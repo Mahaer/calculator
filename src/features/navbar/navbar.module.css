@@ -1,0 +1,95 @@
+.header{
+	padding: 12px 32px;
+	background-color: var(--accent-1);
+	display: flex;
+	justify-content: space-between;
+	height: 90px;
+	align-items: center;
+}
+.siteName h1{
+	font-size: 48px;
+	font-weight: 500;
+}
+.siteName{
+	width: 40%;
+	height: 72px;
+	display: flex;
+	align-items: center;
+}
+.links{
+	width: 60%;
+	height: 72px;
+}
+.links ul {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    height: 72px;
+    padding: 0;
+    margin: 0;
+    list-style: none; 
+}
+.links ul li {
+    display: flex;
+    align-items: center; 
+    justify-content: center;
+	flex-direction: column;
+    flex: 1;
+    font-size: 35px;
+    user-select: none;
+}
+.link::after{
+	content: '';
+    width: 0%;
+    height: 2px;
+    background-color: black;
+    display: block;
+    transition: width 0.1s;
+    margin: auto;
+}
+.link:hover::after {
+    width: 100%;
+}
+.link:hover {
+    cursor: pointer;
+}
+
+@media only screen and (max-width:1440px) and (min-width:1170px){
+	.siteName h1{
+		font-size: 40px;
+	}
+	.links ul li{
+		font-size: 25px;
+	}
+}
+
+@media only screen and (max-width:1170px) and (min-width:840px){
+	.siteName h1{
+		font-size: 28px;
+	}
+	.header{
+		height: 72px;
+	}
+	.links ul li{
+		font-size: 20px;
+	}
+}
+
+@media only screen and (max-width: 840px) {
+    .siteName {
+        width: 28%;
+    }
+    .links {
+        width: 72%;
+    }
+    .siteName h1 {
+        font-size: 20px;
+		margin-bottom: 4px;
+    }
+    .links ul li {
+        font-size: 15px;
+    }
+	.link::after{
+		height: 1px;
+	}
+}

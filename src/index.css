@@ -1,3 +1,8 @@
+:root{
+	--accent-1:rgb(110, 110, 110);
+	--background: rgb(180, 180, 180);
+}
+
 *{
 	margin: 0px;
 	padding: 0px;
@@ -12,6 +17,8 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  background-color: var(--background);
 }
 
 code {

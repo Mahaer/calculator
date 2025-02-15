@@ -1,8 +1,8 @@
 import { configureStore } from '@reduxjs/toolkit';
-import sliceNameReducer from '../features/componentA/componentASlice';
+// import sliceNameReducer from '../features/navbar/navbarSlice';
 
 export const store = configureStore({
 	reducer: {
-		sliceName: sliceNameReducer
+		// sliceName: sliceNameReducer
 	},
 });

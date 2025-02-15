@@ -1,10 +1,13 @@
 import React from 'react';
-import styles from './App.css'; 
-import { ComponentA } from './features/componentA/componentA'
+import { Navbar } from './features/navbar/navbar'
+import { Sections } from './features/sections/sections';
 
 function App() {
 	return (
-		<ComponentA/>
+		<main>
+			<Navbar/>
+			<Sections/>
+		</main>
 	);
 }
 
