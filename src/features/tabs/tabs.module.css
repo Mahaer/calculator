@@ -5,6 +5,8 @@
 .tabs{
 	display: flex;
 	width: 100%;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 .tabsTitle{
 	width: 80px;
@@ -16,6 +18,7 @@
 .tabsTitle h2{
 	font-size: 24px;
 	font-weight: 400px;
+	user-select: none;
 }
 .tab{
 	border: 1px solid black;
@@ -45,8 +48,11 @@
 	cursor: pointer;
 }
 .currentTab{
-	border-bottom: none;
+	border-bottom: 1px solid transparent;
 	background-color: rgb(133, 169, 182);
+}
+.currentTab:hover{
+	cursor: default;
 }
 .extraTab{
 	border:1px solid black ;
@@ -71,4 +77,7 @@
 .extraTab button:hover{
 	background-color: aqua;
 	border: 1px solid black;
+}
+.extraTab h2{
+	user-select: none;
 }
