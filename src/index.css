@@ -1,6 +1,8 @@
 :root{
-	--accent-1:rgb(110, 110, 110);
+	--accent-1:rgb(110, 110, 120);
 	--background: rgb(180, 180, 180);
+  --accent-2:rgb(150, 150, 180);
+  --accent-2-highlight:rgb(180, 180, 220);
 }
 
 *{

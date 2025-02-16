@@ -1,3 +1,123 @@
-/* div{
-	border: 1px solid red;
+:root{
+	--accent-1:rgb(110, 110, 120);
+	--background: rgb(180, 180, 180);
+  --accent-2:rgb(150, 150, 180);
+  --accent-2-highlight:rgb(180, 180, 220);
+}
+
+.sections{
+	display: flex;
+}
+.section{
+	flex: 1;
+}
+.sectionTitle{
+	border: 2px solid black;
+	position: relative;
+	background-color: var(--accent-2);
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.sectionTitle h2{
+	font-size: 32px;
+	margin: 8px 12px;
+	font-weight: 600;
+}
+.sectionBulk{
+	border: 2px solid black;
+	position: absolute;
+	background-color: var(--accent-2);
+	display: none;
+	gap: 10px;
+	width: max-content;
+	margin-left: -2px;
+}
+.sectionTitle:hover .sectionBulk{
+	display: flex;
+}
+.sectionBulk div{
+	display: flex;
+	flex-direction: column;
+	padding: 16px 0px;
+}
+.sectionBulk div button{
+	border: none;
+	background-color: transparent;
+	text-align: left;
+	padding-left: 35px;
+	padding-top: 5px;
+	padding-bottom: 5px;
+	padding-right: 35px;
+	font-size: 18px;
+}
+.sectionBulk div h3{
+	margin-left: 10px;
+	font-size: 28px;
+	margin-top: 8px;
+	margin-bottom: 8px;
+	font-weight: 600;
+}
+.sectionBulk div button:hover {
+	background-color: var(--accent-2-highlight);
+}
+
+@media only screen and (max-width:1330px) {
+	.sectionTitle h2{
+		font-size: 24px;
+		margin: 6px 8px;
+	}
+	.sectionBulk div h3{
+		font-size: 20px;
+	}
+	.sectionBulk div button{
+		font-size: 14px;
+	}
+	.sectionBulk div{
+		padding: 8px 0px;
+	}
+}
+
+/* .sections{
+	display: flex;
+}
+.sectionTitle{
+	border: 1px solid black;
+	position: relative;
+	background-color: var(--accent-2);
+}
+.sectionTitle h2{
+	font-size: 24px;
+	margin: 4px 6px;
+	font-weight: 600;
+}
+.sectionBulk{
+	border: 1px solid green;
+	position: absolute;
+	background-color: var(--accent-2);
+	display: flex;
+	gap: 10px;
+}
+.sectionBulk div{
+	display: flex;
+	flex-direction: column;
+	padding: 16px 0px;
+}
+.sectionBulk div button{
+	border: none;
+	background-color: transparent;
+	text-align: left;
+	padding-left: 35px;
+	padding-top: 5px;
+	padding-bottom: 5px;
+	padding-right: 35px;
+	font-size: 14px;
+}
+.sectionBulk div h3{
+	margin-left: 10px;
+	font-size: 20px;
+	margin-top: 8px;
+	margin-bottom: 8px;
+}
+.sectionBulk div button:hover {
+	background-color: rgb(182, 182, 215);
 } */
