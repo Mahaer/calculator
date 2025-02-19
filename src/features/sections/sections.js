@@ -32,6 +32,7 @@ export function Sections() {
 			</div>
 		  </div>
 		))}
+		<div className={styles.sectionEnd}></div>
 	  </section>
 	);
 }

@@ -1,0 +1,16 @@
+.fraction{
+    width: min-content;
+    font-family:var(--math-font);
+    margin: 0px 5px;
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+}
+.fraction hr{
+    color: black;
+    background-color: black;
+    border: 1px solid black;
+}
+.fraction p{
+    font-weight: 400;
+}

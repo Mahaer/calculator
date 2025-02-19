@@ -1,0 +1,97 @@
+.calculator{
+    border: 2px solid black;
+    width: 100%;
+    height: 600px;
+    margin-top: 20px;
+}
+.calculator h3{
+    display: flex;
+    font-weight: 400;
+    font-family: var(--math-font);
+    font-size: 40px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+.calculator h2{
+    font-size: 30px;
+    margin-left: 10px;
+    font-weight: 500;
+    user-select: none;
+    margin-bottom: 15px;
+}
+.calculator h1{
+    font-size: 35px;
+    margin-left: 10px;
+    font-weight: 650;
+    user-select: none;
+    margin-bottom: 15px;
+    margin-top: 10px;
+}
+sup{
+    margin-top: -15px;
+    font-size: 30px;
+}
+sub{
+    margin-top: 20px;
+    font-size: 30px;
+}
+.formula > div{
+    margin-left: 40px;
+}
+.variables{
+    margin-left: 40px;
+}
+.variable {
+    display: flex;
+    align-items: center;
+    transition: 0.2s;
+}
+.variable h3, .answer h3{
+    user-select: none;
+}
+.variable input, .answer input{
+    background-color: transparent;
+    border: 1px solid gray;
+    border-bottom: 2px solid black;
+    outline: none;
+    padding: 4px 5px;
+    min-width: 8ch;
+    margin-left:25px;
+    margin-right: 5px;
+    font-size: 24px;
+    height: 36px;
+    min-width: 8ch;
+}
+.variable input:focus{
+    border: 1px solid black;
+    border-bottom: 2px solid black;
+    background-color: rgb(136, 184, 199);
+}
+.variable button, .answer button{
+    background-color: darkcyan;
+    border: 1px solid black;
+    padding: 6px 8px;
+    user-select: none;
+    font-size: 20px;
+    margin-left: 10px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+.variable button:hover, .answer button:hover{
+    background-color: rgb(0, 156, 156);
+    transition: 0.1s;
+    cursor: pointer;
+}
+.answer > div{
+    margin-left: 40px;
+    display: flex;
+    align-items: center;
+}
+.answer input{
+    color: darkred;
+    cursor: default;
+}
+.currentVariable{
+    opacity: .5;
+    pointer-events: none;
+}

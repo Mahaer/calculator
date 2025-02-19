@@ -4,4 +4,18 @@
     height: 850px;
     display: flex;
     justify-content: center;
+    background-color: rgb(133, 169, 182);
+}
+.tabContent{
+    width: 800px;
+    padding-top: 40px;
+}
+.tabContent > div{
+    position: relative;
+}
+.leftSnap{
+    position: absolute;
+    right: 100%;
+    top: 0%;
+    margin-right: 10px;
 }

@@ -15,7 +15,8 @@ export const tabsSlice = createSlice({
 	reducers: {
 		changeTabs: (state, action) => {
 			state.currentTab = action.payload
-		}
+		},
+		//Remember to add ids to each tabs name when you do removeTabs. This'll make sure the only tab that closes is the one that was clicked on, not the FIRST or ALL instances of the same name
 	},
 });
 

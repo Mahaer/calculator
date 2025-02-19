@@ -1,0 +1,13 @@
+.dropdown{
+    border: 1px solid blue;
+    height: 58px;
+    width: fit-content;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+.dropdown div{
+    width: 100%;
+    font-size: 30px;
+    padding: 8px 12px;
+    background-color: bisque;
+}
