@@ -1,0 +1,35 @@
+.variableDefinitions{
+    border: 1px solid black;
+    padding: 8px 16px;
+    padding-left: 20px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+.variableDefinitions div{
+    margin-top: 12px;
+    margin-left: 8px;
+}
+.variableDefinitions h2{
+    font-size: 30px;
+    font-weight: 500;
+    user-select: none;
+}
+.variableDefinitions label{
+    display: flex;
+    font-size: 24px;
+    margin: 2px 0px;
+    align-items: center;
+    user-select: none;
+}
+.variableDefinitions h3{
+    display: flex;
+    font-weight: 400;
+    font-family: var(--math-font);
+    font-size: 30px;
+}
+.variableDefinitions h4{
+    display: flex;
+    font-weight: 400;
+    font-size: 28px;
+    margin-left: 12px;
+}

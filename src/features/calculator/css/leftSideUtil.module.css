@@ -1,25 +1,24 @@
-.selectedVariable{
+.leftSideUtil{
     border: 1px solid black;
     padding: 8px 16px;
     padding-right: 20px;
-}
-.selectedVariable h2, .selectedVariable label{
     white-space: nowrap;
     text-overflow: ellipsis;
+    margin-top: 10px;
 }
-.selectedVariable h2{
+.leftSideUtil h2{
     font-size: 30px;
     font-weight: 500;
     user-select: none;
 }
-.selectedVariable label{
+.leftSideUtil label{
     display: flex;
     font-size: 24px;
     margin: 2px 0px;
     align-items: center;
     user-select: none;
 }
-.selectedVariable input[type="radio"] {
+.leftSideUtil input[type="radio"] {
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
@@ -31,24 +30,23 @@
     transition: 0.2s; 
     box-shadow: none;
 }
-.selectedVariable input[type="radio"]:checked {
+.leftSideUtil input[type="radio"]:checked {
     background-color: black;
 }
-.selectedVariable input[type="radio"]:hover {
+.leftSideUtil input[type="radio"]:hover {
     cursor: pointer;
 }
-.selectedVariable h3{
+.leftSideUtil h4{
     display: flex;
     font-weight: 400;
-    font-family: var(--math-font);
-    font-size: 30px;
+    font-size: 25px;
     margin-left: 12px;
 }
-.selectedVariable div{
+.leftSideUtil div{
     margin-top: 12px;
     margin-left: 8px;
 }
-.leftSideUtilVar{
+.fade{
     opacity: 0.4;
     pointer-events: none;
 }

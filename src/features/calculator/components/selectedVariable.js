@@ -7,7 +7,7 @@ import { nonSerializedFormulaData } from "./calculator";
 export function SelectedVariable(props){
     const dispatch = useDispatch();
 
-    const {mode, tabId} = props;
+    const {mode, tabId, type} = props;
     const tabData = useSelector(selectTabData)
     const tD = tabData.find(obj => obj.name === mode);
     const tabs = useSelector(selectTabs)
@@ -24,41 +24,47 @@ export function SelectedVariable(props){
             tV[key] = key
         }
     }
-    return (
-        <div className={styles.selectedVariable}>
-            <h2>Solve for:</h2>
-            <div>
-                {Object.keys(tD.variables).map((variable, index) => (
-                    <label key={index}>
-                        <input
-                            type="radio"
-                            name='selectedVariableGroup'
-                            value={variable}
-                            checked={currentTab.selectedVariable === variable}
-                            onChange={() => {
-                                dispatch(changeSelectedVariable({
-                                    id: tabId,
-                                    value: variable
-                                }));
-                            
-                                const updatedTab = tabs.find(obj => obj.id === tabId);
-                                const updatedVariables = { ...updatedTab.variables }; // Ensure a new copy is used
-                            
-                                updatedVariables[variable] = ''; // Reset the new selected variable
-                            
-                                const answer = nonSerializedFormulaData[mode]['math'](variable, updatedVariables);
-                            
-                                dispatch(getAnswer({
-                                    id: tabId,
-                                    answer: answer,
-                                    selectedVariable: variable // Make sure we update with the new selected variable
-                                }));
-                            }}
-                        />
-                        <h3>{variable}</h3>
-                    </label>
-                ))}
+
+    if(type === 'formula'){
+        return (
+            <div className={styles.selectedVariable}>
+                <h2>Solve for:</h2>
+                <div>
+                    {Object.keys(tD.variables).map((variable, index) => (
+                        <label 
+                            key={index} 
+                            className={variable === tD.leftSideUtil.omittedVariable? (currentTab.leftSideUtilValue === 'Custom Value'? '' : styles.leftSideUtilVar): ''}
+                        >
+                            <input
+                                type="radio"
+                                name='selectedVariableGroup'
+                                value={variable}
+                                checked={currentTab.selectedVariable === variable}
+                                onChange={() => {
+                                    dispatch(changeSelectedVariable({
+                                        id: tabId,
+                                        value: variable
+                                    }));
+                                
+                                    const updatedTab = tabs.find(obj => obj.id === tabId);
+                                    const updatedVariables = { ...updatedTab.variables }; // Ensure a new copy is used
+                                
+                                    updatedVariables[variable] = ''; // Reset the new selected variable
+                                
+                                    const answer = nonSerializedFormulaData[mode]['math'](variable, updatedVariables);
+                                
+                                    dispatch(getAnswer({
+                                        id: tabId,
+                                        answer: answer,
+                                        selectedVariable: variable // Make sure we update with the new selected variable
+                                    }));
+                                }}
+                            />
+                            <h3>{variable}</h3>
+                        </label>
+                    ))}
+                </div>
             </div>
-        </div>
-    )
+        )
+    }
 }

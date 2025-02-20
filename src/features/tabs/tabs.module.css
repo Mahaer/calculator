@@ -27,6 +27,7 @@
 	padding: 2px 6px;
 	display: flex;
 	align-items: center;
+	user-select: none;
 }
 .tab:hover{
 	background-color: rgb(133, 169, 182);
@@ -41,6 +42,7 @@
 	font-weight: 600;
 	width: 25px;
 	height: 25px;
+	user-select: none;
 }
 .tab button:hover{
 	border: 1px solid black;
@@ -73,6 +75,7 @@
 	justify-content: center;
 	align-items: center;
 	margin-right: 10px;
+	user-select: none;
 }
 .extraTab button:hover{
 	background-color: aqua;

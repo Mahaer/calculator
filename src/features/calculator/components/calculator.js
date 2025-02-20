@@ -33,29 +33,61 @@ export const nonSerializedFormulaData = {
                 }
             }
             const {A, P, r, n, t} = updatedVariables
+            let result = 0
             switch(selectedVariable){
                 case 'A':
-                    if(nonSerializedFormulaData.check([P, r, n, t])){
-                        return (P * Math.pow((1 + (r / n)), n * t)).toFixed(2);
+                    if (nonSerializedFormulaData.check([P, r, n, t])) {
+                        if (Number(n) !== 0) {
+                            if(Number(n) >= 0 && P >= 0 && r >= 0 && t >= 0){
+                                result = (P * Math.pow((1 + (r / n)), n * t)).toFixed(2);
+                            } else {
+                                result = 'Error: all variables must be positive'
+                            }
+                        } else {
+                            result = 'Error: cannot divide by zero';
+                        }
                     } else {
-                        return 'Error: missing variable/s';
+                        result = 'Error: missing variable/s';
                     }
+                    break;
                 case 'P':
-                    if(nonSerializedFormulaData.check([A, r, n, t])){
-                        return (A / Math.pow((1 + (r / n)), n * t)).toFixed(2);
+                    if (nonSerializedFormulaData.check([A, r, n, t])) {
+                        if (Number(n) !== 0) {
+                            if(Number(n) >= 0 && A >= 0 && r >= 0 && t >= 0){
+                                result = (A / Math.pow(1 + (r / n), n * t)).toFixed(2);
+                            } else {
+                                result = 'Error: all variables must be positive'
+                            }
+                        } else {
+                            result = 'Error: cannot divide by zero';
+                        }
                     } else {
-                        return 'Error: missing variable/s';
+                        result = 'Error: missing variable/s';
                     }
+                    break;
                 case 'r':
                     if(nonSerializedFormulaData.check([A, P, n, t])){
-                        return math.round(n *((math.nthRoot(A / P, n * t)) - 1), 3)
+                        if (Number(P) !== 0) {
+                            if(Number(n) >= 0 && A >= 0 && n >= 0 && t >= 0){
+                                if(Number(n) === 0 || Number(t) === 0){
+                                    result = 'Error: n and t cannot be zero'
+                                } else {
+                                    result = math.round(n *((math.nthRoot(A / P, n * t)) - 1), 3)
+                                }
+                            } else {
+                                result = 'Error: all variables must be positive'
+                            }
+                        } else {
+                            result = 'Error: cannot divide by zero';
+                        }
                     } else {
-                        return 'Error: missing variable/s';
+                        result = 'Error: missing variable/s';
                     }
+                    break;
                 case 'n':
                     if(nonSerializedFormulaData.check([A, P, r, t])){
                         if (P <= 0 || A <= 0 || r <= 0 || t <= 0) {
-                            return 'Error: all variables must be positive'
+                            result = 'Error: all variables must be positive'
                         }
                     
                         let n = 1; 
@@ -70,26 +102,58 @@ export const nonSerializedFormulaData = {
                             let newN = n - f / fDerivative;
                     
                             if (Math.abs(newN - n) < tolerance) {
-                                return newN;
+                                result = newN;
                             }
                     
                             n = newN;
                             iteration++;
                         }
                     
-                        return 'Error: solution did not converge'
+                        result = 'Error: solution did not converge'
                         //fix this code, this code doesn't accurately calculate n
+                        // Add different edge cases for n too
                     } else {
-                        return 'Error: missing variable/s';
+                        result = 'Error: missing variable/s';
                     }
+                    break;
                 case 't':
                     if(nonSerializedFormulaData.check([A, P, r, n])){
-                        return math.round(math.log(A / P) / (n * math.log(1 + (r / n))), 2);
+                        if (Number(n) === 0 || Number(P) === 0) {
+                            result = 'Error: cannot divide by zero';
+                        } else {
+                            if(Number(n) >= 0 && A >= 0 && r >= 0 && n >= 0){
+                                if(Number(A) === 0 || Number(r) === 0 || (n * math.log(1 + (r / n))) === 0){
+                                    result = 'Error: cannot take natural log of 0'
+                                } else {
+                                    result = math.round(math.log(A / P) / (n * math.log(1 + (r / n))), 2);
+                                }
+                            } else {
+                                result = 'Error: all variables must be positive'
+                            }
+                        }
                     } else {
-                        return 'Error: missing variable/s';
+                        result = 'Error: missing variable/s';
                     }
+                    break;
                 default:
-                    return 'Error'
+                    result = 'Error'
+                    break;
+            }
+            if(result || result === 0){
+                if(String(result) === 'Infinity'){
+                    result = 'Error: result is too large'
+                    return result
+                } else {
+                    if(String(result) === '-Infinity'){
+                        result = 'Error: result is too small'
+                        return result
+                    } else {
+                        return result
+                    }
+                }
+            } else {
+                result = 'Error'
+                return result
             }
         }
     }
@@ -112,7 +176,7 @@ export function Calculator(props) {
     for (let i = 0; i < tVKeys.length; i++) {tV[tVKeys[i]] = tVKeys[i] === tabVariables[tVKeys[i]] ? '' : tabVariables[tVKeys[i]];}
     for (let key in tV) {numericVariables[key] = tV[key] === '' ? '' : Number(tV[key]);}
     for (let key in tV) {
-        if(key === currentTab.selectedVariable || tV[key].includes('Error') || tV[key].includes('Impossible')){
+        if(key === currentTab.selectedVariable || tV[key].includes('Error') || tV[key].includes('Impossible') || tV[key] === Infinity || tV[key] === -Infinity){
             tV[key] = ''
         }
     }
@@ -195,7 +259,7 @@ export function Calculator(props) {
     }
     const handleInputChange = (e, variable) => {
         const newValue = e.target.value;
-        const regex = /^\d*\.?\d*$/;
+        const regex = /^-?\d*\.?\d*$/;
         if (regex.test(newValue) && tV[variable] !== newValue) {
             dispatch(updateInputs({ id: tabId, variable, value: newValue }));
     
@@ -206,24 +270,29 @@ export function Calculator(props) {
         }
     };
     const handleKeyDown = (e, index) => {
-        let nextIndex = e.key === "ArrowDown" ? index + 1 : e.key === "ArrowUp" ? index - 1 : index;
-        let nextVariable = Object.keys(tV)[nextIndex];
-
-        if (nextVariable) {
+        const keys = Object.keys(tV);
+        let nextIndex = index;
+    
+        if (e.key === "ArrowDown") {
+            do {
+                nextIndex++;
+            } while (
+                nextIndex < keys.length &&
+                document.querySelector(`input[name="${keys[nextIndex]}"]`)?.closest(`.${styles.variable}`)?.classList.contains(styles.fade)
+            );
+        } else if (e.key === "ArrowUp") {
+            do {
+                nextIndex--;
+            } while (
+                nextIndex >= 0 &&
+                document.querySelector(`input[name="${keys[nextIndex]}"]`)?.closest(`.${styles.variable}`)?.classList.contains(styles.fade)
+            );
+        }
+    
+        if (nextIndex >= 0 && nextIndex < keys.length) {
+            let nextVariable = keys[nextIndex];
             let nextInput = document.querySelector(`input[name="${nextVariable}"]`);
-
-            if (nextInput && nextInput.classList.contains(styles.currentVariable)) {
-                if(e.key === 'ArrowDown'){
-                    nextIndex += 1;
-                    nextVariable = Object.keys(tV)[nextIndex];
-                    nextInput = document.querySelector(`input[name="${nextVariable}"]`); 
-                } else if(e.key === 'ArrowUp'){
-                    nextIndex -= 1;
-                    nextVariable = Object.keys(tV)[nextIndex];
-                    nextInput = document.querySelector(`input[name="${nextVariable}"]`); 
-                }
-            }
-
+    
             if (nextInput) {
                 setTimeout(() => {
                     nextInput.focus();
@@ -232,6 +301,7 @@ export function Calculator(props) {
             }
         }
     };
+    //Fix issues with left arrow and right arrow keys. also when the input changes the selection always moves to the end
     const handleBlur = (e, variable) => {
         const formattedValue = formatValue(e.target.value, tD.formatTypes[variable]);
         dispatch(updateInputs({
@@ -260,16 +330,20 @@ export function Calculator(props) {
                     <h2>Enter:</h2>
                     <div className={styles.variables}>
                         {Object.keys(tV).map((variable, index) => (
-                            <div className={`${styles.variable} ${currentTab.selectedVariable === variable ? styles.currentVariable : ''}`} key={variable}>
+                            <div 
+                                className={
+                                    `${styles.variable} 
+                                    ${currentTab.selectedVariable === variable ? styles.fade : (variable === tD.leftSideUtil.omittedVariable && currentTab.leftSideUtilValue !== 'Custom Value'? styles.fade:'')}`
+                                } 
+                                key={variable}>
                                 <h3>{variable} =</h3>
                                 <input 
                                     style={{
                                         width: `${Math.max(8, (variable === currentTab.selectedVariable? currentTab.answer : tV[variable])?.length || 0) + 1}ch`,
-                                        color: `${variable === currentTab.selectedVariable? 'darkred' : 'black'}`
+                                        color: `${variable === currentTab.selectedVariable? 'darkred' : (variable === tD.leftSideUtil.omittedVariable && currentTab.leftSideUtilValue !== 'Custom Value'? 'darkgreen': 'black')}`
                                     }}
                                     type='text' 
                                     inputMode='numeric' 
-                                    pattern='[0-9]*' 
                                     value={variable === currentTab.selectedVariable? currentTab.answer : tV[variable]}
                                     autoComplete='off'
                                     autoCorrect='off'
@@ -280,10 +354,14 @@ export function Calculator(props) {
                                     onBlur={(e) => handleBlur(e, variable)}
                                     placeholder=''
                                     aria-label={`enter the ${variable} value here`}
-                                    className={`${currentTab.selectedVariable === variable ? styles.currentVariable : ''}`}
                                 />
-                                <h3>{tD.units[variable]}</h3>
-                                {currentTab.selectedVariable !== variable && (
+                                <h3>{tD.units[variable] !== 'DecimalPercentage'? tD.units[variable]: ''}</h3>
+                                {
+                                    currentTab.selectedVariable !== variable 
+                                    && tD.units[variable] !== ''
+                                    && (variable !== tD.leftSideUtil.omittedVariable
+                                    || currentTab.leftSideUtilValue === 'Custom Value')
+                                &&(
                                     <button type='button'>add conversion</button>
                                 )}
                             </div>
@@ -306,8 +384,14 @@ export function Calculator(props) {
                             readOnly
                             style={{width: `${Math.max(8, currentTab.answer?.length || 0) + 1}ch`}} 
                         />
-                        <h3>{tD.units[currentTab.selectedVariable]}</h3>
-                        <button type='button'>add conversion</button>
+                        <h3>{tD.units[currentTab.selectedVariable] !== 'DecimalPercentage'? tD.units[currentTab.selectedVariable]: ''}</h3>
+                        {
+                            tD.units[currentTab.selectedVariable] !== ''
+                            && (currentTab.selectedVariable !== tD.leftSideUtil.omittedVariable
+                            || currentTab.leftSideUtilValue === 'Custom Value')
+                        &&(
+                            <button type='button'>add conversion</button>
+                        )}
                     </div>
                 </div>
                 {props.children}
