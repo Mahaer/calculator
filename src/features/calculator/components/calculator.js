@@ -41,7 +41,7 @@ export const nonSerializedFormulaData = {
                             if(Number(n) >= 0 && P >= 0 && r >= 0 && t >= 0){
                                 result = (P * Math.pow((1 + (r / n)), n * t)).toFixed(2);
                             } else {
-                                result = 'Error: all variables must be positive'
+                                result = 'Error: all variables must be positive numbers'
                             }
                         } else {
                             result = 'Error: cannot divide by zero';
@@ -56,7 +56,7 @@ export const nonSerializedFormulaData = {
                             if(Number(n) >= 0 && A >= 0 && r >= 0 && t >= 0){
                                 result = (A / Math.pow(1 + (r / n), n * t)).toFixed(2);
                             } else {
-                                result = 'Error: all variables must be positive'
+                                result = 'Error: all variables must be positive numbers'
                             }
                         } else {
                             result = 'Error: cannot divide by zero';
@@ -75,7 +75,7 @@ export const nonSerializedFormulaData = {
                                     result = math.round(n *((math.nthRoot(A / P, n * t)) - 1), 3)
                                 }
                             } else {
-                                result = 'Error: all variables must be positive'
+                                result = 'Error: all variables must be positive numbers'
                             }
                         } else {
                             result = 'Error: cannot divide by zero';
@@ -87,7 +87,7 @@ export const nonSerializedFormulaData = {
                 case 'n':
                     if(nonSerializedFormulaData.check([A, P, r, t])){
                         if (P <= 0 || A <= 0 || r <= 0 || t <= 0) {
-                            result = 'Error: all variables must be positive'
+                            result = 'Error: all variables must be positive numbers'
                         }
                     
                         let n = 1; 
@@ -128,7 +128,7 @@ export const nonSerializedFormulaData = {
                                     result = math.round(math.log(A / P) / (n * math.log(1 + (r / n))), 2);
                                 }
                             } else {
-                                result = 'Error: all variables must be positive'
+                                result = 'Error: all variables must be positive numbers'
                             }
                         }
                     } else {
@@ -158,7 +158,7 @@ export const nonSerializedFormulaData = {
         }
     }
 }
-//remember to ask Mr. Rand about how to solve for n in the compound interest formula
+//remember to learn about how to solve for n in the compound interest formula
 
 export function Calculator(props) {
     const dispatch = useDispatch();
@@ -259,8 +259,12 @@ export function Calculator(props) {
     }
     const handleInputChange = (e, variable) => {
         const newValue = e.target.value;
-        const regex = /^-?\d*\.?\d*$/;
+        const regex = /^-?\d*\.?\d*(e[+-]?\d*)?$/;
+        const input = e.target;
+        const cursorPos = input.selectionStart;
+        
         if (regex.test(newValue) && tV[variable] !== newValue) {
+            
             dispatch(updateInputs({ id: tabId, variable, value: newValue }));
     
             const updatedVariables = { ...tV, [variable]: newValue };
@@ -268,25 +272,29 @@ export function Calculator(props) {
     
             dispatch(getAnswer({ id: tabId, answer: answer, selectedVariable: currentTab.selectedVariable }));
         }
+
+        setTimeout(() => {
+            input.setSelectionRange(cursorPos + 1, cursorPos + 1);
+        }, 0);
     };
     const handleKeyDown = (e, index) => {
         const keys = Object.keys(tV);
         let nextIndex = index;
     
-        if (e.key === "ArrowDown") {
+        if (e.key === "ArrowDown" || e.key === "ArrowUp") {
             do {
-                nextIndex++;
-            } while (
-                nextIndex < keys.length &&
-                document.querySelector(`input[name="${keys[nextIndex]}"]`)?.closest(`.${styles.variable}`)?.classList.contains(styles.fade)
-            );
-        } else if (e.key === "ArrowUp") {
-            do {
-                nextIndex--;
+                nextIndex += e.key === "ArrowDown" ? 1 : -1;
             } while (
                 nextIndex >= 0 &&
-                document.querySelector(`input[name="${keys[nextIndex]}"]`)?.closest(`.${styles.variable}`)?.classList.contains(styles.fade)
+                nextIndex < keys.length &&
+                document.querySelector(`input[name="${keys[nextIndex]}"]`)
+                    ?.closest(`.${styles.variable}`)
+                    ?.classList.contains(styles.fade)
             );
+        } else if (e.key === "ArrowLeft") {
+            return;
+        } else if (e.key === "ArrowRight") {
+            return;
         }
     
         if (nextIndex >= 0 && nextIndex < keys.length) {
@@ -301,19 +309,25 @@ export function Calculator(props) {
             }
         }
     };
-    //Fix issues with left arrow and right arrow keys. also when the input changes the selection always moves to the end
     const handleBlur = (e, variable) => {
-        const formattedValue = formatValue(e.target.value, tD.formatTypes[variable]);
+        let value = e.target.value.trim(); 
+        value = value.replace(/e[+-]?$/, '');  
+
+        value = value.replace(/^e/, '');  
+    
+        const formattedValue = formatValue(value, tD.formatTypes[variable]);
+    
         dispatch(updateInputs({
             id: tabId,
             variable: variable,
             value: formattedValue,
         }));
+    
         dispatch(getAnswer({
-            id:tabId,
+            id: tabId,
             answer: nonSerializedFormulaData[mode]['math'](currentTab.selectedVariable, tV),
             selectedVariable: currentTab.selectedVariable
-        }))
+        }));
     };
 
     if(type === 'formula'){
