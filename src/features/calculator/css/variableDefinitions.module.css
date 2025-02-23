@@ -33,3 +33,7 @@
     font-size: 28px;
     margin-left: 12px;
 }
+.selectedVariable sub h3{
+    font-size: 25px;
+    margin-left: 0px;
+}

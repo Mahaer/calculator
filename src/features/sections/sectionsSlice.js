@@ -5,174 +5,151 @@ const initialState = {
 		{
 			name:'Basic Operations',
 			categories:[
-				[
-					{
-						categoryName: 'Arithmetic',
-						subCategories:[
-							'Addition',
-							'Subtraction',
-							'Multiplication',
-							'Division',
-							'Modulus',
-							'Custom Arithmetic'
-						]
-					},
-					{
-						categoryName: 'Exponents and Roots',
-						subCategories:[
-							'Square',
-							'Cube',
-							'Higher power',
-							'Square root',
-							'Cube root',
-							'Nth root'
-						]
-					}
-				]
+				{
+					'Arithmetic': [
+					  'Addition',
+					  'Subtraction',
+					  'Multiplication',
+					  'Division',
+					  'Modulus',
+					  'Custom Arithmetic'
+					],
+					'Exponents and Roots': [
+					  'Square',
+					  'Cube',
+					  'Nth power',
+					  'Square root',
+					  'Cube root',
+					  'Nth root'
+					]
+				},
+				{
+					'Fractions': [
+						'Adding Fractions',
+						'Subtracting Fractions',
+						'Multiplying Fractions',
+						'Dividing Fractions'
+					],
+					'Complex Numbers': [
+						'Adding Complex Numbers',
+						'Subtracting Complex Numbers',
+						'Multiplying Complex Numbers',
+						'Dividing Complex Numbers'
+					]
+				} 
 			]
 		},
 		{
 			name:'Algebra',
 			categories:[
-				[
-					{
-						categoryName: 'Arithmetic Operations',
-						subCategories:[
-							'Addition',
-							'Subtraction',
-							'Multiplication',
-							'Division'
-						]
-					},
-					{
-						categoryName: 'Polynomial Equations and Functions',
-						subCategories:[
-							'Slope intercept form',
-							'Slope',
-							'General Form of a Quadratic',
-							'Quadratic Formula',
-							'Vertex Form of a Quadratic',
-							'Cubic Formula',
-							'Polynomial Equations',
-							'Add Polynomials',
-							'Subtract Polynomials',
-							'Multiply Polynomials',
-							'Divide Polynomials',
-							'Absolute Value Function'
-						]
-					}
-				],
-				[
-					{
-						categoryName: 'Systems of Equations',
-						subCategories:[
-							'Two variable systems',
-							'Three variable systems',
-							'Systems with more than three variables',
-						]
-					},
-					{
-						categoryName: 'Sequences and Series',
-						subCategories:[
-							'Arithmetic sequence',
-							'Arthmetic recursive sequence',
-							'Sum of first N terms in arithmetic sequence',
-							'Geometric sequence',
-							'Geometric recursive sequence',
-							'Sum of first N terms in geometric sequence',
-						]
-					},
-					{
-						categoryName: 'Complex Numbers',
-						subCategories:[
-							'Addition',
-							'Subtraction',
-							'Multiplication',
-							'Division',
-							'Polar form',
-							'Euler\'s formula',
-							'Complex conjugate'
-						]
-					}
-				]
+				{
+					'Arithmetic Operations': [
+					  	'Algebraic Addition',
+					  	'Algebraic Subtraction',
+					  	'Algebraic Multiplication',
+					  	'Algebraic Division'
+					],
+					'Polynomial Equations and Functions': [
+					  	'Slope Intercept Form',
+					  	'Slope',
+					  	'General Form of a Quadratic',
+					  	'Quadratic Formula',
+						'Axis of Symmetry',
+					  	'Vertex Form of a Quadratic',
+					  	'Polynomial Equations',
+					  	'Add Polynomials',
+					  	'Subtract Polynomials',
+					  	'Multiply Polynomials',
+					  	'Divide Polynomials',
+					  	'Absolute Value Function'
+					]
+				},
+				{
+					'Systems of Equations': [
+					  	'Two Variable Systems',
+					  	'Three Variable Systems',
+					  	'Systems with more than three Variables'
+					],
+					'Sequences and Series': [
+					  	'Arithmetic Sequence (Explicit Formula)',
+					  	'Arithmetic Recursive Sequence',
+					  	'Arithmetic General Sum Formula',
+						'Arithmetic Alternate Sum Formula',
+					  	'Geometric Sequence (Explicit Formula)',
+					  	'Geometric Recursive Sequence',
+					  	'Sum of Finite Geometric Sequence',
+						'Sum of Infinite Geometric Sequence (|r| < 1)'
+					],
+					'Complex Numbers': [
+					  	'Algebraic Addition of Complex Numbers',
+					  	'Algebraic Subtraction of Complex Numbers',
+					  	'Algebraic Multiplication of Complex Numbers',
+					  	'Algebraic Division of Compelx Numbers',
+					  	'Polar form',
+					  	'Euler\'s formula',
+					  	'Complex conjugate'
+					]
+				}
 			]
 		},
 		{
 			name:'Geometry',
 			categories:[
-				[
-					{
-						categoryName: 'Mock Heading',
-						subCategories:[
-							'Mock category'
-						]
-					}
-				]
+				{
+					'Mock Heading': [
+						'Pythagorean Theorm'
+					]
+				}
 			]
 		},
 		{
 			name:'Calculus',
 			categories:[
-				[
-					{
-						categoryName: 'Mock Heading',
-						subCategories:[
-							'Mock category'
-						]
-					}
-				]
+				{
+					'Mock Heading': [
+						'Mock category'
+					]
+				}
 			]
 		},
 		{
 			name:'Physics',
 			categories:[
-				[
-					{
-						categoryName: 'Mock Heading',
-						subCategories:[
-							'Mock category'
-						]
-					}
-				]
+				{
+					'Mock Heading': [
+						'Mock category'
+					]
+				}
 			]
 		},
 		{
 			name:'Statistics',
 			categories:[
-				[
-					{
-						categoryName: 'Mock Heading',
-						subCategories:[
-							'Mock category'
-						]
-					}
-				]
+				{
+					'Mock Heading': [
+						'Mock category'
+					]
+				}
 			]
 		},
 		{
 			name:'Finance and Economics',
 			categories:[
-				[
-					{
-						categoryName: 'Mock Heading',
-						subCategories:[
-							'Mock category'
-						]
-					}
-				]
+				{
+					'Mock Heading': [
+						'Compound Interest'
+					]
+				}
 			]
 		},
 		{
 			name:'Conversions',
 			categories:[
-				[
-					{
-						categoryName: 'Mock Heading',
-						subCategories:[
-							'Mock category'
-						]
-					}
-				]
+				{
+					'Mock Heading': [
+						'Mock category'
+					]
+				}
 			]
 		}
 	]

@@ -14,7 +14,11 @@ export function VariableDefinitions({mode, type}){
                 <div>
                     {Object.keys(tD.definitions).map((variable, index) => (
                         <label key={index}>
-                            <h3>{`${variable} - `}</h3>
+                            {variable.includes('_')
+                                ?<h3>{variable.split('_')[0]}<sub><h3>{variable.split('_')[1]}</h3></sub></h3>
+                                :<h3>{variable}</h3>
+                            }
+                            <h3>&nbsp;-&nbsp;</h3>
                             <h4>{tD.definitions[variable]}</h4>
                         </label>
                     ))}

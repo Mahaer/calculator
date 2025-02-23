@@ -1,0 +1,36 @@
+.mathRoot{
+    font-family: 'Courier New', Courier, monospace;
+    display: flex;
+    font-size: 20px;
+}
+.mathRoot sup span{
+    margin-right: -16px;
+    margin-top: -6px;
+    font-size: 20px;
+}
+.mathRoot sup{
+    font-size: 14px;
+    margin-top: -5px;
+}
+.radical{
+    font-size: 24px;
+}
+.value{
+    margin-left: 5px;
+    display: block;
+    position: relative;
+    margin-top: 2px;
+    font-size: 16px;
+}
+.value::before{
+    height: 1.5px;
+    width: calc(100% + 10px);
+    background-color: black;
+    content: '';
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    margin-left: -7px;
+    margin-top: -2px;
+}

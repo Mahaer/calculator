@@ -1,7 +1,7 @@
 import React from 'react';
 import { Navbar } from './features/navbar/navbar'
 import { Sections } from './features/sections/sections';
-import { Tabs } from './features/tabs/tabs';
+import { Tabs } from './features/calculator/components/tabs';
 import { Tab } from './features/tab/components/tab';
 
 

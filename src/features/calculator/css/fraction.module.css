@@ -4,13 +4,23 @@
     margin: 0px 5px;
     display: flex;
     flex-direction: column;
-    text-align: center;
+    align-items: center;
 }
 .fraction hr{
     color: black;
     background-color: black;
     border: 1px solid black;
+    width: 100%;
 }
 .fraction p{
     font-weight: 400;
+    display: flex;
+}
+.fraction sub{
+    font-size: 18px;
+    margin-top: 10px;
+}
+.fraction sup p{
+    font-size: 18px;
+    margin-bottom: 10px;
 }

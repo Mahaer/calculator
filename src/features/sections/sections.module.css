@@ -36,6 +36,7 @@
 }
 .sectionTitle:hover .sectionBulk{
 	display: flex;
+	z-index: 1;
 }
 .sectionBulk div{
 	display: flex;
@@ -54,6 +55,7 @@
 	padding-bottom: 5px;
 	padding-right: 35px;
 	font-size: 18px;
+	user-select: none;
 }
 .sectionBulk div h3{
 	margin-left: 10px;
@@ -64,12 +66,13 @@
 }
 .sectionBulk div button:hover {
 	background-color: var(--accent-2-highlight);
+	cursor: pointer;
 }
 .sectionEnd{
 	border-right: 2px solid black;
 }
 
-@media only screen and (max-width:1330px) {
+@media only screen and (max-width:1580px) {
 	.sectionTitle h2{
 		font-size: 24px;
 		margin: 6px 8px;
@@ -82,5 +85,15 @@
 	}
 	.sectionBulk div{
 		padding: 8px 0px;
+	}
+}
+@media only screen and (max-width:1180px) {
+	.sectionTitle h2{
+		font-size: 20px;
+	}
+}
+@media only screen and (max-width:1000px) {
+	.sectionTitle h2{
+		font-size: 18px;
 	}
 }

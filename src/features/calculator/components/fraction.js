@@ -1,12 +1,23 @@
 import React from 'react';
 import styles from '../css/fraction.module.css';
 
-export function Fraction({numerator=1, denominator=1, size}){
+export function Fraction(props) {
+    const {parsing='', numerator=1, denominator=1, size = '20px' } = props
     return (
-        <div className={styles.fraction}>
-            <p style={{fontSize: size}}>{numerator}</p>
-            <hr></hr>
-            <p style={{fontSize: size}}>{denominator}</p>
-        </div>
+        <span className={styles.fraction}>
+            <p style={{ fontSize: size }}>
+                {parsing === 'children'
+                    ?props.children.props.children[0].props.children
+                    :numerator
+                }
+            </p>
+            <hr />
+            <p style={{ fontSize: size }}>
+                {parsing === 'children'
+                    ?props.children.props.children[1].props.children
+                    :denominator
+                }
+            </p>
+        </span>
     );
 }

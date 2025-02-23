@@ -1,8 +1,8 @@
 import React from "react";
 import styles from '../css/selectedVariable.module.css'
 import { useSelector, useDispatch } from "react-redux";
-import { selectTabData, selectTabs, changeSelectedVariable, getAnswer } from "../calculatorSlice";
-import { nonSerializedFormulaData } from "./calculator";
+import { selectTabData, selectTabs, changeSelectedVariable, getAnswer, updateInputs } from "../calculatorSlice";
+import { nonSerializedFormulaData } from "../../../nonSerializedFormulaData";
 
 export function SelectedVariable(props){
     const dispatch = useDispatch();
@@ -25,12 +25,45 @@ export function SelectedVariable(props){
         }
     }
 
+    const handleVariableChange = (variable) => {
+        const oldVariable = currentTab.selectedVariable
+        let updatedVariables = {}
+        dispatch(changeSelectedVariable({
+            id: tabId,
+            value: variable
+        }));
+    
+        let updatedTab = tabs.find(obj => obj.id === tabId).variables;
+        if(updatedTab[oldVariable].includes(',')){
+            let newVar;
+            if(updatedTab[oldVariable].includes('i')){
+                newVar = ''
+            } else {
+                let values = updatedTab[oldVariable].split(',')
+                newVar = String(Math.max(...values.map(str => Number(str))))
+            }
+            
+            dispatch(updateInputs({id:tabId, variable: oldVariable, value: newVar}))
+            updatedVariables = { ...updatedTab, [oldVariable]: newVar };
+        } else{
+            updatedVariables = { ...updatedTab };
+        }
+    
+        updatedVariables[variable] = ''; 
+        const answer = nonSerializedFormulaData[mode]['math'](variable, updatedVariables);
+        dispatch(getAnswer({
+            id: tabId,
+            answer: answer,
+            selectedVariable: variable
+        }));
+    }
+
     if(type === 'formula'){
         return (
             <div className={styles.selectedVariable}>
                 <h2>Solve for:</h2>
                 <div>
-                    {Object.keys(tD.variables).map((variable, index) => (
+                    {(tD.variables).map((variable, index) => (
                         <label 
                             key={index} 
                             className={variable === tD.leftSideUtil.omittedVariable? (currentTab.leftSideUtilValue === 'Custom Value'? '' : styles.leftSideUtilVar): ''}
@@ -40,27 +73,12 @@ export function SelectedVariable(props){
                                 name='selectedVariableGroup'
                                 value={variable}
                                 checked={currentTab.selectedVariable === variable}
-                                onChange={() => {
-                                    dispatch(changeSelectedVariable({
-                                        id: tabId,
-                                        value: variable
-                                    }));
-                                
-                                    const updatedTab = tabs.find(obj => obj.id === tabId);
-                                    const updatedVariables = { ...updatedTab.variables }; // Ensure a new copy is used
-                                
-                                    updatedVariables[variable] = ''; // Reset the new selected variable
-                                
-                                    const answer = nonSerializedFormulaData[mode]['math'](variable, updatedVariables);
-                                
-                                    dispatch(getAnswer({
-                                        id: tabId,
-                                        answer: answer,
-                                        selectedVariable: variable // Make sure we update with the new selected variable
-                                    }));
-                                }}
+                                onChange={() => handleVariableChange(variable)}
                             />
-                            <h3>{variable}</h3>
+                            {variable.includes('_')
+                                ?<h3>{variable.split('_')[0]}<sub><h3>{variable.split('_')[1]}</h3></sub></h3>
+                                :<h3>{variable}</h3>
+                            }
                         </label>
                     ))}
                 </div>

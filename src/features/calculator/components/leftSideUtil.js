@@ -1,7 +1,7 @@
 import React from "react";
 import styles from '../css/leftSideUtil.module.css'
 import { useSelector, useDispatch } from "react-redux";
-import { nonSerializedFormulaData } from "./calculator";
+import { nonSerializedFormulaData } from "../../../nonSerializedFormulaData";
 import { selectTabData, selectTabs, changeLeftSideUtilValue, getAnswer } from "../calculatorSlice";
 
 export function LeftSideUtil({mode, tabId, type}){

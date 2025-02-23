@@ -48,6 +48,10 @@
     margin-top: 12px;
     margin-left: 8px;
 }
+.selectedVariable sub h3{
+    font-size: 25px;
+    margin-left: 0px;
+}
 .leftSideUtilVar{
     opacity: 0.4;
     pointer-events: none;

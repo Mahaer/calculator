@@ -1,11 +1,13 @@
 .calculator{
     border: 2px solid black;
     width: 100%;
-    height: 600px;
+    height: fit-content;
+    min-height: 600px;
     margin-top: 20px;
     padding-right: 10px;
     white-space: nowrap;
     text-overflow: ellipsis;
+    padding-bottom: 30px;
 }
 .calculator h3{
     display: flex;
@@ -14,6 +16,11 @@
     font-size: 40px;
     white-space: nowrap;
     text-overflow: ellipsis;
+}
+.comma{
+    font-size: 60px;
+    font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    font-weight: 300;
 }
 .calculator h2{
     font-size: 30px;
@@ -98,4 +105,9 @@ sub{
 .fade{
     opacity: .5;
     pointer-events: none;
+}
+.enter sub h3, .answer sub h3{
+    font-size: 25px;
+    margin-left: 0px;
+    margin-top: 10px;
 }
