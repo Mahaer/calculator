@@ -253,11 +253,46 @@ const initialState = {
 					'If d is unknown but a_n is given, use the arithmetic alternate sum formula calculator'
 				]
 			}
+		},{
+			name: 'Mean',
+			type: 'array',
+			defaultVariable: 'X',
+			topBar:true,
+			startCharacter: '[',
+			endCharacter: ']',
+			splitCharacter: ',',
+			variables:[
+				'X', [
+					'a', 'b'
+				]
+			],
+			definitions: {
+				X: 'Mean(average)'
+			},
+			moreInfo: {
+				features:[],
+				links:[]
+			}
 		}
 	],
 	tabs:[
 		{
 			id:1,
+			mode: 'Mean',
+			type: 'array',
+			variables:{
+				X: 'X',
+				a:'a',
+				b:'b',
+				c:'c',
+				d:'d',
+			},
+			selectedVariable: 'X',
+			answer: 'Error: missing variable/s',
+			conversions: {}
+		},
+		{
+			id:2,
 			mode: 'Compound Interest',
 			type: 'formula',
 			variables:{
@@ -271,7 +306,7 @@ const initialState = {
 			leftSideUtilValue: 'Custom Value',
 			answer: 'Error: missing variable/s',
 			conversions:{}
-		},
+		}
 	],
 	currentTabId: 1,
 };
@@ -311,7 +346,7 @@ export const calculatorSlice = createSlice({
 					state.tabs.push({
 						id:state.tabs.at(-1)?.id + 1,
 						mode: currentTabData.name,
-						type: currentTabData.type,
+						type: 'formula',
 						variables: currentTabData.variables.reduce((acc, curr) => ({ ...acc, [curr]: curr }), {}),
 						selectedVariable: currentTabData.defaultVariable,
 						leftSideUtilValue: currentTabData.defaultLeftSideUtilValue,

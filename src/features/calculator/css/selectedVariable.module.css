@@ -56,3 +56,30 @@
     opacity: 0.4;
     pointer-events: none;
 }
+.selectedVariable .selectionDropdown{
+    margin: 0px;
+    border: 1px solid black;
+    margin-left: 12px;
+    text-align: center;
+    width: 50px;
+}
+.selectedVariable .selectionDropdown > div{
+    margin: 0px;
+    display: flex;
+    justify-content: center;
+}
+.selectedVariable .selectionDropdown > div > h3, .selectedVariable .selectionDropdown > h3{
+    margin-left: 0px;
+}
+.selectedVariable .selectionDropdown h3{
+    margin: 0px;
+}
+.selectedVariable .selectionDropdown > div{
+    border: 1px solid black;
+    position: absolute;
+    left: 51px;
+    width: inherit;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+} 

@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 import styles from '../css/calculator.module.css';
 import { selectTabData, selectTabs, updateInputs, getAnswer } from '../calculatorSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import { nonSerializedFormulaData } from '../../../nonSerializedFormulaData';
-import { create, all } from 'mathjs'
+import { create, all, isUndefined } from 'mathjs'
 
 export function Calculator(props) {
     const dispatch = useDispatch();
@@ -17,15 +17,29 @@ export function Calculator(props) {
     const currentTab = tabs.find(obj => obj.id === tabId)
     const tabVariables = currentTab?.variables || {}
     const tVKeys = Object.keys(tabVariables);
-    let tV = {};
+    let tV = {}
+    let tVArray = {array:{}}
     let numericVariables = {};
     for (let i = 0; i < tVKeys.length; i++) {tV[tVKeys[i]] = tVKeys[i] === tabVariables[tVKeys[i]] ? '' : tabVariables[tVKeys[i]];}
     for (let key in tV) {numericVariables[key] = tV[key] === '' ? '' : Number(tV[key]);}
+
     for (let key in tV) {
         if(key === currentTab.selectedVariable || tV[key].includes('Error') || tV[key].includes('Impossible') || tV[key] === Infinity || tV[key] === -Infinity){
             tV[key] = ''
         }
     }
+    if(type === 'array'){
+        tVArray[Object.keys(tV)[0]]= tV[Object.keys(tV)[0]]
+        for(let i = 0; i < Object.keys(tV).filter(val => val !== Object.keys(tV)[0]).length; i++){
+            tVArray.array[Object.keys(tV).filter(val => val !== Object.keys(tV)[0])[i]] = tV[Object.keys(tV).filter(val => val !== Object.keys(tV)[0])[i]]
+        }
+        for (let key in tVArray.array) {
+            if(key === currentTab.selectedVariable || tVArray.array[key].includes('Error') || tVArray.array[key].includes('Impossible') || tVArray.array[key] === Infinity || tVArray.array[key] === -Infinity){
+                tVArray.array[key] = ''
+            }
+        }
+    }
+
 
     const formatValue = (value, type='standard') => {
         if (value === undefined || value === '' || isNaN(value)) {
@@ -164,7 +178,13 @@ export function Calculator(props) {
 
         value = value.replace(/^e/, '');  
     
-        const formattedValue = formatValue(value, tD.formatTypes[variable]);
+        let formattedValue;
+
+        if(type === 'formula'){
+            formattedValue = formatValue(value, tD.formatTypes[variable]);
+        } else if(type === 'array'){
+            formattedValue = value
+        }
     
         dispatch(updateInputs({
             id: tabId,
@@ -185,8 +205,8 @@ export function Calculator(props) {
                 <div className={styles.formula}>
                     <h1>{mode} Calculator</h1>
                     <div>
-                        <h3 onCopy={(e) => handleCopy(e, tD.formula)}>{nonSerializedFormulaData[mode]['display'](Object.keys(tD.variables))}</h3>
-                        <h3 onCopy={(e) => handleCopy(e, getCopyFormula(tD.formula, tV))} style={{marginTop:'10px'}}>{nonSerializedFormulaData[mode]['display'](tV)}</h3>
+                        <h3 onCopy={(e) => handleCopy(e, tD.formula)}>{nonSerializedFormulaData[mode]['display'](Object.keys(tD.variables), currentTab.selectedVariable)}</h3>
+                        <h3 onCopy={(e) => handleCopy(e, getCopyFormula(tD.formula, tV))} style={{marginTop:'10px'}}>{nonSerializedFormulaData[mode]['display'](tV, currentTab.selectedVariable)}</h3>
                     </div>
                 </div>
                 <div className={styles.enter}>
@@ -198,7 +218,8 @@ export function Calculator(props) {
                                     `${styles.variable} 
                                     ${currentTab.selectedVariable === variable ? styles.fade : (variable === tD.leftSideUtil.omittedVariable && currentTab.leftSideUtilValue !== 'Custom Value'? styles.fade:'')}`
                                 } 
-                                key={index}>
+                                key={index}
+                            >
                                 {variable.includes('_')
                                     ?<h3>{variable.split('_')[0]}<sub><h3>{variable.split('_')[1]}</h3></sub></h3>
                                     :<h3>{variable}</h3>
@@ -209,6 +230,7 @@ export function Calculator(props) {
                                         <React.Fragment key={index}>
                                             <input 
                                                 style={{
+                                                    minWidth:'10ch',
                                                     width: `${Math.max(8, 
                                                         (variable === currentTab.selectedVariable
                                                             ? String(getRoundedValue(value)) 
@@ -234,6 +256,7 @@ export function Calculator(props) {
                                     ))
                                     : (<input 
                                         style={{
+                                            minWidth:'10ch',
                                             width: `${Math.max(8, 
                                                 (variable === currentTab.selectedVariable
                                                     ? String(getRoundedValue(currentTab.answer)) 
@@ -251,7 +274,7 @@ export function Calculator(props) {
                                         onKeyDown={(e) => handleKeyDown(e, index)}
                                         name={variable}
                                         onBlur={(e) => handleBlur(e, variable)}
-                                        placeholder=''
+                                        placeholder='Enter Here'
                                         aria-label={`enter the ${variable} value here`}
                                     />)
                                 }
@@ -281,7 +304,7 @@ export function Calculator(props) {
                                 ? currentTab.answer
                                     .split(',')
                                     .map((value, index, array) => (
-                                        <React.Fragment key={index}>
+                                        <Fragment key={index}>
                                             <input
                                                 type='text'
                                                 placeholder=''
@@ -290,13 +313,14 @@ export function Calculator(props) {
                                                 spellCheck='false'
                                                 readOnly
                                                 style={{
+                                                    minWidth:'10ch',
                                                     width: `${Math.max
                                                         (8, String(getRoundedValue(value.trim()))?.length || 0) + 1
                                                     }ch`
                                                 }} 
                                             />
                                             {index < array.length - 1 && <p key={`comma_${index}`} className={styles.comma}>, </p>}
-                                        </React.Fragment>
+                                        </Fragment>
                                     ))
                                 : (
                                     <input
@@ -307,6 +331,7 @@ export function Calculator(props) {
                                         spellCheck='false'
                                         readOnly
                                         style={{
+                                            minWidth:'10ch',
                                             width: `${Math.max(8, String(getRoundedValue(currentTab.answer))?.length || 0) + 1}ch`
                                         }} 
                                     />
@@ -325,5 +350,215 @@ export function Calculator(props) {
                 {props.children}
             </div>
         );
+    } else if(type === 'array'){
+        return (
+            <div className={styles.calculator}>
+                <div className={styles.formula}>
+                    <h1>{mode} Calculator</h1>
+                    <div className={styles.flex}>
+                        <h3>
+                            {Object.keys(tVArray)[1] === currentTab.selectedVariable
+                                ?Object.keys(tVArray)[1].includes('_')
+                                    ? nonSerializedFormulaData.checkVar(tVArray, currentTab.selectedVariable, Object.keys(tVArray)[1], {sub:true})
+                                    :isUndefined(tD.topBar)
+                                        ? nonSerializedFormulaData.checkVar(
+                                            '7Ru42hF72M', 
+                                            currentTab.selectedVariable, 
+                                            Object.keys(tVArray)[1], 
+                                        )
+                                        : nonSerializedFormulaData.checkVar(
+                                            '7Ru42hF72M', 
+                                            currentTab.selectedVariable, 
+                                            Object.keys(tVArray)[1], 
+                                            {topBar:true}
+                                        )
+                                :Object.keys(tVArray)[1].includes('_')
+                                    ? nonSerializedFormulaData.checkVar(tVArray, currentTab.selectedVariable, Object.keys(tVArray)[1], {sub:true})
+                                    :isUndefined(tD.topBar)
+                                        ? nonSerializedFormulaData.checkVar(
+                                            tVArray, 
+                                            currentTab.selectedVariable, 
+                                            Object.keys(tVArray)[1], 
+                                        )
+                                        : nonSerializedFormulaData.checkVar(
+                                            tVArray, 
+                                            currentTab.selectedVariable, 
+                                            Object.keys(tVArray)[1], 
+                                            {topBar:true}
+                                        )
+                            }
+                        </h3>
+                        <h3>&nbsp;=&nbsp;</h3>
+                        <h3>{!isUndefined(tD.startCharacter)? tD.startCharacter: ''}</h3>
+                            {Object.keys(tVArray.array).map((variable, index, array) => (
+                                <Fragment key={index}>
+                                    <h3>
+                                        {
+                                           variable === currentTab.selectedVariable
+                                                ?nonSerializedFormulaData.checkVar(
+                                                    '7Ru42hF72M', 
+                                                    currentTab.selectedVariable, 
+                                                    variable, 
+                                                    {sub:true}
+                                                )
+                                                :nonSerializedFormulaData.checkVar(
+                                                    tVArray.array, 
+                                                    currentTab.selectedVariable, 
+                                                    variable, 
+                                                    {sub:true}
+                                                )
+                                        }
+                                    </h3>
+                                    {index < array.length - 1 && <h3 key={`comma_${index}`} >{tD.splitCharacter}</h3>}
+                                </Fragment>
+                            ))}
+                        <h3>{!isUndefined(tD.endCharacter)? tD.endCharacter: ''}</h3>
+                    </div>
+                </div>
+                <div className={styles.enter}>
+                    <h2>Enter:</h2>
+                    <div className={styles.variables}>
+                        {Object.keys(tV).map((variable, index) => (
+                            <div 
+                                className={
+                                    `${styles.variable} 
+                                    ${currentTab.selectedVariable === variable ? styles.fade : ''}`
+                                } 
+                                key={index}
+                            >
+                                {variable.includes('_')
+                                    ?<h3>{variable.split('_')[0]}<sub><h3>{variable.split('_')[1]}</h3></sub></h3>
+                                    :(isUndefined(tD.topBar)
+                                        ?<h3>{variable}</h3>
+                                        :(Object.keys(tV)[0] === variable
+                                            ?<h3>{nonSerializedFormulaData.checkVar(
+                                                tVArray.array, 
+                                                '7Ru42hF72M', 
+                                                variable, 
+                                                {topBar:true}
+                                            )}</h3>
+                                            :<h3>{variable}</h3>
+                                        )
+                                    )
+                                }
+                                <h3>&nbsp;=</h3>
+                                {tabVariables[variable].includes(',') && variable === currentTab.selectedVariable
+                                        ? tabVariables[variable].split(',').map((value, index, array) => (
+                                            <React.Fragment key={index}>
+                                                <input 
+                                                    style={{
+                                                        minWidth:'10ch',
+                                                        width: `${Math.max(12, 
+                                                            (variable === currentTab.selectedVariable
+                                                                ? String(getRoundedValue(value)) 
+                                                                : tV[variable]
+                                                            )?.length || 0) + 1}ch`,
+                                                        color: `${variable === currentTab.selectedVariable? 'darkred' : 'black'}`
+                                                    }}
+                                                    type='text' 
+                                                    inputMode='numeric' 
+                                                    value={getRoundedValue(value.trim())}
+                                                    autoComplete='off'
+                                                    autoCorrect='off'
+                                                    spellCheck='false'
+                                                    onChange={(e) => handleInputChange(e, variable)}
+                                                    onKeyDown={(e) => handleKeyDown(e, index)}
+                                                    name={variable}
+                                                    onBlur={(e) => handleBlur(e, variable)}
+                                                    placeholder=''
+                                                    aria-label={`enter the ${variable} value here`}
+                                                />
+                                                {index < array.length - 1 && <p key={`comma_${index}`} className={styles.comma}>, </p>}
+                                            </React.Fragment>
+                                        ))
+                                        : (<input 
+                                            style={{
+                                                minWidth:'10ch',
+                                                width: `${Math.max(4, 
+                                                    (variable === currentTab.selectedVariable
+                                                        ? String(getRoundedValue(currentTab.answer)) 
+                                                        : tV[variable]
+                                                    )?.length || 0) + 1}ch`,
+                                                color: `${variable === currentTab.selectedVariable? 'darkred' : 'black'}`
+                                            }}
+                                            type='text' 
+                                            inputMode='numeric' 
+                                            value={variable === currentTab.selectedVariable? getRoundedValue(currentTab.answer) : tV[variable]}
+                                            autoComplete='off'
+                                            autoCorrect='off'
+                                            spellCheck='false'
+                                            onChange={(e) => handleInputChange(e, variable)}
+                                            onKeyDown={(e) => handleKeyDown(e, index)}
+                                            name={variable}
+                                            onBlur={(e) => handleBlur(e, variable)}
+                                            placeholder='Enter Here'
+                                            aria-label={`enter the ${variable} value here`}
+                                        />)
+                                    }
+                            </div>
+                        ))}
+                    </div>
+                </div>
+                <div className={styles.answer}>
+                    <h2>Answer:</h2>
+                    <div>
+                        {currentTab.selectedVariable.includes('_')
+                            ?<h3>{currentTab.selectedVariable.split('_')[0]}<sub><h3>{currentTab.selectedVariable.split('_')[1]}</h3></sub></h3>
+                                :(isUndefined(tD.topBar)
+                                ?<h3>{currentTab.selectedVariable}</h3>
+                                :(Object.keys(tV)[0] === currentTab.selectedVariable
+                                    ?<h3>{nonSerializedFormulaData.checkVar(
+                                        tVArray.array, 
+                                        '7Ru42hF72M', 
+                                        currentTab.selectedVariable, 
+                                        {topBar:true}
+                                    )}</h3>
+                                    :<h3>{currentTab.selectedVariable}</h3>
+                                )
+                            )
+                        }
+                        <h3>&nbsp;=&nbsp;</h3>
+                        {
+                                currentTab.answer.includes(',')
+                                    ? currentTab.answer
+                                        .split(',')
+                                        .map((value, index, array) => (
+                                            <Fragment key={index}>
+                                                <input
+                                                    type='text'
+                                                    placeholder=''
+                                                    aria-label={`answer-${index}`}
+                                                    value={getRoundedValue(value)}
+                                                    spellCheck='false'
+                                                    readOnly
+                                                    style={{
+                                                        minWidth:'10ch',
+                                                        width: `${Math.max
+                                                            (8, String(getRoundedValue(value.trim()))?.length || 0) + 1
+                                                        }ch`
+                                                    }} 
+                                                />
+                                                {index < array.length - 1 && <p key={`comma_${index}`} className={styles.comma}>, </p>}
+                                            </Fragment>
+                                        ))
+                                    : (
+                                        <input
+                                            type='text'
+                                            placeholder=''
+                                            aria-label='answer'
+                                            value={getRoundedValue(currentTab.answer)}
+                                            spellCheck='false'
+                                            readOnly
+                                            style={{
+                                                minWidth:'10ch',
+                                                width: `${Math.max(8, String(getRoundedValue(currentTab.answer))?.length || 0) + 1}ch`
+                                            }} 
+                                        />
+                                    )
+                            }
+                    </div>
+                </div>
+            </div>
+        )
     }
 }

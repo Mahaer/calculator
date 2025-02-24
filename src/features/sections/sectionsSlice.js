@@ -126,8 +126,12 @@ const initialState = {
 			name:'Statistics',
 			categories:[
 				{
-					'Mock Heading': [
-						'Mock category'
+					'Aspects of a Dataset': [
+						'Mean',
+						'Median',
+						'Mode',
+						'Range',
+						'All in One'
 					]
 				}
 			]

@@ -12,65 +12,92 @@ export const nonSerializedFormulaData = {
         str !== '-.' && 
         !isNaN(Number(str))
     ),
-    checkVar: (variables, variable,{ lessThanZeroParen=false, paren=false, sub=false, subVar=false, subVal=''} = {}) => {
-        if(!lessThanZeroParen && !paren && !sub){
+    checkVar: (variables, selectedVariable, variable,{ lessThanZeroParen=false, paren=false, sub=false, subVar=false, subVal='', topBar=false, minusOne=false} = {}) => {
+        if(!lessThanZeroParen && !paren && !sub && !topBar && !minusOne){
             return variables[variable] !== '' && variables[variable] !== undefined 
             ? (isNaN(Number(variables[variable])) 
-                ? variable
-                :math.round(variables[variable], nonSerializedFormulaData.roundingValue)) 
-            : variable
-        } else if(paren && !sub){
+                ? <span style={selectedVariable === variable? {color: 'darkred'}: {}}>{variable}</span>
+                : math.round(variables[variable], nonSerializedFormulaData.roundingValue))
+            : <span style={selectedVariable === variable? {color: 'darkred'}: {}}>{variable}</span>
+        } else if(paren && !sub && !topBar && !minusOne){
             return variables[variable] !== '' && variables[variable] !== undefined 
             ? (isNaN(Number(variables[variable])) 
-                ? variable
+                ? <span style={selectedVariable === variable? {color: 'darkred'}: {}}>{variable}</span>
                 :`(${math.round(variables[variable], nonSerializedFormulaData.roundingValue)})`) 
-            : variable
-        } else if(lessThanZeroParen && !sub){
+            : <span style={selectedVariable === variable? {color: 'darkred'}: {}}>{variable}</span>
+        } else if(lessThanZeroParen && !sub && !topBar && !minusOne){
             return variables[variable] !== '' && variables[variable] !== undefined 
                 ? (isNaN(Number(variables[variable])) 
-                    ? variable
+                    ? <span style={selectedVariable === variable? {color: 'darkred'}: {}}>{variable}</span>
                     :(variables[variable] < 0?`(${math.round(variables[variable], nonSerializedFormulaData.roundingValue)})`:math.round(variables[variable], nonSerializedFormulaData.roundingValue))) 
-                : variable
-        } else if(sub && !lessThanZeroParen && !paren && !subVar){
+                : <span style={selectedVariable === variable? {color: 'darkred'}: {}}>{variable}</span>
+        } else if(sub && !lessThanZeroParen && !paren && !subVar && !topBar && !minusOne){
             return variables[variable] !== '' && variables[variable] !== undefined 
                 ? (isNaN(Number(variables[variable])) 
-                    ? (<>{variable.split('_')[0]}<sub>{variable.split('_')[1]}</sub></>) 
+                    ? (<span style={selectedVariable === variable? {color: 'darkred'}: {}}>{variable.split('_')[0]}<sub>{variable.split('_')[1]}</sub></span>) 
                     :math.round(variables[variable], nonSerializedFormulaData.roundingValue)) 
-                : (<>{variable.split('_')[0]}<sub>{variable.split('_')[1]}</sub></>)
-        } else if(sub && paren && !subVar){
+                : (<span style={selectedVariable === variable? {color: 'darkred'}: {}}>{variable.split('_')[0]}<sub>{variable.split('_')[1]}</sub></span>)
+        } else if(sub && paren && !subVar && !topBar && !minusOne){
             return variables[variable] !== '' && variables[variable] !== undefined 
                 ? (isNaN(Number(variables[variable])) 
-                    ? (<>{variable.split('_')[0]}<sub>{variable.split('_')[1]}</sub></>) 
+                    ? (<span style={selectedVariable === variable? {color: 'darkred'}: {}}>{variable.split('_')[0]}<sub>{variable.split('_')[1]}</sub></span>) 
                     :`(${math.round(variables[variable], nonSerializedFormulaData.roundingValue)})`) 
-                : (<>{variable.split('_')[0]}<sub>{variable.split('_')[1]}</sub></>)
-        } else if(sub && lessThanZeroParen && !subVar){
+                : (<span style={selectedVariable === variable? {color: 'darkred'}: {}}>{variable.split('_')[0]}<sub>{variable.split('_')[1]}</sub></span>)
+        } else if(sub && lessThanZeroParen && !subVar && !topBar && !minusOne){
             return variables[variable] !== '' && variables[variable] !== undefined 
                 ? (isNaN(Number(variables[variable])) 
-                    ? (<>{variable.split('_')[0]}<sub>{variable.split('_')[1]}</sub></>)
+                    ? (<span style={selectedVariable === variable? {color: 'darkred'}: {}}>{variable.split('_')[0]}<sub>{variable.split('_')[1]}</sub></span>)
                     :(variables[variable] < 0? `(${math.round(variables[variable], nonSerializedFormulaData.roundingValue)})` :math.round(variables[variable], nonSerializedFormulaData.roundingValue))) 
-                    : (<>{variable.split('_')[0]}<sub>{variable.split('_')[1]}</sub></>)
-        } else if(sub && !lessThanZeroParen && !paren && subVar){
+                    : (<span style={selectedVariable === variable? {color: 'darkred'}: {}}>{variable.split('_')[0]}<sub>{variable.split('_')[1]}</sub></span>)
+        } else if(sub && !lessThanZeroParen && !paren && subVar && !topBar && !minusOne){
             return variables[variable] !== '' && variables[variable] !== undefined 
             ? (isNaN(Number(variables[variable])) 
-                ? (<>{variable.split('_')[0]}<sub>{subVal}</sub></>) 
+                ? (<span style={selectedVariable === variable? {color: 'darkred'}: {}}>{variable.split('_')[0]}<sub>{subVal}</sub></span>) 
                 :math.round(variables[variable], nonSerializedFormulaData.roundingValue)) 
-            : (<>{variable.split('_')[0]}<sub>{subVal}</sub></>)
+            : (<span style={selectedVariable === variable? {color: 'darkred'}: {}}>{variable.split('_')[0]}<sub>{subVal}</sub></span>)
+        } else if(sub && !lessThanZeroParen && !paren && subVar && !topBar && minusOne){
+            return variables[variable] !== '' && variables[variable] !== undefined 
+            ? (isNaN(Number(variables[variable])) 
+                ? (<span style={selectedVariable === variable? {color: 'darkred'}: {}}>{variable.split('_')[0]}<sub>{subVal}-1</sub></span>) 
+                :math.round(variables[variable], nonSerializedFormulaData.roundingValue)) 
+            : (<span style={selectedVariable === variable? {color: 'darkred'}: {}}>{variable.split('_')[0]}<sub>{subVal}-1</sub></span>)
+        } else if(topBar && !lessThanZeroParen && !paren && !sub && !minusOne){
+            return variables[variable] !== '' && variables[variable] !== undefined 
+            ? (isNaN(Number(variables[variable])) 
+                ? (<span style={selectedVariable === variable
+                    ? {color: 'darkred', display:'flex', flexDirection:'column', alignItems:'center'}
+                    : {display:'flex', flexDirection:'column', alignItems:'center'}}
+                   >
+                    <h3 style={{height:'8px'}}>&#772;</h3>
+                    <h3 style={{fontSize:'32px'}}>{variable}</h3>
+                   </span>)
+                :math.round(variables[variable], nonSerializedFormulaData.roundingValue)) 
+            : (<span style={selectedVariable === variable
+                ? {color: 'darkred', display:'flex', flexDirection:'column', alignItems:'center'}
+                : {display:'flex', flexDirection:'column', alignItems:'center'}}
+               >
+                <h3 style={{height:'8px'}}>&#772;</h3>
+                <h3 style={{fontSize:'32px'}}>{variable}</h3>
+               </span>)
         }
     } ,
     roundingValue:2,
     'Compound Interest':{
-        'display':(variables) => (
+        'display':(variables, selectedVariable) => (
             <>
-                {`${nonSerializedFormulaData.checkVar(variables, 'A')} = 
-                ${nonSerializedFormulaData.checkVar(variables, 'P')}(1+ `}
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'A')}
+                &nbsp;=&nbsp;
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'P')}
+                {`(`}
+                1&nbsp;+&nbsp; 
                 <Fraction 
-                    numerator={nonSerializedFormulaData.checkVar(variables, 'r')} 
-                    denominator={nonSerializedFormulaData.checkVar(variables, 'n')} 
+                    numerator={nonSerializedFormulaData.checkVar(variables, selectedVariable, 'r')} 
+                    denominator={nonSerializedFormulaData.checkVar(variables, selectedVariable, 'n')} 
                 />
                 {`)`}
                 <sup>
-                    {nonSerializedFormulaData.checkVar(variables, 'n')}
-                    {nonSerializedFormulaData.checkVar(variables, 't', {paren:true})}
+                    {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'n')}
+                    {nonSerializedFormulaData.checkVar(variables, selectedVariable, 't', {paren:true})}
                 </sup>
             </>
         ),
@@ -208,11 +235,14 @@ export const nonSerializedFormulaData = {
         }
     },
     'Slope Intercept Form':{
-        'display':(variables) => (
+        'display':(variables, selectedVariable) => (
             <>
-                {`${nonSerializedFormulaData.checkVar(variables, 'y')} = 
-                ${nonSerializedFormulaData.checkVar(variables, 'm')}${nonSerializedFormulaData.checkVar(variables, 'x', {paren:true})} + 
-                ${nonSerializedFormulaData.checkVar(variables, 'b', {lessThanZeroParen:true})}`}
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'y')}
+                &nbsp;=&nbsp;
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'm')}
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable,'x', {paren:true})}
+                &nbsp;+&nbsp;
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable,'b', {lessThanZeroParen:true})}
             </>
         ),
         'math':(selectedVariable, variables) => {
@@ -291,21 +321,21 @@ export const nonSerializedFormulaData = {
         }
     },
     'Slope':{
-        'display':(variables) => (
+        'display':(variables, selectedVariable) => (
             <>
-                {nonSerializedFormulaData.checkVar(variables, 'm')}
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'm')}
                 &nbsp;=&nbsp;
                     <Fraction parsing='children'>
                         <>
                             <p>
-                                {nonSerializedFormulaData.checkVar(variables, 'Y_2', {sub:true})}
+                                {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'Y_2', {sub:true})}
                                 &nbsp;-&nbsp;
-                                {nonSerializedFormulaData.checkVar(variables, 'Y_1', {sub:true, lessThanZeroParen:true})}
+                                {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'Y_1', {sub:true, lessThanZeroParen:true})}
                             </p>
                             <p>
-                                {nonSerializedFormulaData.checkVar(variables, 'X_2', {sub:true})}
+                                {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'X_2', {sub:true})}
                                 &nbsp;-&nbsp;
-                                {nonSerializedFormulaData.checkVar(variables, 'X_1', {sub:true, lessThanZeroParen:true})}
+                                {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'X_1', {sub:true, lessThanZeroParen:true})}
                             </p>
                         </>
                     </Fraction>
@@ -400,15 +430,15 @@ export const nonSerializedFormulaData = {
         }
     },
     'General Form of a Quadratic':{
-        'display':(variables) => (
+        'display':(variables, selectedVariable) => (
             <>
-                {nonSerializedFormulaData.checkVar(variables, 'a', {lessThanZeroParen:true})}
-                {nonSerializedFormulaData.checkVar(variables, 'x', {paren:true})}
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'a', {lessThanZeroParen:true})}
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'x', {paren:true})}
                 <sup>2</sup>&nbsp;+&nbsp;
-                {nonSerializedFormulaData.checkVar(variables, 'b', {lessThanZeroParen:true})}
-                {nonSerializedFormulaData.checkVar(variables, 'x', {paren:true})}
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'b', {lessThanZeroParen:true})}
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'x', {paren:true})}
                 &nbsp;+&nbsp;
-                {nonSerializedFormulaData.checkVar(variables, 'c', {lessThanZeroParen:true})}
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'c', {lessThanZeroParen:true})}
                 &nbsp;=&nbsp;0
             </>
         ),
@@ -502,27 +532,27 @@ export const nonSerializedFormulaData = {
         }
     },
     'Quadratic Formula':{
-        'display':(variables) => (
+        'display':(variables, selectedVariable) => (
             <>
-                {nonSerializedFormulaData.checkVar(variables, 'x')}&nbsp;=&nbsp;
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'x')}&nbsp;=&nbsp;
                 <Fraction parsing='children'>
                     <>
                         <p>
-                            -{nonSerializedFormulaData.checkVar(variables, 'b', {lessThanZeroParen:true})}
+                            -{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'b', {lessThanZeroParen:true})}
                             &nbsp;&plusmn;&nbsp;
                             <MathRoot size={20} sup={true}>
                                 <>
                                     <span>
-                                        {nonSerializedFormulaData.checkVar(variables, 'b', {lessThanZeroParen:true})}
+                                        {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'b', {lessThanZeroParen:true})}
                                         <sup>2</sup>&nbsp;-&nbsp;4
-                                        {nonSerializedFormulaData.checkVar(variables, 'a', {paren:true})}
-                                        {nonSerializedFormulaData.checkVar(variables, 'c', {paren:true})}
+                                        {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'a', {paren:true})}
+                                        {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'c', {paren:true})}
                                     </span>
                                 </>
                             </MathRoot>
                         </p>
                         <p>2
-                            {nonSerializedFormulaData.checkVar(variables, 'a',{paren:true})}
+                            {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'a',{paren:true})}
                         </p>
                     </>
                 </Fraction>
@@ -626,16 +656,16 @@ export const nonSerializedFormulaData = {
         }
     },
     'Vertex Form of a Quadratic': {
-        'display': (variables) => (
+        'display': (variables, selectedVariable) => (
             <>
-                {nonSerializedFormulaData.checkVar(variables, 'y')}
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'y')}
                 &nbsp;=&nbsp;
-                {nonSerializedFormulaData.checkVar(variables, 'a')}(
-                {nonSerializedFormulaData.checkVar(variables, 'x')}
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'a')}(
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'x')}
                 &nbsp;-&nbsp;
-                {nonSerializedFormulaData.checkVar(variables, 'h', {lessThanZeroParen:true})}
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'h', {lessThanZeroParen:true})}
                 )<sup>2</sup>&nbsp;+&nbsp;
-                {nonSerializedFormulaData.checkVar(variables, 'k', {lessThanZeroParen:true})}
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'k', {lessThanZeroParen:true})}
             </>
         ),
         'math': (selectedVariable, variables) => {
@@ -731,14 +761,16 @@ export const nonSerializedFormulaData = {
         }
     },
     'Axis of Symmetry': {
-        'display': (variables) => (
+        'display': (variables, selectedVariable) => (
             <>
-                {nonSerializedFormulaData.checkVar(variables, 'h')}
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'h')}
                 &nbsp;=&nbsp;
-                <Fraction
-                    numerator={`-${nonSerializedFormulaData.checkVar(variables, 'b', {lessThanZeroParen: true})}`}
-                    denominator={`2${nonSerializedFormulaData.checkVar(variables, 'a', {paren: true})}`}
-                />
+                <Fraction parsing='children'>
+                    <>
+                        <p>-{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'b', {lessThanZeroParen: true})}</p>
+                        <p>2{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'a', {paren: true})}</p>
+                    </>
+                </Fraction>
             </>
         ),
         'math': (selectedVariable, variables) => {
@@ -804,15 +836,15 @@ export const nonSerializedFormulaData = {
         }
     },
     'Arithmetic Sequence (Explicit Formula)': {
-        'display': (variables) => (
+        'display': (variables, selectedVariable) => (
             <>
-                {nonSerializedFormulaData.checkVar(variables, `a_n`, {sub:true, subVar:true, subVal: nonSerializedFormulaData.checkVar(variables, 'n')})}
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, `a_n`, {sub:true, subVar:true, subVal: nonSerializedFormulaData.checkVar(variables, 'n')})}
                 &nbsp;=&nbsp;
-                {nonSerializedFormulaData.checkVar(variables, 'a_1', {sub:true})}
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'a_1', {sub:true})}
                 &nbsp;+&nbsp;(
-                {nonSerializedFormulaData.checkVar(variables, 'n')}
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'n')}
                 &nbsp;-&nbsp;1)
-                {nonSerializedFormulaData.checkVar(variables, 'd')}
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'd')}
             </>
         ),
         'math': (selectedVariable, variables) => {
@@ -885,13 +917,13 @@ export const nonSerializedFormulaData = {
         }
     },
     'Arithmetic Recursive Sequence': {
-        'display': (variables) => (
+        'display': (variables, selectedVariable) => (
             <>
-                {nonSerializedFormulaData.checkVar(variables, `a_n`, {sub:true, subVar:true, subVal: nonSerializedFormulaData.checkVar(variables, 'n')})}
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, `a_n`, {sub:true, subVar:true, subVal: nonSerializedFormulaData.checkVar(variables, selectedVariable, 'n')})}
                 &nbsp;=&nbsp;
-                {nonSerializedFormulaData.checkVar(variables, `a_n-1`, {sub:true, subVar:true, subVal: `${nonSerializedFormulaData.checkVar(variables, 'n')}-1`})}
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, `a_n-1`, {sub:true, subVar:true, subVal: nonSerializedFormulaData.checkVar(variables, selectedVariable, 'n'), minusOne:true})}
                 &nbsp;+&nbsp;
-                {nonSerializedFormulaData.checkVar(variables, 'd', {lessThanZeroParen:true})}
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'd', {lessThanZeroParen:true})}
             </>
         ),
         'math': (selectedVariable, variables) => {
@@ -968,20 +1000,20 @@ export const nonSerializedFormulaData = {
         }
     },
     'Arithmetic General Sum Formula': {
-        'display': (variables) => (
+        'display': (variables, selectedVariable) => (
             <>
-                {nonSerializedFormulaData.checkVar(variables, `S_n`, {sub:true, subVar:true, subVal: nonSerializedFormulaData.checkVar(variables, 'n')})}
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, `S_n`, {sub:true, subVar:true, subVal: nonSerializedFormulaData.checkVar(variables, 'n')})}
                 &nbsp;=&nbsp;
                 <Fraction
-                    numerator={nonSerializedFormulaData.checkVar(variables, 'n')}
+                    numerator={nonSerializedFormulaData.checkVar(variables, selectedVariable, 'n')}
                     denominator='2'
                 />
                 &nbsp;&times;&nbsp;(2
-                {nonSerializedFormulaData.checkVar(variables, 'a_1', {paren:true, sub:true})}
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'a_1', {paren:true, sub:true})}
                 &nbsp;+&nbsp;(
-                {nonSerializedFormulaData.checkVar(variables, 'n')}
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'n')}
                 &nbsp;-&nbsp;1)
-                {nonSerializedFormulaData.checkVar(variables, 'd')})
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'd')})
             </>
         ),
         'math': (selectedVariable, variables) => {
@@ -1048,6 +1080,62 @@ export const nonSerializedFormulaData = {
                     break;
                 default:
                     result = 'Error'
+                    break;
+            }
+            if(result || result === 0){
+                if(String(result) === 'Infinity'){
+                    result = 'Error: result is too large'
+                    return result
+                } else {
+                    if(String(result) === '-Infinity'){
+                        result = 'Error: result is too small'
+                        return result
+                    } else {
+                        return result
+                    }
+                }
+            } else {
+                result = 'Error'
+                return result
+            }
+        }
+    },
+    'Mean':{
+        'math': (selectedVariable, variables) => {
+            let updatedVariables = {...variables}
+            let result = 0
+            for(let key in variables){
+                if(key === updatedVariables[key]){
+                    updatedVariables[key] = ''
+                }
+            }
+            let {X} = updatedVariables
+
+            let keys = Object.keys(variables).filter(val => val !== Object.keys(variables)[0])
+            let values = []
+            for(let i = 0; i < keys.length; i++){
+                values.push(variables[keys[i]])
+            }
+
+            switch(selectedVariable){
+                case 'X':
+                    if(nonSerializedFormulaData.check([...values])){
+                        result = math.sum(values) / values.length
+                    } else {
+                        result = 'Error: missing variable/s'
+                    }
+                    break;
+                default:
+                    keys = (Object.keys(variables).filter(val => val !== Object.keys(variables)[0] && val !== selectedVariable))
+                    values = []
+                    for(let i = 0; i < keys.length; i++){
+                        values.push(variables[keys[i]])
+                    }
+                    if(nonSerializedFormulaData.check([...values, X])){
+                        result = (X * (values.length + 1)) - math.sum(values)
+                    } else {
+                        result = 'Error: missing variable/s'
+                    }
                     break;
             }
             if(result || result === 0){
