@@ -81,7 +81,7 @@ sub{
 .variable input:focus{
     border: 1px solid black;
     border-bottom: 2px solid black;
-    background-color: rgb(136, 184, 199);
+    background-color: var(--calc-background-highlight);
     box-shadow: none;
 }
 .variable button, .answer button{

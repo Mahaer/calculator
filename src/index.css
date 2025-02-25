@@ -4,6 +4,8 @@
   --accent-2:rgb(150, 150, 180);
   --accent-2-highlight:rgb(180, 180, 220);
   --math-font: 'Courier New', Courier, monospace;
+  --calc-background: rgb(133, 169, 182);
+  --calc-background-highlight: rgb(136, 184, 199);
 }
 
 *{

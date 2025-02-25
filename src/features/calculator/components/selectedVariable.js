@@ -3,6 +3,7 @@ import styles from '../css/selectedVariable.module.css'
 import { useSelector, useDispatch } from "react-redux";
 import { selectTabData, selectTabs, changeSelectedVariable, getAnswer, updateInputs } from "../calculatorSlice";
 import { nonSerializedFormulaData } from "../../../nonSerializedFormulaData";
+import { isUndefined } from "mathjs";
 
 export function SelectedVariable(props){
     const dispatch = useDispatch();
@@ -71,6 +72,52 @@ export function SelectedVariable(props){
             selectedVariable: variable
         }));
     }
+    const handleDropdownMouseEnter = (e) => {
+        if(e.target.tagName === 'H3'){
+            if(!isUndefined(e.target.parentNode.children[1])){
+                e.target.parentNode.children[1].children[0].style.width = '100%'
+                e.target.parentNode.children[1].children[0].style.opacity = '1'
+                e.target.parentNode.children[1].children[0].style.transition = '0.1s'
+            }
+            if(!isUndefined(e.target.parentNode.parentNode.children[Number(e.target.parentNode.id)-1])){
+                e.target.parentNode.parentNode.children[Number(e.target.parentNode.id)-1].children[1].children[0].style.width = '100%'
+                e.target.parentNode.parentNode.children[Number(e.target.parentNode.id)-1].children[1].children[0].style.opacity = '1'
+                e.target.parentNode.parentNode.children[Number(e.target.parentNode.id)-1].children[1].children[0].style.transition = '0.1s'
+            }
+        } else {
+            e.target.style.width = '100%'
+            e.target.style.opacity = '1'
+            e.target.style.transition = '0.1s'
+            if(Number(e.target.parentNode.parentNode.id)-1 !== -1){
+                e.target.parentNode.parentNode.parentNode.children[Number(e.target.parentNode.parentNode.id)-1].children[1].children[0].style.width = '100%'
+                e.target.parentNode.parentNode.parentNode.children[Number(e.target.parentNode.parentNode.id)-1].children[1].children[0].style.opacity = '1'
+                e.target.parentNode.parentNode.parentNode.children[Number(e.target.parentNode.parentNode.id)-1].children[1].children[0].style.transition = '0.1s'
+            }
+        }
+    }
+    const handleDropdownMouseLeave = (e) => {
+        if(e.target.tagName === 'H3'){
+            if(!isUndefined(e.target.parentNode.children[1])){
+                e.target.parentNode.children[1].children[0].style.width = '90%'
+                e.target.parentNode.children[1].children[0].style.opacity = '0.4'
+                e.target.parentNode.children[1].children[0].style.transition = '0s'
+            }
+            if(!isUndefined(e.target.parentNode.parentNode.children[Number(e.target.parentNode.id)-1])){
+                e.target.parentNode.parentNode.children[Number(e.target.parentNode.id)-1].children[1].children[0].style.width = '90%'
+                e.target.parentNode.parentNode.children[Number(e.target.parentNode.id)-1].children[1].children[0].style.opacity = '0.4'
+                e.target.parentNode.parentNode.children[Number(e.target.parentNode.id)-1].children[1].children[0].style.transition = '0s'
+            }
+        } else {
+            e.target.style.width = '90%'
+            e.target.style.opacity = '0.4'
+            e.target.style.transition = '0s'
+            if(Number(e.target.parentNode.parentNode.id)-1 !== -1){
+                e.target.parentNode.parentNode.parentNode.children[Number(e.target.parentNode.parentNode.id)-1].children[1].children[0].style.width = '90%'
+                e.target.parentNode.parentNode.parentNode.children[Number(e.target.parentNode.parentNode.id)-1].children[1].children[0].style.opacity = '0.4'
+                e.target.parentNode.parentNode.parentNode.children[Number(e.target.parentNode.parentNode.id)-1].children[1].children[0].style.transition = '0s'
+            }
+        }
+    }
 
     if(type === 'formula'){
         return (
@@ -124,10 +171,18 @@ export function SelectedVariable(props){
                         onChange={() => handleVariableChange('a')}
                     />
                     <div className={styles.selectionDropdown}>
-                        <h3>{arrayVar}</h3>
+                        <h3>{arrayVar}<span className={styles.dropdownArrow}>v</span></h3>
                         <div>
-                            {Object.keys(tVArray.array).map((variable, index) => (
-                                <h3>{variable}</h3>
+                            {Object.keys(tVArray.array).map((variable, index, array) => (
+                                <div 
+                                    id={index}
+                                    key={index} 
+                                    onMouseEnter={(e) => handleDropdownMouseEnter(e)}
+                                    onMouseLeave={(e) => handleDropdownMouseLeave(e)}
+                                >
+                                    <h3>{variable}</h3>
+                                    {index < array.length - 1 && <span><hr></hr></span>}
+                                </div>
                             ))}
                         </div>
                     </div>
