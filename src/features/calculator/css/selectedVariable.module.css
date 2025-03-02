@@ -61,16 +61,15 @@
     border: 1px solid black;
     margin-left: 12px;
     text-align: center;
-    width: 52px;
     padding-left: 5px;
     background-color: var(--calc-background-highlight);
     padding-right: 2px;
+    user-select: none;
 }
 .selectedVariable .selectionDropdown > div{
     margin: 0px;
-    display: flex;
-    justify-content: center;
     background-color: var(--calc-background);
+    height: min-content;
 }
 .selectedVariable .selectionDropdown > h3{
     width: 43px;
@@ -86,21 +85,31 @@
     border: 1px solid black;
     position: absolute;
     left: 51px;
-    width: inherit;
-    flex-direction: column;
+    min-width: 52px;
+    width: fit-content;
     display: none;
+    grid-auto-flow: column;
     box-shadow: 2px 2px 4px 0px rgba(0, 0, 0, 0.4);
 } 
 .dropdownArrow{
-    font-size: 20px;
+    font-size: 12px;
+    font-weight: bold;
+    font-family: sans-serif;
     display: inline-flex;
     justify-content: center;
     align-items: center;
     width: fit-content;
     flex: 1;
 }
+.selectedVariable .selectionDropdown:hover{
+    cursor: pointer;
+}
 .selectedVariable .selectionDropdown:hover > div:last-child{
-    display: flex;
+    display: grid;
+}
+.selectedVariable .selectionDropdown > div:last-child > div{
+    border-right:1px solid rgba(0, 0, 0, 0.8) ;
+    width: 51px;
 }
 .selectedVariable .selectionDropdown > div:last-child:hover{
     cursor: pointer;
@@ -113,7 +122,7 @@
     margin: 0px;
 }
 .selectedVariable .selectionDropdown > div:last-child > div > h3{
-    padding-left: 5px;
+    padding-left: 8px;
 }
 .selectedVariable .selectionDropdown > div:last-child > div > span{
     display: flex;
@@ -124,4 +133,19 @@
     border: none;
     border-bottom: 1px solid black;
     opacity: 0.4;
+}
+.fade{
+    opacity: 0.4; 
+    pointer-events: none;   
+}
+.flex{
+    display: flex;
+}
+.noBorderRight{
+    border-right: 1px solid transparent !important;
+}
+.selectedVariable .wideHr{
+    width: 100% !important;
+    opacity: 1 !important;
+    transition: 0.1s !important;
 }

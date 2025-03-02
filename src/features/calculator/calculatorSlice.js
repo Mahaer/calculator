@@ -257,22 +257,34 @@ const initialState = {
 			name: 'Mean',
 			type: 'array',
 			defaultVariable: 'X',
+			defaultLeftSideUtilValue: '15',
 			topBar:true,
 			startCharacter: '[',
 			endCharacter: ']',
 			splitCharacter: ',',
 			variables:[
 				'X', [
-					'a', 'b'
+					'a',
+					'b',
+					'c',
+					'd',
+					'e',
+					'f',
+					'g',
+					'h',
+					'i',
+					'j',
+					'k',
+					'l',
+					'm',
+					'n',
+					'o'
 				]
 			],
 			definitions: {
 				X: 'Mean(average)'
 			},
-			moreInfo: {
-				features:[],
-				links:[]
-			}
+			moreInfo: {}
 		}
 	],
 	tabs:[
@@ -286,10 +298,21 @@ const initialState = {
 				b:'b',
 				c:'c',
 				d:'d',
+				e:'e',
+				f:'f',
+				g:'g',
+				h:'h',
+				i:'i',
+				j:'j',
+				k:'k',
+				l:'l',
+				m:'m',
+				n:'n',
+				o:'o'
 			},
 			selectedVariable: 'X',
+			leftSideUtilValue: '15',
 			answer: 'Error: missing variable/s',
-			conversions: {}
 		},
 		{
 			id:2,
@@ -341,10 +364,11 @@ export const calculatorSlice = createSlice({
 		addTab: (state, action) => {
 			const {name} = action.payload
 			const currentTabData = state.tabData.find(obj => obj.name === name)
+			const newId = state.tabs.at(-1)?.id + 1
 			if(currentTabData){
 				if(currentTabData.type === 'formula'){
 					state.tabs.push({
-						id:state.tabs.at(-1)?.id + 1,
+						id:newId,
 						mode: currentTabData.name,
 						type: 'formula',
 						variables: currentTabData.variables.reduce((acc, curr) => ({ ...acc, [curr]: curr }), {}),
@@ -352,6 +376,16 @@ export const calculatorSlice = createSlice({
 						leftSideUtilValue: currentTabData.defaultLeftSideUtilValue,
 						answer: 'Error: missing variable/s',
 						conversions: {}
+					})
+				} else if(currentTabData.type === 'array'){
+					state.tabs.push({
+						id:newId,
+						mode:currentTabData.name,
+						type:'array',
+						variables: { [currentTabData.variables[0]]: currentTabData.variables[0], ...currentTabData.variables[1].reduce((acc, item) => ({ ...acc, [item]: item }), {}) },
+						selectedVariable: currentTabData.defaultVariable,
+						leftSideUtilValue: currentTabData.defaultLeftSideUtilValue,
+						answer: 'Error: missing variable/s'
 					})
 				}
 				state.currentTabId = state.tabs[state.tabs.length - 1].id
@@ -363,37 +397,41 @@ export const calculatorSlice = createSlice({
 
 			state.tabs = state.tabs.map((tab, index) => ({
 				...tab,
-				id: index + 1  // Set the new id based on the index (1-based id)
+				id: index + 1
 			}));
 
 			if (state.currentTabId > idToRemove) {
-				// If currentTabId is greater than the removed tab id, decrease it
 				state.currentTabId -= 1;
 			  } else if (state.currentTabId === idToRemove) {
-				// If currentTabId is the same as the removed tab id, adjust it
 				if (state.currentTabId === state.tabs.length + 1) {
-				  // If it’s the last tab, decrement currentTabId
 				  state.currentTabId -= 1;
 				}
 			  }
+		},
+		changeTermNumber: (state, action) => {
+			const {updatedVariables, termNumber} = action.payload
+			const id = state.currentTabId
+			const currentTab = state.tabs.find(obj => obj.id === id)
+			currentTab.leftSideUtilValue = termNumber
+
+			currentTab.variables = updatedVariables
 		}
 	}
 });
 
-		export const { 
-			updateInputs, 
-			changeSelectedVariable, 
-			getAnswer, 
-			changeLeftSideUtilValue,
-			switchTabs,
-			addTab,
-			removeTab
-		} = calculatorSlice.actions
-		// Exports the action creators formed by createSlice()
+export const { 
+	updateInputs, 
+	changeSelectedVariable, 
+	getAnswer, 
+	changeLeftSideUtilValue,
+	switchTabs,
+	addTab,
+	removeTab,
+	changeTermNumber,
+} = calculatorSlice.actions
 		
-		export const selectTabData = (state) => state.calculator.tabData;
-		export const selectTabs = (state) => state.calculator.tabs;
-		export const selectCurrentTabId = (state) => state.calculator.currentTabId;
-		// Exports an example selector, which is a specific value
+export const selectTabData = (state) => state.calculator.tabData;
+export const selectTabs = (state) => state.calculator.tabs;
+export const selectCurrentTabId = (state) => state.calculator.currentTabId;
 
-		export default calculatorSlice.reducer;
+export default calculatorSlice.reducer;

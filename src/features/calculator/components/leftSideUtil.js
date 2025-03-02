@@ -1,26 +1,104 @@
-import React from "react";
+import React, { useState } from "react";
 import styles from '../css/leftSideUtil.module.css'
-import { useSelector, useDispatch } from "react-redux";
+import { isUndefined } from 'mathjs';
+import { useDispatch } from "react-redux";
 import { nonSerializedFormulaData } from "../../../nonSerializedFormulaData";
-import { selectTabData, selectTabs, changeLeftSideUtilValue, getAnswer } from "../calculatorSlice";
+import { 
+    changeLeftSideUtilValue, 
+    getAnswer, 
+    changeTermNumber, 
+    changeSelectedVariable
+} from "../calculatorSlice";
 
-export function LeftSideUtil({mode, tabId, type}){
+
+export function LeftSideUtil(props){
+    const {
+        mode, 
+        tabId, 
+        type, 
+        currentTab, 
+        tD,
+        tV,
+        ArrayVar,
+        setArrayVar,
+    } = props;
+
     const dispatch = useDispatch();
-
-    const tabData = useSelector(selectTabData)
-    const tD = tabData.find(obj => obj.name === mode);
-    const tabs = useSelector(selectTabs)
+    const termArray = ['2', '3', '4', '5', '10', '15', '20', '25']
+    const [terms, setTerms] = useState(currentTab.leftSideUtilValue);
+    const [customTerm, setCustomTerm] = useState(true);
+    const [intervalId, setIntervalId] = useState()
      
-    const currentTab = tabs.find(obj => obj.id === tabId)
-    const tabVariables = currentTab?.variables || {}
-    const tVKeys = Object.keys(tabVariables);
-    let tV = {};
-    for (let i = 0; i < tVKeys.length; i++) {tV[tVKeys[i]] = tVKeys[i] === tabVariables[tVKeys[i]] ? '' : tabVariables[tVKeys[i]];}
-    for (let key in tV) {if(key === currentTab.selectedVariable){tV[key] = key}}
+    const handleTermChange = (e, number) => {
+        const currentVariables = tV
+        setCustomTerm(e.target.dataset.term === 'custom')
+        setTerms(number)
+        if(Number(number) >= 2 && Number(number < 26)){
+            const alphabetArray = Array.from({ length: Number(number) }, (_, index) => 
+                String.fromCharCode(97 + index)
+            );
+            let newVariables = {}
+            newVariables[Object.keys(currentVariables)[0]] = currentVariables[Object.keys(currentVariables)[0]]
+            for(let i=0; i < alphabetArray.length; i++){
+                newVariables[alphabetArray[i]] = 
+                    isUndefined(currentVariables[alphabetArray[i]])
+                        ? alphabetArray[i]
+                           : currentVariables[alphabetArray[i]]
+            }
+            let newSelectedVariable = currentTab.selectedVariable
+            if(!Object.keys(Object.fromEntries(Object.entries(newVariables).slice(1))).includes(currentTab.selectedVariable) && Object.keys(newVariables)[0] !== currentTab.selectedVariable ) {
+                newSelectedVariable =  Object.keys(newVariables).length > 0 ? Object.keys(newVariables)[Object.keys(newVariables).length - 1] : null;
+                setArrayVar(newSelectedVariable)
+                dispatch(changeSelectedVariable({id:tabId, value: ArrayVar}))
+            }
+            dispatch(changeSelectedVariable({id:tabId, value: newSelectedVariable}))
+            dispatch(changeTermNumber({updatedVariables: newVariables, termNumber: number}))
+            const updatedVariables = {...newVariables}
+            const answer = nonSerializedFormulaData[mode]['math'](newSelectedVariable, updatedVariables)
+            dispatch(getAnswer({ id: tabId, answer: answer, selectedVariable: newSelectedVariable }))
+        } else{
+            dispatch(changeTermNumber({updatedVariables: tV, termNumber: number}))
+        }        
+    }
+    const handleChange = (e, {add=false, subtract=false} = {}) => {
+        const value = document.getElementById('customInput').value
+        if (value === '' || (/^\d{1,2}$/.test(value))) {
+            if(!add && !subtract){
+                setTerms(value);
+                handleTermChange(e, value);
+            } else if(add && value < 25) {
+                setTerms(String(Number(value) + 1))
+                handleTermChange(e, String(Number(value) + 1))
+            } else if (subtract && String(value) !== '2' && String(value) !== '1' && String(value) !== '0' && value !== '') {
+                setTerms(String(Number(value) - 1))
+                handleTermChange(e, String(Number(value) - 1))
+            }
+        }
+    };
+    const handleBlur = (e) => {
+        let value = e.target.value;
+        if (/^0\d+$/.test(value)) {
+            e.target.value = parseInt(value, 10);
+        }
+        e.target.style.color = 'darkgreen';
+    }
+    const handleMouseDown = (e, actionType) => {
+        handleChange(e, actionType);
+        const startTime = Date.now()
+
+        setIntervalId(setInterval(() => {
+            if(Date.now() - startTime > 150){
+                handleChange(e, actionType)
+            }
+        }, 60))
+    };
+    const handleMouseUpAndLeave = () => {
+        clearInterval(intervalId)
+    }
 
 
     if (type === 'formula' && Object.keys(tD.leftSideUtil).length !== 0){
-        return <div className={`${styles.leftSideUtil} ${currentTab.selectedVariable === tD.leftSideUtil.omittedVariable? styles.fade : ''}`}>
+        return (<div className={`${styles.leftSideUtil} ${currentTab.selectedVariable === tD.leftSideUtil.omittedVariable? styles.fade : ''}`}>
             <h2>{`${tD.leftSideUtil.title} (${tD.leftSideUtil.omittedVariable}):`}</h2>
             <div>
                     {Object.keys(tD.leftSideUtil.values).map((value, index) => (
@@ -51,6 +129,75 @@ export function LeftSideUtil({mode, tabId, type}){
                         <h4>Custom Value</h4>
                     </label>
             </div>
-        </div>
+        </div>)
+    } else if (type === 'array'){
+        return (<div className={styles.leftSideUtil}>
+            <h2>Number of Terms:</h2>
+            <div>
+                {termArray.map((number, index) => (
+                    <label key={index}>
+                        <input
+                            type="radio"
+                            name="leftSideUtilGroup"
+                            data-term = 'notcustom'
+                            value={number}
+                            checked={!customTerm? currentTab.leftSideUtilValue === number: false}
+                            onChange={(e) => handleTermChange(e, number)}
+                        />
+                        <h4>{number}</h4>
+                    </label>
+                ))}
+                <span className={styles.adjustValue}>
+                    <label key='custom'>
+                        <input
+                            type="radio"
+                            name="leftSideUtilGroup"
+                            data-term = 'custom'
+                            value={terms}
+                            checked={customTerm}
+                            onChange={(e) => handleTermChange(e, terms)}
+                            onClick={(e) => handleTermChange(e, terms)}
+                        />
+                        <h4>Custom:</h4>
+                    </label>
+                    <input
+                        id="customInput"
+                        type="text"
+                        inputMode="numeric"
+                        value={terms}
+                        data-term = 'custom'
+                        autoComplete="off"
+                        autoCorrect="off"
+                        spellCheck="false"
+                        onChange={(e) => handleChange(e)}
+                        onFocus={(e) => e.target.style.color = 'black'}
+                        onBlur={(e) => handleBlur(e)}
+                        placeholder="Enter:"
+                        aria-label="Enter the custom value here"
+                        className={customTerm? '': styles.fade}
+                    />
+                    <button 
+                        key='subtract'
+                        type="button"
+                        data-term='custom'
+                        className={customTerm? '': styles.fade}
+                        onMouseDown={(e) => handleMouseDown(e, {subtract: true})}
+                        onMouseOut={(e) => handleMouseUpAndLeave()}
+                        onMouseUp={(e) => handleMouseUpAndLeave()}
+                        onMouseLeave={(e) => handleMouseUpAndLeave()}
+                    >&minus;</button>            
+                    <button 
+                        key='add'
+                        type="button"
+                        data-term = 'custom'
+                        className={customTerm? '': styles.fade}
+                        onMouseDown={(e) => handleMouseDown(e, {add: true})}
+                        onMouseOut={(e) => handleMouseUpAndLeave()}
+                        onMouseUp={(e) => handleMouseUpAndLeave()}
+                        onMouseLeave={(e) => handleMouseUpAndLeave()}
+                    >+</button>
+                </span>
+            </div>
+        </div>)
     }
 }

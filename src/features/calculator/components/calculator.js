@@ -1,7 +1,7 @@
 import React, { Fragment } from 'react';
 import styles from '../css/calculator.module.css';
-import { selectTabData, selectTabs, updateInputs, getAnswer } from '../calculatorSlice';
-import { useDispatch, useSelector } from 'react-redux';
+import { updateInputs, getAnswer } from '../calculatorSlice';
+import { useDispatch } from 'react-redux';
 import { nonSerializedFormulaData } from '../../../nonSerializedFormulaData';
 import { create, all, isUndefined } from 'mathjs'
 
@@ -9,37 +9,16 @@ export function Calculator(props) {
     const dispatch = useDispatch();
     const math = create(all)
 
-    const {mode, tabId, type} = props;
-    const tabData = useSelector(selectTabData)
-    const tD = tabData.find(obj => obj.name === mode);
-    const tabs = useSelector(selectTabs)
-     
-    const currentTab = tabs.find(obj => obj.id === tabId)
-    const tabVariables = currentTab?.variables || {}
-    const tVKeys = Object.keys(tabVariables);
-    let tV = {}
-    let tVArray = {array:{}}
-    let numericVariables = {};
-    for (let i = 0; i < tVKeys.length; i++) {tV[tVKeys[i]] = tVKeys[i] === tabVariables[tVKeys[i]] ? '' : tabVariables[tVKeys[i]];}
-    for (let key in tV) {numericVariables[key] = tV[key] === '' ? '' : Number(tV[key]);}
-
-    for (let key in tV) {
-        if(key === currentTab.selectedVariable || tV[key].includes('Error') || tV[key].includes('Impossible') || tV[key] === Infinity || tV[key] === -Infinity){
-            tV[key] = ''
-        }
-    }
-    if(type === 'array'){
-        tVArray[Object.keys(tV)[0]]= tV[Object.keys(tV)[0]]
-        for(let i = 0; i < Object.keys(tV).filter(val => val !== Object.keys(tV)[0]).length; i++){
-            tVArray.array[Object.keys(tV).filter(val => val !== Object.keys(tV)[0])[i]] = tV[Object.keys(tV).filter(val => val !== Object.keys(tV)[0])[i]]
-        }
-        for (let key in tVArray.array) {
-            if(key === currentTab.selectedVariable || tVArray.array[key].includes('Error') || tVArray.array[key].includes('Impossible') || tVArray.array[key] === Infinity || tVArray.array[key] === -Infinity){
-                tVArray.array[key] = ''
-            }
-        }
-    }
-
+    const {
+        mode, 
+        tabId, 
+        type, 
+        currentTab, 
+        tV,
+        tD,
+        tabVariables,
+        tVArray
+    } = props;
 
     const formatValue = (value, type='standard') => {
         if (value === undefined || value === '' || isNaN(value)) {
@@ -144,32 +123,62 @@ export function Calculator(props) {
         const keys = Object.keys(tV);
         let nextIndex = index;
     
-        if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+        if (e.key === "ArrowDown" || 
+            e.key === "ArrowUp" || 
+            e.key === 'Tab' || 
+            (e.shiftKey && e.key === 'Tab')
+        ) {
+            e.preventDefault()
             do {
-                nextIndex += e.key === "ArrowDown" ? 1 : -1;
+                nextIndex += (e.key === "ArrowDown" || (!e.shiftKey && e.key === 'Tab')) ? 1 : -1;
+                
+                if (nextIndex < 0) {
+                    nextIndex = keys.length - 1;
+                } else if (nextIndex >= keys.length) {
+                    nextIndex = 0;
+                }
+    
             } while (
                 nextIndex >= 0 &&
                 nextIndex < keys.length &&
                 document.querySelector(`input[name="${keys[nextIndex]}"]`)
                     ?.closest(`.${styles.variable}`)
-                    ?.classList.contains(styles.fade)
+                    ?.classList.contains(styles.fade) // Skipping conditions
             );
-        } else if (e.key === "ArrowLeft") {
-            return;
-        } else if (e.key === "ArrowRight") {
-            return;
-        }
+            if (nextIndex >= 0 && nextIndex < keys.length) {
+                let nextVariable = keys[nextIndex];
+                let nextInput = document.querySelector(`input[name="${nextVariable}"]`);
     
-        if (nextIndex >= 0 && nextIndex < keys.length) {
-            let nextVariable = keys[nextIndex];
-            let nextInput = document.querySelector(`input[name="${nextVariable}"]`);
-    
-            if (nextInput) {
-                setTimeout(() => {
-                    nextInput.focus();
-                    nextInput.selectionStart = nextInput.selectionEnd = nextInput.value.length;
-                }, 0);
+                if (nextInput) {
+                    setTimeout(() => {
+                        nextInput.focus();
+                        nextInput.selectionStart = nextInput.selectionEnd = nextInput.value.length;
+                    }, 0);
+                }
             }
+        } else if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
+            e.preventDefault();
+            const currentInput = document.activeElement;
+    
+            if (e.key === "ArrowLeft") {
+                if (currentInput.selectionStart === 0) {
+                    currentInput.selectionStart = currentInput.selectionEnd = currentInput.value.length;
+                } else {
+                    currentInput.selectionStart -= 1;
+                    currentInput.selectionEnd -= 1;
+                }
+            }
+    
+            if (e.key === "ArrowRight") {
+                if (currentInput.selectionEnd === currentInput.value.length) {
+                    currentInput.selectionStart = currentInput.selectionEnd = 0;
+                } else {
+                    currentInput.selectionStart += 1;
+                    currentInput.selectionEnd += 0;
+                }
+            }
+    
+            currentInput.setSelectionRange(currentInput.selectionStart, currentInput.selectionEnd);
         }
     };
     const handleBlur = (e, variable) => {
@@ -198,7 +207,6 @@ export function Calculator(props) {
             selectedVariable: currentTab.selectedVariable
         }));
     };
-
     if(type === 'formula'){
         return (
             <div className={styles.calculator}>
@@ -352,112 +360,126 @@ export function Calculator(props) {
         );
     } else if(type === 'array'){
         return (
-            <div className={styles.calculator}>
-                <div className={styles.formula}>
-                    <h1>{mode} Calculator</h1>
-                    <div className={styles.flex}>
-                        <h3>
-                            {Object.keys(tVArray)[1] === currentTab.selectedVariable
-                                ?Object.keys(tVArray)[1].includes('_')
-                                    ? nonSerializedFormulaData.checkVar(tVArray, currentTab.selectedVariable, Object.keys(tVArray)[1], {sub:true})
-                                    :isUndefined(tD.topBar)
-                                        ? nonSerializedFormulaData.checkVar(
-                                            '7Ru42hF72M', 
-                                            currentTab.selectedVariable, 
-                                            Object.keys(tVArray)[1], 
-                                        )
-                                        : nonSerializedFormulaData.checkVar(
-                                            '7Ru42hF72M', 
-                                            currentTab.selectedVariable, 
-                                            Object.keys(tVArray)[1], 
-                                            {topBar:true}
-                                        )
-                                :Object.keys(tVArray)[1].includes('_')
-                                    ? nonSerializedFormulaData.checkVar(tVArray, currentTab.selectedVariable, Object.keys(tVArray)[1], {sub:true})
-                                    :isUndefined(tD.topBar)
-                                        ? nonSerializedFormulaData.checkVar(
-                                            tVArray, 
-                                            currentTab.selectedVariable, 
-                                            Object.keys(tVArray)[1], 
-                                        )
-                                        : nonSerializedFormulaData.checkVar(
-                                            tVArray, 
-                                            currentTab.selectedVariable, 
-                                            Object.keys(tVArray)[1], 
-                                            {topBar:true}
-                                        )
-                            }
-                        </h3>
+            <div className={`${styles.calculator} ${currentTab.leftSideUtilValue === '' || currentTab.leftSideUtilValue < 2 || currentTab.leftSideUtilValue > 25? styles.borderFade: ''}`}>
+                <div className={currentTab.leftSideUtilValue === '' || currentTab.leftSideUtilValue < 2 || currentTab.leftSideUtilValue > 25? styles.extraFade: ''}>
+                    <div className={styles.formula}>
+                        <h1>{mode} Calculator</h1>
+                        <div className={styles.flex}>
+                        <h3>{nonSerializedFormulaData.checkVar(tV, currentTab.selectedVariable, Object.keys(tVArray)[1], {topBar:true})}</h3>
                         <h3>&nbsp;=&nbsp;</h3>
-                        <h3>{!isUndefined(tD.startCharacter)? tD.startCharacter: ''}</h3>
-                            {Object.keys(tVArray.array).map((variable, index, array) => (
-                                <Fragment key={index}>
-                                    <h3>
-                                        {
-                                           variable === currentTab.selectedVariable
-                                                ?nonSerializedFormulaData.checkVar(
-                                                    '7Ru42hF72M', 
-                                                    currentTab.selectedVariable, 
-                                                    variable, 
-                                                    {sub:true}
-                                                )
-                                                :nonSerializedFormulaData.checkVar(
-                                                    tVArray.array, 
-                                                    currentTab.selectedVariable, 
-                                                    variable, 
-                                                    {sub:true}
-                                                )
-                                        }
-                                    </h3>
-                                    {index < array.length - 1 && <h3 key={`comma_${index}`} >{tD.splitCharacter}</h3>}
-                                </Fragment>
-                            ))}
-                        <h3>{!isUndefined(tD.endCharacter)? tD.endCharacter: ''}</h3>
-                    </div>
-                </div>
-                <div className={styles.enter}>
-                    <h2>Enter:</h2>
-                    <div className={styles.variables}>
-                        {Object.keys(tV).map((variable, index) => (
-                            <div 
-                                className={
-                                    `${styles.variable} 
-                                    ${currentTab.selectedVariable === variable ? styles.fade : ''}`
-                                } 
-                                key={index}
-                            >
-                                {variable.includes('_')
-                                    ?<h3>{variable.split('_')[0]}<sub><h3>{variable.split('_')[1]}</h3></sub></h3>
-                                    :(isUndefined(tD.topBar)
-                                        ?<h3>{variable}</h3>
-                                        :(Object.keys(tV)[0] === variable
-                                            ?<h3>{nonSerializedFormulaData.checkVar(
-                                                tVArray.array, 
-                                                '7Ru42hF72M', 
-                                                variable, 
-                                                {topBar:true}
-                                            )}</h3>
-                                            :<h3>{variable}</h3>
-                                        )
-                                    )
+                        <h3>{!isUndefined(tD.startCharacter) ? tD.startCharacter : ''}</h3>
+
+                        <div className={styles.variablesWrapper}>
+                            {Object.keys(tVArray.array).reduce((acc, variable, index) => {
+                                if (index % 9 === 0) {
+                                    acc.push([]);
                                 }
-                                <h3>&nbsp;=</h3>
-                                {tabVariables[variable].includes(',') && variable === currentTab.selectedVariable
-                                        ? tabVariables[variable].split(',').map((value, index, array) => (
-                                            <React.Fragment key={index}>
-                                                <input 
+                                acc[acc.length - 1].push(variable);
+                                return acc;
+                            }, []).map((row, rowIndex, array) => (
+                                <div key={`row_${rowIndex}`} className={styles.flex}>
+                                    {row.map((variable, index) => (
+                                        <Fragment key={index}>
+                                            <h3>
+                                                {
+                                                    variable === currentTab.selectedVariable
+                                                        ? nonSerializedFormulaData.checkVar(
+                                                            '7Ru42hF72M',
+                                                            currentTab.selectedVariable,
+                                                            variable,
+                                                            {sub: true}
+                                                        )
+                                                        : nonSerializedFormulaData.checkVar(
+                                                            tVArray.array,
+                                                            currentTab.selectedVariable,
+                                                            variable,
+                                                            {sub: true}
+                                                        )
+                                                }
+                                            </h3>
+                                            {index < row.length - 1 && <h3 key={`comma_${index}`}>{tD.splitCharacter}</h3>}
+                                        </Fragment>
+                                    ))}
+                                    {/* Attach the endCharacter only to the last row */}
+                                    {rowIndex === array.length - 1 && rowIndex === array.length - 1 && (
+                                        <h3>{!isUndefined(tD.endCharacter) ? tD.endCharacter : ''}</h3>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                    </div>
+                    <div className={styles.enter}>
+                        <h2>Enter:</h2>
+                        <div className={styles.variables}>
+                            {Object.keys(tVArray.array).length < 8 
+                                ? Object.keys(tV).map((variable, index) => (       
+                                    <div 
+                                        className={
+                                            `${styles.variable} 
+                                            ${currentTab.selectedVariable === variable ? styles.fade : ''}`
+                                        } 
+                                        key={index}
+                                    >
+                                        {variable.includes('_')
+                                            ?<h3>{variable.split('_')[0]}<sub><h3>{variable.split('_')[1]}</h3></sub></h3>
+                                            :(isUndefined(tD.topBar)
+                                                ?<h3>{variable}</h3>
+                                                :(Object.keys(tV)[0] === variable
+                                                    ?<h3>{nonSerializedFormulaData.checkVar(
+                                                        tVArray.array, 
+                                                        '7Ru42hF72M', 
+                                                        variable, 
+                                                        {topBar:true}
+                                                    )}</h3>
+                                                    :<h3>{variable}</h3>
+                                                )
+                                            )
+                                        }
+                                        <h3>&nbsp;=</h3>
+                                        {tabVariables[variable].includes(',') && variable === currentTab.selectedVariable
+                                                ? tabVariables[variable].split(',').map((value, index, array) => (
+                                                    <React.Fragment key={index}>
+                                                        <input 
+                                                            style={{
+                                                                minWidth:'10ch',
+                                                                width: `${Math.max(12, 
+                                                                    (variable === currentTab.selectedVariable
+                                                                        ? String(getRoundedValue(value)) 
+                                                                        : tV[variable]
+                                                                    )?.length || 0) + 1}ch`,
+                                                                color: `${variable === currentTab.selectedVariable? 'darkred' : 'black'}`
+                                                            }}
+                                                            type='text' 
+                                                            inputMode='numeric' 
+                                                            value={getRoundedValue(value.trim())}
+                                                            autoComplete='off'
+                                                            autoCorrect='off'
+                                                            spellCheck='false'
+                                                            onChange={(e) => handleInputChange(e, variable)}
+                                                            onKeyDown={(e) => handleKeyDown(e, index)}
+                                                            name={variable}
+                                                            onBlur={(e) => handleBlur(e, variable)}
+                                                            placeholder=''
+                                                            aria-label={`enter the ${variable} value here`}
+                                                        />
+                                                        {index < array.length - 1 && <p key={`comma_${index}`} className={styles.comma}>, </p>}
+                                                        {console.log(getRoundedValue(value.trim()))}
+                                                    </React.Fragment>
+                                                ))
+                                                : (<input 
                                                     style={{
                                                         minWidth:'10ch',
-                                                        width: `${Math.max(12, 
+                                                        width: `${Math.max(4, 
                                                             (variable === currentTab.selectedVariable
-                                                                ? String(getRoundedValue(value)) 
+                                                                ? String(getRoundedValue(currentTab.answer)) 
                                                                 : tV[variable]
                                                             )?.length || 0) + 1}ch`,
                                                         color: `${variable === currentTab.selectedVariable? 'darkred' : 'black'}`
                                                     }}
                                                     type='text' 
                                                     inputMode='numeric' 
-                                                    value={getRoundedValue(value.trim())}
+                                                    value={variable === currentTab.selectedVariable? getRoundedValue(currentTab.answer) : tV[variable]}
                                                     autoComplete='off'
                                                     autoCorrect='off'
                                                     spellCheck='false'
@@ -465,98 +487,672 @@ export function Calculator(props) {
                                                     onKeyDown={(e) => handleKeyDown(e, index)}
                                                     name={variable}
                                                     onBlur={(e) => handleBlur(e, variable)}
-                                                    placeholder=''
+                                                    placeholder='Enter Here'
                                                     aria-label={`enter the ${variable} value here`}
-                                                />
-                                                {index < array.length - 1 && <p key={`comma_${index}`} className={styles.comma}>, </p>}
-                                            </React.Fragment>
-                                        ))
-                                        : (<input 
-                                            style={{
-                                                minWidth:'10ch',
-                                                width: `${Math.max(4, 
-                                                    (variable === currentTab.selectedVariable
-                                                        ? String(getRoundedValue(currentTab.answer)) 
-                                                        : tV[variable]
-                                                    )?.length || 0) + 1}ch`,
-                                                color: `${variable === currentTab.selectedVariable? 'darkred' : 'black'}`
-                                            }}
-                                            type='text' 
-                                            inputMode='numeric' 
-                                            value={variable === currentTab.selectedVariable? getRoundedValue(currentTab.answer) : tV[variable]}
-                                            autoComplete='off'
-                                            autoCorrect='off'
-                                            spellCheck='false'
-                                            onChange={(e) => handleInputChange(e, variable)}
-                                            onKeyDown={(e) => handleKeyDown(e, index)}
-                                            name={variable}
-                                            onBlur={(e) => handleBlur(e, variable)}
-                                            placeholder='Enter Here'
-                                            aria-label={`enter the ${variable} value here`}
-                                        />)
-                                    }
-                            </div>
-                        ))}
+                                                />)
+                                            }
+                                    </div>
+                                ))
+                                : (Object.keys(tVArray.array).length < 15
+                                    ? (
+                                        <>
+                                            <div 
+                                                className={
+                                                    `${styles.variable} 
+                                                    ${currentTab.selectedVariable === Object.keys(tVArray)[1] ? styles.fade : ''}`
+                                                } 
+                                            >
+                                                {Object.keys(tVArray)[1].includes('_')
+                                                    ?<h3>{Object.keys(tVArray)[1].split('_')[0]}<sub><h3>{Object.keys(tVArray)[1].split('_')[1]}</h3></sub></h3>
+                                                    :(isUndefined(tD.topBar)
+                                                        ?<h3>{Object.keys(tVArray)[1]}</h3>
+                                                        :(Object.keys(tV)[0] === Object.keys(tVArray)[1]
+                                                            ?<h3>{nonSerializedFormulaData.checkVar(
+                                                                tVArray.array, 
+                                                                '7Ru42hF72M', 
+                                                                Object.keys(tVArray)[1], 
+                                                                {topBar:true}
+                                                            )}</h3>
+                                                            :<h3>{Object.keys(tVArray)[1]}</h3>
+                                                        )
+                                                    )
+                                                }
+                                                <h3>&nbsp;=</h3>
+                                                {tabVariables[Object.keys(tVArray)[1]].includes(',') && Object.keys(tVArray)[1] === currentTab.selectedVariable
+                                                        ? tabVariables[Object.keys(tVArray)[1]].split(',').map((value, index, array) => (
+                                                            <React.Fragment key={index}>
+                                                                <input 
+                                                                    style={{
+                                                                        minWidth:'6ch',
+                                                                        width: `${Math.max(12, 
+                                                                            (Object.keys(tVArray)[1] === currentTab.selectedVariable
+                                                                                ? String(getRoundedValue(value)) 
+                                                                                : tV[Object.keys(tVArray)[1]]
+                                                                            )?.length || 0) + 1}ch`,
+                                                                        color: `${Object.keys(tVArray)[1] === currentTab.selectedVariable? 'darkred' : 'black'}`
+                                                                    }}
+                                                                    type='text' 
+                                                                    inputMode='numeric' 
+                                                                    value={getRoundedValue(value.trim())}
+                                                                    autoComplete='off'
+                                                                    autoCorrect='off'
+                                                                    spellCheck='false'
+                                                                    onChange={(e) => handleInputChange(e, Object.keys(tVArray)[1])}
+                                                                    onKeyDown={(e) => handleKeyDown(e, index+1)}
+                                                                    name={Object.keys(tVArray)[1]}
+                                                                    onBlur={(e) => handleBlur(e, Object.keys(tVArray)[1])}
+                                                                    placeholder=''
+                                                                    aria-label={`enter the ${Object.keys(tVArray)[1]} value here`}
+                                                                />
+                                                                {index < array.length - 1 && <p key={`comma_${index}`} className={styles.comma}>, </p>}
+                                                            </React.Fragment>
+                                                        ))
+                                                        : (<input 
+                                                            style={{
+                                                                minWidth:'10ch',
+                                                                width: `${Math.max(4, 
+                                                                    (Object.keys(tVArray)[1] === currentTab.selectedVariable
+                                                                        ? String(getRoundedValue(currentTab.answer)) 
+                                                                        : tV[Object.keys(tVArray)[1]]
+                                                                    )?.length || 0) + 1}ch`,
+                                                                color: `${Object.keys(tVArray)[1] === currentTab.selectedVariable? 'darkred' : 'black'}`
+                                                            }}
+                                                            type='text' 
+                                                            inputMode='numeric' 
+                                                            value={Object.keys(tVArray)[1] === currentTab.selectedVariable? getRoundedValue(currentTab.answer) : tV[Object.keys(tVArray)[1]]}
+                                                            autoComplete='off'
+                                                            autoCorrect='off'
+                                                            spellCheck='false'
+                                                            onChange={(e) => handleInputChange(e, Object.keys(tVArray)[1])}
+                                                            onKeyDown={(e) => handleKeyDown(e, 0)}
+                                                            name={Object.keys(tVArray)[1]}
+                                                            onBlur={(e) => handleBlur(e, Object.keys(tVArray)[1])}
+                                                            placeholder='Enter Here'
+                                                            aria-label={`enter the ${Object.keys(tVArray)[1]} value here`}
+                                                        />)
+                                                    }
+                                            </div>
+                                            <div>
+                                                {(() => {
+                                                    const variables = Object.keys(tVArray.array);
+                                                    const columnCount = 2;
+                                                    const rowCount = Math.ceil(variables.length / columnCount);
+
+                                                    return Array.from({ length: rowCount }).map((_, rowIndex) => (
+                                                    <div key={rowIndex} className={styles.flex}>
+                                                        {Array.from({ length: columnCount }).map((_, colIndex) => {
+                                                        const varIndex = rowIndex + colIndex * rowCount;
+                                                        const currentVar = variables[varIndex];
+
+                                                        if (!currentVar) return null; 
+
+                                                        return (
+                                                            <React.Fragment key={varIndex}>
+                                                    
+                                                            {colIndex > 0 && <h3 className={styles.comma}>,</h3>}
+
+                                                            <div
+                                                                className={`${styles.variable} ${currentTab.selectedVariable === currentVar ? styles.fade : ''}`}
+                                                                key={varIndex}
+                                                            >
+                                                                {currentVar.includes('_')
+                                                                ? <h3>{currentVar.split('_')[0]}<sub><h3>{currentVar.split('_')[1]}</h3></sub></h3>
+                                                                : (isUndefined(tD.topBar)
+                                                                    ? <h3>{currentVar}</h3>
+                                                                    : (Object.keys(tV)[0] === currentVar
+                                                                    ? <h3>{nonSerializedFormulaData.checkVar(
+                                                                        tVArray.array, 
+                                                                        '7Ru42hF72M', 
+                                                                        currentVar, 
+                                                                        { topBar: true }
+                                                                        )}</h3>
+                                                                    : <h3>{currentVar}</h3>
+                                                                    )
+                                                                )
+                                                                }
+                                                                <h3>&nbsp;=</h3>
+                                                                {tabVariables[currentVar].includes(',') && currentVar === currentTab.selectedVariable
+                                                                ? tabVariables[currentVar].split(',').map((value, inputIndex, arr) => (
+                                                                    <React.Fragment key={inputIndex}>
+                                                                        <input
+                                                                        style={{
+                                                                            minWidth: '6ch',
+                                                                            width: `${Math.max(12, 
+                                                                            (currentVar === currentTab.selectedVariable
+                                                                                ? String(getRoundedValue(value)) 
+                                                                                : tV[currentVar]
+                                                                            )?.length || 0) + 1}ch`,
+                                                                            color: `${currentVar === currentTab.selectedVariable ? 'darkred' : 'black'}`
+                                                                        }}
+                                                                        type='text'
+                                                                        inputMode='numeric'
+                                                                        value={getRoundedValue(value.trim())}
+                                                                        autoComplete='off'
+                                                                        autoCorrect='off'
+                                                                        spellCheck='false'
+                                                                        onChange={(e) => handleInputChange(e, currentVar)}
+                                                                        onKeyDown={(e) => handleKeyDown(e, inputIndex+1)}
+                                                                        name={currentVar}
+                                                                        onBlur={(e) => handleBlur(e, currentVar)}
+                                                                        placeholder=''
+                                                                        aria-label={`enter the ${currentVar} value here`}
+                                                                        />
+                                                                        {inputIndex < arr.length - 1 && <p key={`comma_${inputIndex}`} className={styles.comma}>, </p>}
+                                                                    </React.Fragment>
+                                                                    ))
+                                                                : (<input
+                                                                    style={{
+                                                                        minWidth: '6ch',
+                                                                        width: `${Math.max(4, 
+                                                                        (currentVar === currentTab.selectedVariable
+                                                                            ? (String(getRoundedValue(currentTab.answer)) === 'Error: missing variable/s'? 'Error': String(getRoundedValue(currentTab.answer)))
+                                                                            : (tV[currentVar] === 'Error: missing variable/s'? 'Error': tV[currentVar])
+                                                                        )?.length || 0) + 1}ch`,
+                                                                        color: `${currentVar === currentTab.selectedVariable ? 'darkred' : 'black'}`
+                                                                    }}
+                                                                    type='text'
+                                                                    inputMode='numeric'
+                                                                    value={
+                                                                        ((
+                                                                        currentVar === currentTab.selectedVariable 
+                                                                            ? getRoundedValue(currentTab.answer) 
+                                                                            : tV[currentVar]
+                                                                        ) === 'Error: missing variable/s'
+                                                                        ? 'Error'
+                                                                        : (
+                                                                            currentVar === currentTab.selectedVariable 
+                                                                                ? getRoundedValue(currentTab.answer) 
+                                                                                : tV[currentVar]
+                                                                            ))
+                                                                        }
+                                                                    autoComplete='off'
+                                                                    autoCorrect='off'
+                                                                    spellCheck='false'
+                                                                    onChange={(e) => handleInputChange(e, currentVar)}
+                                                                    onKeyDown={(e) => handleKeyDown(e, varIndex+1)}
+                                                                    name={currentVar}
+                                                                    onBlur={(e) => handleBlur(e, currentVar)}
+                                                                    placeholder='Enter'
+                                                                    aria-label={`enter the ${currentVar} value here`}
+                                                                    />)
+                                                                }
+                                                            </div>
+                                                            </React.Fragment>
+                                                        );
+                                                        })}
+                                                    </div>
+                                                    ));
+                                                })()}
+                                            </div>
+                                        </>
+                                    )
+                                    : (Object.keys(tVArray.array).length < 19
+                                        ? (
+                                            <>
+                                                <div 
+                                                    className={
+                                                        `${styles.variable} 
+                                                        ${currentTab.selectedVariable === Object.keys(tVArray)[1] ? styles.fade : ''}`
+                                                    } 
+                                                >
+                                                    {Object.keys(tVArray)[1].includes('_')
+                                                        ?<h3>{Object.keys(tVArray)[1].split('_')[0]}<sub><h3>{Object.keys(tVArray)[1].split('_')[1]}</h3></sub></h3>
+                                                        :(isUndefined(tD.topBar)
+                                                            ?<h3>{Object.keys(tVArray)[1]}</h3>
+                                                            :(Object.keys(tV)[0] === Object.keys(tVArray)[1]
+                                                                ?<h3>{nonSerializedFormulaData.checkVar(
+                                                                    tVArray.array, 
+                                                                    '7Ru42hF72M', 
+                                                                    Object.keys(tVArray)[1], 
+                                                                    {topBar:true}
+                                                                )}</h3>
+                                                                :<h3>{Object.keys(tVArray)[1]}</h3>
+                                                            )
+                                                        )
+                                                    }
+                                                    <h3>&nbsp;=</h3>
+                                                    {tabVariables[Object.keys(tVArray)[1]].includes(',') && Object.keys(tVArray)[1] === currentTab.selectedVariable
+                                                            ? tabVariables[Object.keys(tVArray)[1]].split(',').map((value, index, array) => (
+                                                                <React.Fragment key={index}>
+                                                                    <input 
+                                                                        style={{
+                                                                            minWidth:'6ch',
+                                                                            width: `${Math.max(12, 
+                                                                                (Object.keys(tVArray)[1] === currentTab.selectedVariable
+                                                                                    ? String(getRoundedValue(value)) 
+                                                                                    : tV[Object.keys(tVArray)[1]]
+                                                                                )?.length || 0) + 1}ch`,
+                                                                            color: `${Object.keys(tVArray)[1] === currentTab.selectedVariable? 'darkred' : 'black'}`
+                                                                        }}
+                                                                        type='text' 
+                                                                        inputMode='numeric' 
+                                                                        value={getRoundedValue(value.trim())}
+                                                                        autoComplete='off'
+                                                                        autoCorrect='off'
+                                                                        spellCheck='false'
+                                                                        onChange={(e) => handleInputChange(e, Object.keys(tVArray)[1])}
+                                                                        onKeyDown={(e) => handleKeyDown(e, index+1)}
+                                                                        name={Object.keys(tVArray)[1]}
+                                                                        onBlur={(e) => handleBlur(e, Object.keys(tVArray)[1])}
+                                                                        placeholder=''
+                                                                        aria-label={`enter the ${Object.keys(tVArray)[1]} value here`}
+                                                                    />
+                                                                    {index < array.length - 1 && <p key={`comma_${index}`} className={styles.comma}>, </p>}
+                                                                </React.Fragment>
+                                                            ))
+                                                            : (<input 
+                                                                style={{
+                                                                    minWidth:'10ch',
+                                                                    width: `${Math.max(4, 
+                                                                        (Object.keys(tVArray)[1] === currentTab.selectedVariable
+                                                                            ? String(getRoundedValue(currentTab.answer)) 
+                                                                            : tV[Object.keys(tVArray)[1]]
+                                                                        )?.length || 0) + 1}ch`,
+                                                                    color: `${Object.keys(tVArray)[1] === currentTab.selectedVariable? 'darkred' : 'black'}`
+                                                                }}
+                                                                type='text' 
+                                                                inputMode='numeric' 
+                                                                value={Object.keys(tVArray)[1] === currentTab.selectedVariable? getRoundedValue(currentTab.answer) : tV[Object.keys(tVArray)[1]]}
+                                                                autoComplete='off'
+                                                                autoCorrect='off'
+                                                                spellCheck='false'
+                                                                onChange={(e) => handleInputChange(e, Object.keys(tVArray)[1])}
+                                                                onKeyDown={(e) => handleKeyDown(e, 0)}
+                                                                name={Object.keys(tVArray)[1]}
+                                                                onBlur={(e) => handleBlur(e, Object.keys(tVArray)[1])}
+                                                                placeholder='Enter Here'
+                                                                aria-label={`enter the ${Object.keys(tVArray)[1]} value here`}
+                                                            />)
+                                                        }
+                                                </div>
+                                                <div>
+                                                    {(() => {
+                                                        const variables = Object.keys(tVArray.array);
+                                                        const columnCount = 3;
+                                                        const rowCount = Math.ceil(variables.length / columnCount);
+
+                                                        return Array.from({ length: rowCount }).map((_, rowIndex) => (
+                                                        <div key={rowIndex} className={styles.flex}>
+                                                            {Array.from({ length: columnCount }).map((_, colIndex) => {
+                                                            const varIndex = rowIndex + colIndex * rowCount;
+                                                            const currentVar = variables[varIndex];
+
+                                                            if (!currentVar) return null; 
+
+                                                            return (
+                                                                <React.Fragment key={varIndex}>
+                                                        
+                                                                {colIndex > 0 && <h3 className={styles.comma}>,</h3>}
+
+                                                                <div
+                                                                    className={`${styles.variable} ${currentTab.selectedVariable === currentVar ? styles.fade : ''}`}
+                                                                    key={varIndex}
+                                                                >
+                                                                    {currentVar.includes('_')
+                                                                    ? <h3>{currentVar.split('_')[0]}<sub><h3>{currentVar.split('_')[1]}</h3></sub></h3>
+                                                                    : (isUndefined(tD.topBar)
+                                                                        ? <h3>{currentVar}</h3>
+                                                                        : (Object.keys(tV)[0] === currentVar
+                                                                        ? <h3>{nonSerializedFormulaData.checkVar(
+                                                                            tVArray.array, 
+                                                                            '7Ru42hF72M', 
+                                                                            currentVar, 
+                                                                            { topBar: true }
+                                                                            )}</h3>
+                                                                        : <h3>{currentVar}</h3>
+                                                                        )
+                                                                    )
+                                                                    }
+                                                                    <h3 style={{marginLeft:'-20px'}}>&nbsp;=</h3>
+                                                                    {tabVariables[currentVar].includes(',') && currentVar === currentTab.selectedVariable
+                                                                    ? tabVariables[currentVar].split(',').map((value, inputIndex, arr) => (
+                                                                        <React.Fragment key={inputIndex}>
+                                                                            <input
+                                                                            style={{
+                                                                                minWidth: '6ch',
+                                                                                width: `${Math.max(12, 
+                                                                                (currentVar === currentTab.selectedVariable
+                                                                                    ? String(getRoundedValue(value)) 
+                                                                                    : tV[currentVar]
+                                                                                )?.length || 0) + 1}ch`,
+                                                                                color: `${currentVar === currentTab.selectedVariable ? 'darkred' : 'black'}`,
+                                                                                marginLeft: '5px'
+                                                                            }}
+                                                                            type='text'
+                                                                            inputMode='numeric'
+                                                                            value={getRoundedValue(value.trim())}
+                                                                            autoComplete='off'
+                                                                            autoCorrect='off'
+                                                                            spellCheck='false'
+                                                                            onChange={(e) => handleInputChange(e, currentVar)}
+                                                                            onKeyDown={(e) => handleKeyDown(e, inputIndex+1)}
+                                                                            name={currentVar}
+                                                                            onBlur={(e) => handleBlur(e, currentVar)}
+                                                                            placeholder=''
+                                                                            aria-label={`enter the ${currentVar} value here`}
+                                                                            />
+                                                                            {inputIndex < arr.length - 1 && <p key={`comma_${inputIndex}`} className={styles.comma}>, </p>}
+                                                                        </React.Fragment>
+                                                                        ))
+                                                                    : (<input
+                                                                        style={{
+                                                                            minWidth: '6ch',
+                                                                            width: `${Math.max(4, 
+                                                                            (currentVar === currentTab.selectedVariable
+                                                                                ? String(getRoundedValue(currentTab.answer)) === 'Error: missing variable/s'
+                                                                                    ? 'Error'
+                                                                                    : String(getRoundedValue(currentTab.answer))
+                                                                                : tV[currentVar] === 'Error: missing variable/s'
+                                                                                    ? 'Error'
+                                                                                    : tV[currentVar]
+                                                                            )?.length || 0) + 1}ch`,
+                                                                            color: `${currentVar === currentTab.selectedVariable ? 'darkred' : 'black'}`,
+                                                                            marginLeft: '5px'
+                                                                        }}
+                                                                        type='text'
+                                                                        inputMode='numeric'
+                                                                        value={(currentVar === currentTab.selectedVariable 
+                                                                            ? getRoundedValue(currentTab.answer) 
+                                                                            : tV[currentVar]) === 'Error: missing variable/s'
+                                                                                ? 'Error'
+                                                                                : (currentVar === currentTab.selectedVariable 
+                                                                                    ? getRoundedValue(currentTab.answer) 
+                                                                                    : tV[currentVar]
+                                                                                )
+                                                                            }
+                                                                        autoComplete='off'
+                                                                        autoCorrect='off'
+                                                                        spellCheck='false'
+                                                                        onChange={(e) => handleInputChange(e, currentVar)}
+                                                                        onKeyDown={(e) => handleKeyDown(e, varIndex+1)}
+                                                                        name={currentVar}
+                                                                        onBlur={(e) => handleBlur(e, currentVar)}
+                                                                        placeholder='Enter'
+                                                                        aria-label={`enter the ${currentVar} value here`}
+                                                                        />)
+                                                                    }
+                                                                </div>
+                                                                </React.Fragment>
+                                                            );
+                                                            })}
+                                                        </div>
+                                                        ));
+                                                    })()}
+                                                </div>
+                                            </>
+                                        )
+                                        : (
+                                            <>
+                                                <div 
+                                                    className={
+                                                        `${styles.variable} 
+                                                        ${currentTab.selectedVariable === Object.keys(tVArray)[1] ? styles.fade : ''}`
+                                                    } 
+                                                >
+                                                    {Object.keys(tVArray)[1].includes('_')
+                                                        ?<h3>{Object.keys(tVArray)[1].split('_')[0]}<sub><h3>{Object.keys(tVArray)[1].split('_')[1]}</h3></sub></h3>
+                                                        :(isUndefined(tD.topBar)
+                                                            ?<h3>{Object.keys(tVArray)[1]}</h3>
+                                                            :(Object.keys(tV)[0] === Object.keys(tVArray)[1]
+                                                                ?<h3>{nonSerializedFormulaData.checkVar(
+                                                                    tVArray.array, 
+                                                                    '7Ru42hF72M', 
+                                                                    Object.keys(tVArray)[1], 
+                                                                    {topBar:true}
+                                                                )}</h3>
+                                                                :<h3>{Object.keys(tVArray)[1]}</h3>
+                                                            )
+                                                        )
+                                                    }
+                                                    <h3>&nbsp;=</h3>
+                                                    {tabVariables[Object.keys(tVArray)[1]].includes(',') && Object.keys(tVArray)[1] === currentTab.selectedVariable
+                                                            ? tabVariables[Object.keys(tVArray)[1]].split(',').map((value, index, array) => (
+                                                                <React.Fragment key={index}>
+                                                                    <input 
+                                                                        style={{
+                                                                            minWidth:'6ch',
+                                                                            width: `${Math.max(12, 
+                                                                                (Object.keys(tVArray)[1] === currentTab.selectedVariable
+                                                                                    ? String(getRoundedValue(value)) 
+                                                                                    : tV[Object.keys(tVArray)[1]]
+                                                                                )?.length || 0) + 1}ch`,
+                                                                            color: `${Object.keys(tVArray)[1] === currentTab.selectedVariable? 'darkred' : 'black'}`
+                                                                        }}
+                                                                        type='text' 
+                                                                        inputMode='numeric' 
+                                                                        value={getRoundedValue(value.trim())}
+                                                                        autoComplete='off'
+                                                                        autoCorrect='off'
+                                                                        spellCheck='false'
+                                                                        onChange={(e) => handleInputChange(e, Object.keys(tVArray)[1])}
+                                                                        onKeyDown={(e) => handleKeyDown(e, index+1)}
+                                                                        name={Object.keys(tVArray)[1]}
+                                                                        onBlur={(e) => handleBlur(e, Object.keys(tVArray)[1])}
+                                                                        placeholder=''
+                                                                        aria-label={`enter the ${Object.keys(tVArray)[1]} value here`}
+                                                                    />
+                                                                    {index < array.length - 1 && <p key={`comma_${index}`} className={styles.comma}>, </p>}
+                                                                </React.Fragment>
+                                                            ))
+                                                            : (<input 
+                                                                style={{
+                                                                    minWidth:'10ch',
+                                                                    width: `${Math.max(4, 
+                                                                        (Object.keys(tVArray)[1] === currentTab.selectedVariable
+                                                                            ? String(getRoundedValue(currentTab.answer)) 
+                                                                            : tV[Object.keys(tVArray)[1]]
+                                                                        )?.length || 0) + 1}ch`,
+                                                                    color: `${Object.keys(tVArray)[1] === currentTab.selectedVariable? 'darkred' : 'black'}`
+                                                                }}
+                                                                type='text' 
+                                                                inputMode='numeric' 
+                                                                value={Object.keys(tVArray)[1] === currentTab.selectedVariable? getRoundedValue(currentTab.answer) : tV[Object.keys(tVArray)[1]]}
+                                                                autoComplete='off'
+                                                                autoCorrect='off'
+                                                                spellCheck='false'
+                                                                onChange={(e) => handleInputChange(e, Object.keys(tVArray)[1])}
+                                                                onKeyDown={(e) => handleKeyDown(e, 0)}
+                                                                name={Object.keys(tVArray)[1]}
+                                                                onBlur={(e) => handleBlur(e, Object.keys(tVArray)[1])}
+                                                                placeholder='Enter Here'
+                                                                aria-label={`enter the ${Object.keys(tVArray)[1]} value here`}
+                                                            />)
+                                                        }
+                                                </div>
+                                                <div>
+                                                    {(() => {
+                                                        const variables = Object.keys(tVArray.array);
+                                                        const columnCount = 5;
+                                                        const rowCount = Math.ceil(variables.length / columnCount);
+
+                                                        return Array.from({ length: rowCount }).map((_, rowIndex) => (
+                                                        <div key={rowIndex} className={styles.flex}>
+                                                            {Array.from({ length: columnCount }).map((_, colIndex) => {
+                                                            const varIndex = rowIndex + colIndex * rowCount;
+                                                            const currentVar = variables[varIndex];
+
+                                                            if (!currentVar) return null; 
+
+                                                            return (
+                                                                <React.Fragment key={varIndex}>
+                                                        
+                                                                {colIndex > 0 && <h3 className={styles.comma}>,</h3>}
+
+                                                                <div
+                                                                    className={`${styles.variable} ${currentTab.selectedVariable === currentVar ? styles.fade : ''}`}
+                                                                    key={varIndex}
+                                                                >
+                                                                    {currentVar.includes('_')
+                                                                    ? <h3>{currentVar.split('_')[0]}<sub><h3>{currentVar.split('_')[1]}</h3></sub></h3>
+                                                                    : (isUndefined(tD.topBar)
+                                                                        ? <h3>{currentVar}</h3>
+                                                                        : (Object.keys(tV)[0] === currentVar
+                                                                        ? <h3>{nonSerializedFormulaData.checkVar(
+                                                                            tVArray.array, 
+                                                                            '7Ru42hF72M', 
+                                                                            currentVar, 
+                                                                            { topBar: true }
+                                                                            )}</h3>
+                                                                        : <h3>{currentVar}</h3>
+                                                                        )
+                                                                    )
+                                                                    }
+                                                                    <h3 style={{marginLeft:'-25px'}}>&nbsp;=</h3>
+                                                                    {tabVariables[currentVar].includes(',') && currentVar === currentTab.selectedVariable
+                                                                    ? tabVariables[currentVar].split(',').map((value, inputIndex, arr) => (
+                                                                        <React.Fragment key={inputIndex}>
+                                                                            <input
+                                                                            style={{
+                                                                                minWidth: '2ch',
+                                                                                width: `${Math.max(2, 
+                                                                                (currentVar === currentTab.selectedVariable
+                                                                                    ? String(getRoundedValue(value)) 
+                                                                                    : tV[currentVar]
+                                                                                )?.length || 0) + 1}ch`,
+                                                                                color: `${currentVar === currentTab.selectedVariable ? 'darkred' : 'black'}`,
+                                                                                marginLeft: '0px'
+                                                                            }}
+                                                                            type='text'
+                                                                            inputMode='numeric'
+                                                                            value={getRoundedValue(value.trim())}
+                                                                            autoComplete='off'
+                                                                            autoCorrect='off'
+                                                                            spellCheck='false'
+                                                                            onChange={(e) => handleInputChange(e, currentVar)}
+                                                                            onKeyDown={(e) => handleKeyDown(e, inputIndex+1)}
+                                                                            name={currentVar}
+                                                                            onBlur={(e) => handleBlur(e, currentVar)}
+                                                                            placeholder=''
+                                                                            aria-label={`enter the ${currentVar} value here`}
+                                                                            />
+                                                                            {inputIndex < arr.length - 1 && <p key={`comma_${inputIndex}`} className={styles.comma}>, </p>}
+                                                                        </React.Fragment>
+                                                                        ))
+                                                                    : (<input
+                                                                        style={{
+                                                                            minWidth: '2ch',
+                                                                            width: `${Math.max(2, 
+                                                                            (currentVar === currentTab.selectedVariable
+                                                                                ? String(getRoundedValue(currentTab.answer)) === 'Error: missing variable/s'
+                                                                                    ? 'Err' 
+                                                                                    : String(getRoundedValue(currentTab.answer))
+                                                                                : tV[currentVar] === 'Error: missing variable/s'
+                                                                                    ? 'Err'
+                                                                                    : tV[currentVar]
+                                                                            )?.length || 0) + 1}ch`,
+                                                                            color: `${currentVar === currentTab.selectedVariable ? 'darkred' : 'black'}`,
+                                                                            marginLeft: '0px'
+                                                                        }}
+                                                                        type='text'
+                                                                        inputMode='numeric'
+                                                                        value={(currentVar === currentTab.selectedVariable 
+                                                                            ? getRoundedValue(currentTab.answer) 
+                                                                            : tV[currentVar]) === 'Error: missing variable/s'
+                                                                                ? 'Err'
+                                                                                : (currentVar === currentTab.selectedVariable 
+                                                                                    ? getRoundedValue(currentTab.answer) 
+                                                                                    : tV[currentVar]
+                                                                                )
+                                                                            }
+                                                                        autoComplete='off'
+                                                                        autoCorrect='off'
+                                                                        spellCheck='false'
+                                                                        onChange={(e) => handleInputChange(e, currentVar)}
+                                                                        onKeyDown={(e) => handleKeyDown(e, varIndex+1)}
+                                                                        name={currentVar}
+                                                                        onBlur={(e) => handleBlur(e, currentVar)}
+                                                                        placeholder=''
+                                                                        aria-label={`enter the ${currentVar} value here`}
+                                                                        />)
+                                                                    }
+                                                                </div>
+                                                                </React.Fragment>
+                                                            );
+                                                            })}
+                                                        </div>
+                                                        ));
+                                                    })()}
+                                                </div>
+                                            </>
+                                        )
+                                    )
+                                )
+                            }
+                        </div>
+                    </div>
+                    <div className={styles.answer}>
+                        <h2>Answer:</h2>
+                        <div>
+                            {currentTab.selectedVariable.includes('_')
+                                ?<h3>{currentTab.selectedVariable.split('_')[0]}<sub><h3>{currentTab.selectedVariable.split('_')[1]}</h3></sub></h3>
+                                    :(isUndefined(tD.topBar)
+                                    ?<h3>{currentTab.selectedVariable}</h3>
+                                    :(Object.keys(tV)[0] === currentTab.selectedVariable
+                                        ?<h3>{nonSerializedFormulaData.checkVar(
+                                            tVArray.array, 
+                                            '7Ru42hF72M', 
+                                            currentTab.selectedVariable, 
+                                            {topBar:true}
+                                        )}</h3>
+                                        :<h3>{currentTab.selectedVariable}</h3>
+                                    )
+                                )
+                            }
+                            <h3>&nbsp;=&nbsp;</h3>
+                            {
+                                    currentTab.answer.includes(',')
+                                        ? currentTab.answer
+                                            .split(',')
+                                            .map((value, index, array) => (
+                                                <Fragment key={index}>
+                                                    <input
+                                                        type='text'
+                                                        placeholder=''
+                                                        aria-label={`answer-${index}`}
+                                                        value={getRoundedValue(value)}
+                                                        spellCheck='false'
+                                                        readOnly
+                                                        style={{
+                                                            minWidth:'10ch',
+                                                            width: `${Math.max
+                                                                (8, String(getRoundedValue(value.trim()))?.length || 0) + 1
+                                                            }ch`
+                                                        }} 
+                                                    />
+                                                    {index < array.length - 1 && <p key={`comma_${index}`} className={styles.comma}>, </p>}
+                                                </Fragment>
+                                            ))
+                                        : (
+                                            <input
+                                                type='text'
+                                                placeholder=''
+                                                aria-label='answer'
+                                                value={getRoundedValue(currentTab.answer)}
+                                                spellCheck='false'
+                                                readOnly
+                                                style={{
+                                                    minWidth:'10ch',
+                                                    width: `${Math.max(8, String(getRoundedValue(currentTab.answer))?.length || 0) + 1}ch`
+                                                }} 
+                                            />
+                                        )
+                                }
+                        </div>
                     </div>
                 </div>
-                <div className={styles.answer}>
-                    <h2>Answer:</h2>
-                    <div>
-                        {currentTab.selectedVariable.includes('_')
-                            ?<h3>{currentTab.selectedVariable.split('_')[0]}<sub><h3>{currentTab.selectedVariable.split('_')[1]}</h3></sub></h3>
-                                :(isUndefined(tD.topBar)
-                                ?<h3>{currentTab.selectedVariable}</h3>
-                                :(Object.keys(tV)[0] === currentTab.selectedVariable
-                                    ?<h3>{nonSerializedFormulaData.checkVar(
-                                        tVArray.array, 
-                                        '7Ru42hF72M', 
-                                        currentTab.selectedVariable, 
-                                        {topBar:true}
-                                    )}</h3>
-                                    :<h3>{currentTab.selectedVariable}</h3>
-                                )
-                            )
-                        }
-                        <h3>&nbsp;=&nbsp;</h3>
-                        {
-                                currentTab.answer.includes(',')
-                                    ? currentTab.answer
-                                        .split(',')
-                                        .map((value, index, array) => (
-                                            <Fragment key={index}>
-                                                <input
-                                                    type='text'
-                                                    placeholder=''
-                                                    aria-label={`answer-${index}`}
-                                                    value={getRoundedValue(value)}
-                                                    spellCheck='false'
-                                                    readOnly
-                                                    style={{
-                                                        minWidth:'10ch',
-                                                        width: `${Math.max
-                                                            (8, String(getRoundedValue(value.trim()))?.length || 0) + 1
-                                                        }ch`
-                                                    }} 
-                                                />
-                                                {index < array.length - 1 && <p key={`comma_${index}`} className={styles.comma}>, </p>}
-                                            </Fragment>
-                                        ))
-                                    : (
-                                        <input
-                                            type='text'
-                                            placeholder=''
-                                            aria-label='answer'
-                                            value={getRoundedValue(currentTab.answer)}
-                                            spellCheck='false'
-                                            readOnly
-                                            style={{
-                                                minWidth:'10ch',
-                                                width: `${Math.max(8, String(getRoundedValue(currentTab.answer))?.length || 0) + 1}ch`
-                                            }} 
-                                        />
-                                    )
-                            }
-                    </div>
+                <div className={styles.errorSuggestion}>
+                    {currentTab.leftSideUtilValue === '' || currentTab.leftSideUtilValue < 2 || currentTab.leftSideUtilValue > 25
+                        ? (<div>
+                            <h1>
+                                {
+                                    currentTab.leftSideUtilValue === '' || Number(currentTab.leftSideUtilValue) < 2
+                                    ? 'Enter at least 2 terms'
+                                    : 'Enter at most 25 terms'
+                                }
+                            </h1>
+                        </div>)
+                        : ''    
+                    }
                 </div>
             </div>
         )

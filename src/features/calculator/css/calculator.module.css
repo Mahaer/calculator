@@ -8,6 +8,7 @@
     white-space: nowrap;
     text-overflow: ellipsis;
     padding-bottom: 30px;
+    position: relative;
 }
 .calculator h3{
     display: flex;
@@ -24,6 +25,7 @@
     font-size: 60px;
     font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
     font-weight: 300;
+    user-select: none;
 }
 .calculator h2{
     font-size: 30px;
@@ -112,8 +114,38 @@ sub{
     opacity: .5;
     pointer-events: none;
 }
+.extraFade{
+    opacity: 0.2;
+    pointer-events: none;
+}
+.borderFade{
+    border-color: rgba(0, 0, 0, 0.4);
+}
 .enter sub h3, .answer sub h3{
     font-size: 25px;
     margin-left: 0px;
     margin-top: 10px;
+}
+.errorSuggestion {
+    opacity: 1;
+    color: darkred;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    user-select: auto;
+}
+.errorSuggestion div{
+    border: 2px solid darkred;
+    border-radius: 2px;
+    background-color: var(--calc-background);
+    box-shadow: 2px 2px 4px 0px rgba(0, 0, 0, 0.4);
+}
+.errorSuggestion div h1{
+    font-weight: 400;
+    margin: 4px 12px;
 }

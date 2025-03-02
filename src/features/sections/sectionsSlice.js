@@ -47,7 +47,8 @@ const initialState = {
 					  	'Algebraic Addition',
 					  	'Algebraic Subtraction',
 					  	'Algebraic Multiplication',
-					  	'Algebraic Division'
+					  	'Algebraic Division',
+						'Algebraic Proportions'
 					],
 					'Polynomial Equations and Functions': [
 					  	'Slope Intercept Form',

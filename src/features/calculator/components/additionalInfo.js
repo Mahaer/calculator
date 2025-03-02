@@ -7,15 +7,30 @@ export function AdditionalInfo({mode, type}){
     const tabData = useSelector(selectTabData)
     const tD = tabData.find(obj => obj.name === mode);
 
-    if(type === 'formula'){
+    if(type === 'formula' || type === 'array'){
         return (
             <div className={styles.additionalInfo}>
                 <h2>Additional Information:</h2>
                 <div>
                     <label key={`feature_given`}>
                         <h3>{' - '}</h3>
-                        <h4>You can use the up/down arrows to switch between inputs</h4>
+                        <h4>Use the up/down arrows to switch between inputs</h4>
                     </label>
+                    {type === 'array'
+                        ?(
+                            <>
+                                <label key={`feature_given_array_1`}>
+                                    <h3>{` - `}</h3>
+                                    <h4>The mininum amount of terms is 2</h4>
+                                </label>
+                                <label key={`feature_given_array_2`}>
+                                    <h3>{` - `}</h3>
+                                    <h4>The maximum amount of terms is 25</h4>
+                                </label>
+                            </>
+                        )
+                        : ''
+                    }
                     {tD.moreInfo.features?((tD.moreInfo.features).map((feature, index) => (
                         <label key={`feature_${index}`}>
                             <h3>{' - '}</h3>

@@ -65,22 +65,26 @@ export const nonSerializedFormulaData = {
             return variables[variable] !== '' && variables[variable] !== undefined 
             ? (isNaN(Number(variables[variable])) 
                 ? (<span style={selectedVariable === variable
-                    ? {color: 'darkred', display:'flex', flexDirection:'column', alignItems:'center'}
-                    : {display:'flex', flexDirection:'column', alignItems:'center'}}
+                    ? {color: 'darkred', display:'inline-flex', flexDirection: 'column', alignItems: 'center'}
+                    : {display:'inline-flex', flexDirection: 'column', alignItems: 'center'}}
                    >
-                    <h3 style={{height:'8px'}}>&#772;</h3>
+                    <h3 style={{height:'8px'}}>&#772;
+                        <span style={{color: 'transparent'}}>-</span>
+                    </h3>
                     <h3 style={{fontSize:'32px'}}>{variable}</h3>
                    </span>)
                 :math.round(variables[variable], nonSerializedFormulaData.roundingValue)) 
             : (<span style={selectedVariable === variable
-                ? {color: 'darkred', display:'flex', flexDirection:'column', alignItems:'center'}
-                : {display:'flex', flexDirection:'column', alignItems:'center'}}
+                ? {color: 'darkred', display:'inline-flex', flexDirection: 'column', alignItems: 'center'}
+                : {display:'inline-flex', flexDirection: 'column', alignItems: 'center'}}
                >
-                <h3 style={{height:'8px'}}>&#772;</h3>
+                <h3 style={{height:'8px'}}>&#772;
+                    <span style={{color: 'transparent'}}>-</span>
+                </h3>
                 <h3 style={{fontSize:'32px'}}>{variable}</h3>
                </span>)
         }
-    } ,
+    },
     roundingValue:2,
     'Compound Interest':{
         'display':(variables, selectedVariable) => (
