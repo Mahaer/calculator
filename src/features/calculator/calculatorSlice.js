@@ -3,50 +3,81 @@ import { createSlice } from '@reduxjs/toolkit';
 const initialState = {
 	tabData:[
 		{
-			name:'Compound Interest',
+			name: 'Algebraic Addition',
+			type: 'array',
+			defaultVariable: 'S',
+			defaultLeftSideUtilValue: '2',
+			splitCharacter: '+',
+			variables:[
+				'S', [
+					'a',
+					'b'
+				]
+			],
+			lessThanZeroParen:true,
+			definitions: [
+				'Sum',
+				'Addends'
+			],
+			moreInfo: {}
+		},{
+			name: 'Algebraic Subtraction',
+			type: 'array',
+			defaultVariable: 'D',
+			defaultLeftSideUtilValue: '2',
+			splitCharacter: '-',
+			variables:[
+				'D', [
+					'a',
+					'b'
+				]
+			],
+			lessThanZeroParen:true,
+			definitions: [
+				'Difference',
+				'Minuend/Subtrahend'
+			],
+			moreInfo: {}
+		},{
+			name: 'Algebraic Multiplication',
+			type: 'array',
+			defaultVariable: 'P',
+			defaultLeftSideUtilValue: '2',
+			splitCharacter: '×',
+			variables:[
+				'P', [
+					'a',
+					'b'
+				]
+			],
+			lessThanZeroParen:true,
+			definitions: [
+				'Product',
+				'Factors'
+			],
+			moreInfo: {}
+		},{
+			name: 'Algebraic Proportions',
 			type: 'formula',
-			formula:'A=P(1+(r/n))^nt',
-			defaultVariable: 'A',
-			defaultLeftSideUtilValue: 'Custom Value',
-			variables:['A', 'P', 'r', 'n', 't'],
-			units:{
-				A:'USD',
-				P:'USD',
-				r:'DecimalPercentage',
-				t:'yrs'
+			formula: '(a/b) = (c/d)',
+			defaultVariable: 'a',
+			variables: [
+				'a', 'b', 'c', 'd'
+			],
+			units: {},
+			formatTypes: {},
+			calculationType: {},
+			leftSideUtil: {},
+			definitions: {
+				a: 'First term/First numerator',
+				b: 'Second term/First denominator',
+				c: 'Third term/Second numerator',
+				d: 'Fourth term/Second denominator'
 			},
-			formatTypes:{
-				A:'money',
-				P:'money'
-			},
-			calculationType:{
-				n:'approximation',
-			},
-			leftSideUtil:{
-				title: 'Compound Frequency',
-				omittedVariable: 'n',
-				values:{
-					Biennially: 0.5,
-					Annually: 1,
-					Biannually: 2,
-					Quarterly: 4,
-					Monthly: 12,
-					Weekly: 52.14,
-					Daily: 365,
-				},
-			},
-			definitions:{
-				A:'Final amount',
-				P:'Principal(initial) amount',
-				r:'Annual interest rate(decimal)',
-				n:'Annual compounding frequency',
-				t:'Time in years'
-			},
-			moreInfo:{
-				links:{
-					Wikipedia: 'https://en.wikipedia.org/wiki/Compound_interest',
-					Graph: 'https://www.desmos.com/calculator/aivdjyspbo'
-				}
+			moreInfo: {
+				features: [
+					'To perform dimensional analysis or use units, <br>go to Conversions > Dimensional Analysis'
+				]
 			}
 		},{
 			name: 'Slope Intercept Form',
@@ -113,7 +144,7 @@ const initialState = {
 			},
 			moreInfo:{
 				features:[
-					'Complex numbers are not supported, use the quadratic formula calculator'
+					'Complex numbers are not supported, <br>go to Algebra > Quadratic Formula to use them'
 				]
 			}
 		},{
@@ -154,7 +185,7 @@ const initialState = {
 			},
 			moreInfo:{
 				features:[
-					'Use the axis of symmertry calculator to find h',
+					'Go to Algebra > Axis of symmetry to find h',
 					'(h, k) is the vertex of the parabola',
 					'The axis of symmetry is x = h',
 					'If a > 0, then the maximum value of y is k',
@@ -179,7 +210,7 @@ const initialState = {
 			},
 			moreInfo: {
 				features:[
-					'Use general form of a quadratic calculator to find k(subsitute x with h)',
+					'Go to Algebra > General Form of a Quadratic <br>to find k(subsitute x with h)',
 					'(h, k) is the vertex of the parabola',
 					'The axis of symmetry is x = h',
 					'If a > 0, then the maximum value of y is k',
@@ -213,6 +244,11 @@ const initialState = {
 			variables:[
 				'a_n', 'a_n-1', 'a_1', 'n', 'd'
 			],
+			fadedVariables: {
+				a_1: ['n'],
+				'a_n-1': ['a_n', 'a_1', 'r']
+			},
+			omittedSolveFor:['a_1'],
 			units: {},
 			formatTypes: {},
 			calculationType: {},
@@ -226,13 +262,13 @@ const initialState = {
 			},
 			moreInfo:{
 				features:[
-					'The first term isn\'t in the formula but still necessary for finding n'
+					'a_1 isn\'t in the formula but still <br>necessary for finding n'
 				]
 			}
 		},{
 			name: 'Arithmetic General Sum Formula',
 			type: 'formula',
-			formula: 'S_n = (n - 2) * (2a_1 + (n-1)d)',
+			formula: 'S_n = (n/2) * (2a_1 + (n-1)d)',
 			defaultVariable: 'S_n',
 			defaultLeftSideUtilValue: '',
 			variables: [
@@ -250,7 +286,120 @@ const initialState = {
 			},
 			moreInfo: {
 				features: [
-					'If d is unknown but a_n is given, use the arithmetic alternate sum formula calculator'
+					'If d is unknown but a_n is given, use the <br>Algebra > Arithmetic Alternate Sum Formula'
+				]
+			}
+		},{
+			name: 'Arithmetic Alternate Sum Formula',
+			type: 'formula',
+			formula: 'S_n = (n/2) * (a_1 + a_n)',
+			defaultVariable: 'S_n',
+			defaultLeftSideUtilValue: '',
+			variables: [
+				'S_n', 'a_1', 'a_n', 'n'
+			],
+			units: {},
+			formatTypes: {},
+			calculationType: {},
+			leftSideUtil: {},
+			definitions: {
+				S_n: 'Sum of the first n terms',
+				a_1: 'First term of the sequence',
+				a_n: 'Nth term of the sequence',
+				n: 'Number of terms'
+			},
+			moreInfo:{}
+		},{
+			name: 'Geometric Sequence (Explicit Formula)',
+			type: 'formula',
+			formula: 'a_n = a_1 * r^(n-1)',
+			defaultVariable: 'a_n',
+			defaultLeftSideUtilValue: '',
+			variables: [
+				'a_n', 'a_1', 'r', 'n'
+			],
+			units: {},
+			formatTypes: {},
+			calculationType: {},
+			leftSideUtil: {},
+			definitions: {
+				a_n: 'Nth term of the sequence',
+				a_1: 'First term of the sequence',
+				n: 'Number of terms',
+				r: 'Common ratio'
+			},
+			moreInfo:{}
+		},{
+			name: 'Geometric Recursive Sequence',
+			type: 'formula',
+			formula: 'a_n = r * a_n-1',
+			defaultVariable: 'a_n',
+			defaultLeftSideUtilValue: '',
+			variables: [
+				'a_n', 'a_n-1', 'a_1', 'n', 'r'
+			],
+			fadedVariables:{
+				a_1: ['n'],
+				'a_n-1': ['a_n', 'a_1', 'r']
+			},
+			omittedSolveFor:['a_1'],
+			units: {},
+			formatTypes: {},
+			calculationType: {},
+			leftSideUtil: {},
+			definitions: {
+				a_n: 'Nth term of the sequence',
+				'a_n-1': 'Term before the nth term',
+				a_1: 'First term of the sequence',
+				n: 'Number of terms',
+				r: 'Common ratio'
+			},
+			moreInfo:{
+				features:[
+					'a_1 isn\'t in the formula but still <br>necessary for finding n'
+				]
+			}
+		},{
+			name: 'Geometric Finite Sum',
+			type: 'formula',
+			formula: 'S_n = a_1((1-r^n)/(a-r))',
+			defaultVariable: 'S_n',
+			variables: [
+				'S_n', 'a_1', 'n', 'r'
+			],
+			units: {},
+			formatTypes: {},
+			calculationType: {
+				r: 'approximation'
+			},
+			leftSideUtil: {},
+			definitions: {
+				S_n: 'Sum of the first n terms',
+				a_1: 'First term of the sequence',
+				n: 'Number of terms',
+				r: 'Common ratio'
+			},
+			moreInfo:{}
+		},{
+			name: 'Geometric Infinite Sum For |r| < 1',
+			type: 'formula',
+			formula: 'S = a_1 / (1-r)',
+			defaultVariable: 'S',
+			variables: [
+				'S', 'a_1', 'r'
+			],
+			units: {},
+			formatTypes: {},
+			calculationType: {},
+			leftSideUtil: {},
+			definitions: {
+				S: 'Sum of the infinite sequence',
+				n: 'Number of terms',
+				r: 'Common ratio'
+			},
+			moreInfo: {
+				features: [
+					'the absolute value of r has to be <br>less than 1 (|r| < 1)'
 				]
 			}
 		},{
@@ -281,10 +430,57 @@ const initialState = {
 					'o'
 				]
 			],
-			definitions: {
-				X: 'Mean(average)'
-			},
+			definitions: [
+				'Mean(average)',
+				'Data Points'
+			],
 			moreInfo: {}
+		},{
+			name:'Compound Interest',
+			type: 'formula',
+			formula:'A=P(1+(r/n))^nt',
+			defaultVariable: 'A',
+			defaultLeftSideUtilValue: 'Custom Value',
+			variables:['A', 'P', 'r', 'n', 't'],
+			units:{
+				A:'USD',
+				P:'USD',
+				r:'DecimalPercentage',
+				t:'yrs'
+			},
+			formatTypes:{
+				A:'money',
+				P:'money'
+			},
+			calculationType:{
+				n:'approximation',
+			},
+			leftSideUtil:{
+				title: 'Compound Frequency',
+				omittedVariable: 'n',
+				values:{
+					Biennially: 0.5,
+					Annually: 1,
+					Biannually: 2,
+					Quarterly: 4,
+					Monthly: 12,
+					Weekly: 52.14,
+					Daily: 365,
+				},
+			},
+			definitions:{
+				A:'Final amount',
+				P:'Principal(initial) amount',
+				r:'Annual interest rate(decimal)',
+				n:'Annual compounding frequency',
+				t:'Time in years'
+			},
+			moreInfo:{
+				links:{
+					Wikipedia: 'https://en.wikipedia.org/wiki/Compound_interest',
+					Graph: 'https://www.desmos.com/calculator/aivdjyspbo'
+				}
+			}
 		}
 	],
 	tabs:[
@@ -312,6 +508,7 @@ const initialState = {
 			},
 			selectedVariable: 'X',
 			leftSideUtilValue: '15',
+			arrayVar: 'a',
 			answer: 'Error: missing variable/s',
 		},
 		{
@@ -385,6 +582,7 @@ export const calculatorSlice = createSlice({
 						variables: { [currentTabData.variables[0]]: currentTabData.variables[0], ...currentTabData.variables[1].reduce((acc, item) => ({ ...acc, [item]: item }), {}) },
 						selectedVariable: currentTabData.defaultVariable,
 						leftSideUtilValue: currentTabData.defaultLeftSideUtilValue,
+						arrayVar: 'a',
 						answer: 'Error: missing variable/s'
 					})
 				}
@@ -415,6 +613,16 @@ export const calculatorSlice = createSlice({
 			currentTab.leftSideUtilValue = termNumber
 
 			currentTab.variables = updatedVariables
+		},
+		changeLeftSideUtilValueForArray: (state, action) => {
+			const {id, value} = action.payload
+			const currentTab = state.tabs.find(obj => obj.id === id)
+			currentTab.leftSideUtilValue = value
+		},
+		changeArrayVar: (state, action) => {
+			const {id, value} = action.payload
+			const currentTab = state.tabs.find(obj => obj.id === id)
+			currentTab.arrayVar = value
 		}
 	}
 });
@@ -428,6 +636,8 @@ export const {
 	addTab,
 	removeTab,
 	changeTermNumber,
+	changeLeftSideUtilValueForArray,
+	changeArrayVar
 } = calculatorSlice.actions
 		
 export const selectTabData = (state) => state.calculator.tabData;

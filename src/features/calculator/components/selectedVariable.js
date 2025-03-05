@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import styles from '../css/selectedVariable.module.css'
 import { useDispatch } from "react-redux";
-import { changeSelectedVariable, getAnswer, updateInputs } from "../calculatorSlice";
+import { changeArrayVar, changeSelectedVariable, getAnswer, updateInputs } from "../calculatorSlice";
 import { nonSerializedFormulaData } from "../../../nonSerializedFormulaData";
 import { isUndefined } from "mathjs";
 
@@ -16,8 +16,6 @@ export function SelectedVariable(props){
         tD,
         tVArray,
         tabs,
-        arrayVar,
-        setArrayVar
     } = props;
 
     const [dropdownArrowDown, setDropdownArrowDown] = useState(false);
@@ -57,7 +55,7 @@ export function SelectedVariable(props){
         }));
 
         if(type === 'array' && variable !== Object.keys(tVArray)[1]){
-            setArrayVar(variable)
+            dispatch(changeArrayVar({id:tabId, value:variable}))
         }
     }
     const handleDropdownMouseEnter = (e) => {
@@ -82,14 +80,13 @@ export function SelectedVariable(props){
             setHideDropdown(false)
         }, 1)
     }
-
     if(type === 'formula'){
         return (
             <div className={styles.selectedVariable}>
                 <h2>Solve for:</h2>
                 <div>
                     {(tD.variables).map((variable, index) => (
-                        <label 
+                        ((!isUndefined(tD.omittedSolveFor)? !(tD.omittedSolveFor).includes(variable): true)?<label 
                             key={index} 
                             className={variable === tD.leftSideUtil.omittedVariable? (currentTab.leftSideUtilValue === 'Custom Value'? '' : styles.leftSideUtilVar): ''}
                         >
@@ -104,7 +101,7 @@ export function SelectedVariable(props){
                                 ?<h3>{variable.split('_')[0]}<sub><h3>{variable.split('_')[1]}</h3></sub></h3>
                                 :<h3>{variable}</h3>
                             }
-                        </label>
+                        </label>:'')
                     ))}
                 </div>
             </div>
@@ -123,12 +120,9 @@ export function SelectedVariable(props){
                     />
                     {Object.keys(tVArray)[1].includes('_')
                         ?<h3>{Object.keys(tVArray)[1].split('_')[0]}<sub><h3>{Object.keys(tVArray)[1].split('_')[1]}</h3></sub></h3>
-                        :(!isUndefined(currentTab.topBar)
+                        :(isUndefined(tD.topBar)
                             ?<h3>{Object.keys(tVArray)[1]}</h3>
-                            :(<span style={currentTab.selectedVariable === Object.keys(tVArray)[1]
-                                ? {color: 'darkred', display:'inline-flex', flexDirection: 'column', alignItems: 'center'}
-                                : {display:'inline-flex', flexDirection: 'column', alignItems: 'center'}}
-                               >
+                            :(<span style={{display:'inline-flex', flexDirection: 'column', alignItems: 'center'}}>
                                 <h3 style={{height:'5px', fontWeight:'bold'}}>&#772;
                                     <span style={{color: 'transparent'}}>-</span>
                                 </h3>
@@ -142,9 +136,9 @@ export function SelectedVariable(props){
                         <input
                             type="radio"
                             name='selectedVariableGroup'
-                            value={arrayVar}
-                            checked={currentTab.selectedVariable === arrayVar}
-                            onChange={() => handleVariableChange(Object.keys(tVArray.array).includes(arrayVar)? arrayVar: Object.keys(tVArray.array)[Object.keys(tVArray.array).length - 1])}
+                            value={currentTab.arrayVar}
+                            checked={currentTab.selectedVariable === currentTab.arrayVar}
+                            onChange={() => handleVariableChange(Object.keys(tVArray.array).includes(currentTab.arrayVar)? currentTab.arrayVar: Object.keys(tVArray.array)[Object.keys(tVArray.array).length - 1])}
                         />
                     </label>
                     <div 
@@ -153,7 +147,7 @@ export function SelectedVariable(props){
                             onMouseLeave={(e) => setDropdownArrowDown(false)}
                         >
                             <h3>
-                                {Object.keys(tVArray.array).includes(arrayVar)? arrayVar: Object.keys(tVArray.array)[Object.keys(tVArray.array).length - 1]}
+                                {Object.keys(tVArray.array).includes(currentTab.arrayVar)? currentTab.arrayVar: Object.keys(tVArray.array)[Object.keys(tVArray.array).length - 1]}
                                 {
                                     dropdownArrowDown
                                     ?<span className={styles.dropdownArrow}>&#9660;</span>
@@ -172,7 +166,7 @@ export function SelectedVariable(props){
                                             data-name={variable}
                                             onMouseEnter={(e) => handleDropdownMouseEnter(e)}
                                             onMouseLeave={(e) => handleDropdownMouseLeave(e)}
-                                            onClick={(e) => {setArrayVar(e.target.dataset.name);handleVariableChange(variable)}}
+                                            onClick={(e) => {dispatch(changeArrayVar({id:tabId, value:e.target.dataset.name}));handleVariableChange(variable)}}
                                             className={
                                                 index > (Math.floor(Object.keys(tVArray.array).length / numColumns))  * numColumns - 1 
                                                 ||

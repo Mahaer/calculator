@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import styles from '../css/tab.module.css';
 import { Dropdown } from './dropdown';
 import { Calculator } from '../../calculator/components/calculator';
@@ -29,7 +29,7 @@ export function Tab() {
 	for (let key in tV) {numericVariables[key] = tV[key] === '' ? '' : Number(tV[key]);}
 	
 	for (let key in tV) {
-		if(key === currentTab.selectedVariable || tV[key].includes('Error') || tV[key].includes('Impossible') || tV[key] === Infinity || tV[key] === -Infinity){
+		if(tV[key].includes('Error') || tV[key].includes('Impossible') || tV[key] === Infinity || tV[key] === -Infinity){
 			tV[key] = ''
 		}
 	}
@@ -39,12 +39,11 @@ export function Tab() {
 			tVArray.array[Object.keys(tV).filter(val => val !== Object.keys(tV)[0])[i]] = tV[Object.keys(tV).filter(val => val !== Object.keys(tV)[0])[i]]
 		}
 		for (let key in tVArray.array) {
-			if(key === currentTab.selectedVariable || tVArray.array[key].includes('Error') || tVArray.array[key].includes('Impossible') || tVArray.array[key] === Infinity || tVArray.array[key] === -Infinity){
+			if(tVArray.array[key].includes('Error') || tVArray.array[key].includes('Impossible') || tVArray.array[key] === Infinity || tVArray.array[key] === -Infinity){
 				tVArray.array[key] = ''
 			}
 		}
 	}
-	const [arrayVar, setArrayVar] = useState(Object.keys(tVArray.array)[0])
 
 	if(mode !== "" && type !== ""){
 		return (
@@ -63,8 +62,6 @@ export function Tab() {
 								tVArray={tVArray}
 								tabVariables={tabVariables}
 								tabs={tabs}
-								arrayVar={arrayVar}
-								setArrayVar={setArrayVar}
 							/>
 							<LeftSideUtil 
 								mode={mode} 
@@ -76,8 +73,6 @@ export function Tab() {
 								tVArray={tVArray}
 								tabVariables={tabVariables}
 								tabs={tabs}
-								arrayVar={arrayVar}
-								setArrayVar={setArrayVar}
 							/>
 						</div>
 						<Calculator 

@@ -12,9 +12,13 @@ export function AdditionalInfo({mode, type}){
             <div className={styles.additionalInfo}>
                 <h2>Additional Information:</h2>
                 <div>
-                    <label key={`feature_given`}>
+                    <label key={`feature_given_1`}>
                         <h3>{' - '}</h3>
                         <h4>Use the up/down arrows to switch between inputs</h4>
+                    </label>
+                    <label key={`feature_given_2`}>
+                        <h3>{' - '}</h3>
+                        <h4>Also use tab/shift + tab to switch as well</h4>
                     </label>
                     {type === 'array'
                         ?(
@@ -31,12 +35,26 @@ export function AdditionalInfo({mode, type}){
                         )
                         : ''
                     }
-                    {tD.moreInfo.features?((tD.moreInfo.features).map((feature, index) => (
+                    {tD.moreInfo.features ? (
+                    tD.moreInfo.features.map((feature, index) => {
+                        // Check if feature contains <br> and split it
+                        const featureParts = feature.split('<br>');
+                        
+                        return (
                         <label key={`feature_${index}`}>
                             <h3>{' - '}</h3>
+                            {featureParts.length > 1 ? (
+                            <span>
+                                <h4>{featureParts[0]}</h4>
+                                <h4>{featureParts[1]}</h4>
+                            </span>
+                            ) : (
                             <h4>{feature}</h4>
+                            )}
                         </label>
-                    ))):''}
+                        );
+                    })
+                    ) : ''}
                 </div>
                 {tD.moreInfo.links?(Object.keys(tD.moreInfo.links).length !== 0 &&
                     <>

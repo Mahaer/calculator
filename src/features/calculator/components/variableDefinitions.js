@@ -41,12 +41,12 @@ export function VariableDefinitions({type, tVArray, tD}){
                                 )
                         }
                         <h3>&nbsp;-&nbsp;</h3>
-                        <h4>{tD.definitions[Object.keys(tVArray)[1]]}</h4>
+                        <h4>{tD.definitions[0]}</h4>
                     </label>
                     <label key='variables'>
                         <h3>a<span className={styles.mdash}>&mdash;</span>{Object.keys(tVArray.array)[Object.keys(tVArray.array).length - 1]}</h3>
                         <h3>&nbsp;-&nbsp;</h3>
-                        <h4>Data points</h4>
+                        <h4>{tD.definitions[1]}</h4>
                     </label>
                 </div>
             </div>

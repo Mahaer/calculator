@@ -7,7 +7,9 @@ import {
     changeLeftSideUtilValue, 
     getAnswer, 
     changeTermNumber, 
-    changeSelectedVariable
+    changeSelectedVariable,
+    changeLeftSideUtilValueForArray,
+    changeArrayVar
 } from "../calculatorSlice";
 
 
@@ -19,20 +21,17 @@ export function LeftSideUtil(props){
         currentTab, 
         tD,
         tV,
-        ArrayVar,
-        setArrayVar,
     } = props;
-
     const dispatch = useDispatch();
     const termArray = ['2', '3', '4', '5', '10', '15', '20', '25']
-    const [terms, setTerms] = useState(currentTab.leftSideUtilValue);
     const [customTerm, setCustomTerm] = useState(true);
     const [intervalId, setIntervalId] = useState()
+    const terms = currentTab.leftSideUtilValue
      
     const handleTermChange = (e, number) => {
         const currentVariables = tV
         setCustomTerm(e.target.dataset.term === 'custom')
-        setTerms(number)
+        dispatch(changeLeftSideUtilValueForArray({id:tabId, value:number}))
         if(Number(number) >= 2 && Number(number < 26)){
             const alphabetArray = Array.from({ length: Number(number) }, (_, index) => 
                 String.fromCharCode(97 + index)
@@ -48,8 +47,8 @@ export function LeftSideUtil(props){
             let newSelectedVariable = currentTab.selectedVariable
             if(!Object.keys(Object.fromEntries(Object.entries(newVariables).slice(1))).includes(currentTab.selectedVariable) && Object.keys(newVariables)[0] !== currentTab.selectedVariable ) {
                 newSelectedVariable =  Object.keys(newVariables).length > 0 ? Object.keys(newVariables)[Object.keys(newVariables).length - 1] : null;
-                setArrayVar(newSelectedVariable)
-                dispatch(changeSelectedVariable({id:tabId, value: ArrayVar}))
+                dispatch(changeArrayVar({id:tabId, value:newSelectedVariable}))
+                dispatch(changeSelectedVariable({id:tabId, value: currentTab.arrayVar}))
             }
             dispatch(changeSelectedVariable({id:tabId, value: newSelectedVariable}))
             dispatch(changeTermNumber({updatedVariables: newVariables, termNumber: number}))
@@ -64,13 +63,13 @@ export function LeftSideUtil(props){
         const value = document.getElementById('customInput').value
         if (value === '' || (/^\d{1,2}$/.test(value))) {
             if(!add && !subtract){
-                setTerms(value);
+                dispatch(changeLeftSideUtilValueForArray({id:tabId, value:value}))
                 handleTermChange(e, value);
             } else if(add && value < 25) {
-                setTerms(String(Number(value) + 1))
+                dispatch(changeLeftSideUtilValueForArray({id:tabId, value:String(Number(value) + 1)}))
                 handleTermChange(e, String(Number(value) + 1))
             } else if (subtract && String(value) !== '2' && String(value) !== '1' && String(value) !== '0' && value !== '') {
-                setTerms(String(Number(value) - 1))
+                dispatch(changeLeftSideUtilValueForArray({id:tabId, value:String(Number(value) - 1)}))
                 handleTermChange(e, String(Number(value) - 1))
             }
         }
@@ -87,7 +86,7 @@ export function LeftSideUtil(props){
         const startTime = Date.now()
 
         setIntervalId(setInterval(() => {
-            if(Date.now() - startTime > 150){
+            if(Date.now() - startTime > 350){
                 handleChange(e, actionType)
             }
         }, 60))

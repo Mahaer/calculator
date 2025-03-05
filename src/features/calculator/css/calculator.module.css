@@ -48,10 +48,14 @@ sup{
 }
 sub{
     margin-top: 20px;
-    font-size: 30px;
+    font-size: 25px;
 }
 .formula > div{
     margin-left: 40px;
+}
+.formula > div > h3{
+    display: flex;
+    align-items: center;
 }
 .variables{
     margin-left: 40px;
@@ -113,6 +117,7 @@ sub{
 .fade{
     opacity: .5;
     pointer-events: none;
+    transition: 0s;
 }
 .extraFade{
     opacity: 0.2;

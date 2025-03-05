@@ -24,3 +24,6 @@
     font-size: 18px;
     margin-bottom: 10px;
 }
+.fraction p sup span{
+    font-size: 20px;
+}
