@@ -7,20 +7,21 @@ const initialState = {
 			categories:[
 				{
 					'Arithmetic': [
-					  'Addition/ Sum',
-					  'Subtraction/ Difference',
-					  'Multiplication/ Product',
-					  'Division/ Quotient',
-					  'Modulus',
+					  'Addition',
+					  'Subtraction',
+					  'Multiplication',
+					  'Division',
+					  'Modulus (Remainder)',
+					  'Factorial',
 					  'Custom Arithmetic'
 					],
 					'Exponents and Roots': [
 					  'Square',
 					  'Cube',
-					  'Nth power',
-					  'Square root',
-					  'Cube root',
-					  'Nth root'
+					  'Nth Power',
+					  'Square Root',
+					  'Cube Root',
+					  'Nth Root'
 					]
 				},
 				{
@@ -102,7 +103,7 @@ const initialState = {
 						'Square Perimeter',
 						'Triangle Perimeter',
 						'Right Triangle Perimeter',
-						'Circle Perimeter',
+						'Circle Circumference',
 						'Ellipse Perimeter',
 						'Parallelogram Perimeter',
 						'Trapezoid Perimeter',
@@ -174,7 +175,7 @@ const initialState = {
 						'Parallelogram',
 						'Rhombus',
 						'Rectangle',
-						'Square',
+						'Square Diagram',
 						'Circle',
 						'Ellipse',
 						'Regular Pentagon',
@@ -183,7 +184,7 @@ const initialState = {
 						'Regular Octagon'
 					],
 					'3D Shape Diagrams': [
-						'Cube',
+						'Cube Diagram',
 						'Rectangular Prism',
 						'Pentagonal Prism',
 						'Hexagonal Prism',
@@ -289,18 +290,8 @@ const initialState = {
 export const sectionsSlice = createSlice({
 	name: 'sections',
 	initialState: initialState,
-	reducers: {
-		exampleIncrementer: (state, action) => {
-			state.sections += action.payload
-				}
-			},
-	});
-
-		export const { exampleIncrementer } = sectionsSlice.actions
-		// Exports the action creators formed by createSlice()
+	reducers: {}
+});
 		
-		export const selectSections = (state) => state.sections.sections;
-		// Exports an example selector, which is a specific value
-
-
-		export default sectionsSlice.reducer;
+export const selectSections = (state) => state.sections.sections;
+export default sectionsSlice.reducer;

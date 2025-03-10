@@ -8,6 +8,14 @@
     margin-top: -6px;
     font-size: 20px;
 }
+ .normal sup span{
+    margin-bottom: 15px !important;
+ }
+.normal{
+    margin-top: 5px;
+    margin-bottom: -5px;
+    position: relative;
+}
 .mathRoot sup{
     font-size: 14px;
     margin-top: -5px;
@@ -15,12 +23,21 @@
 .radical{
     font-size: 24px;
 }
+.normal > .radical{
+    font-size: 32px !important;
+    margin-top: 6px;
+}
 .value{
     margin-left: 5px;
     display: block;
     position: relative;
     margin-top: 2px;
     font-size: 16px;
+}
+.normal > .value{
+    font-size: 25px;
+    margin-bottom: -7px;
+    margin-top: 10px;
 }
 .value::before{
     height: 1.5px;

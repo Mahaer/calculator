@@ -2,7 +2,7 @@
     border: 2px solid black;
     width: 100%;
     height: fit-content;
-    min-height: 600px;
+    min-height: 420px;
     margin-top: 20px;
     padding-right: 10px;
     white-space: nowrap;
@@ -17,6 +17,9 @@
     font-size: 40px;
     white-space: nowrap;
     text-overflow: ellipsis;
+}
+.calculator h3 span{
+    font-family: var(--math-font);
 }
 .flex{
     display: flex;
@@ -68,16 +71,21 @@ sub{
 .variable h3, .answer h3{
     user-select: none;
 }
-.variable input, .answer input{
+.variable input, .answer input, .flexAnswer input{
     background-color: transparent;
     border: 1px solid gray;
     border-bottom: 2px solid black;
     outline: none;
     padding: 4px 5px;
-    margin-left:25px;
-    margin-right: 5px;
     font-size: 24px;
     height: 36px;
+}
+.flexAnswer input{
+    margin-left: 18px;
+}
+.variable input, .answer input{
+    margin-right: 5px;
+    margin-left: 25px;
 }
 .variable input::placeholder{
     opacity: 0.3;
@@ -109,10 +117,25 @@ sub{
     margin-left: 40px;
     display: flex;
     align-items: center;
+    width: fit-content;
 }
-.answer input{
+.answer > div > h3:first-child{
+    color: darkred;
+}
+.answer > div > h3 + h3{
+    width: 48.02px;
+}
+.answer input, .flexAnswer input{
     color: darkred;
     cursor: default;
+}
+.flexAnswer{
+    display: flex;
+    align-items: center;
+    margin-top: 25px;
+}
+.flexAnswer h2{
+    margin-bottom: 0px;
 }
 .fade{
     opacity: .5;

@@ -96,7 +96,7 @@ export function LeftSideUtil(props){
     }
 
 
-    if (type === 'formula' && Object.keys(tD.leftSideUtil).length !== 0){
+    if ((type === 'formula' || type === 'formula_expresssion') && Object.keys(tD.leftSideUtil).length !== 0){
         return (<div className={`${styles.leftSideUtil} ${currentTab.selectedVariable === tD.leftSideUtil.omittedVariable? styles.fade : ''}`}>
             <h2>{`${tD.leftSideUtil.title} (${tD.leftSideUtil.omittedVariable}):`}</h2>
             <div>
@@ -129,7 +129,7 @@ export function LeftSideUtil(props){
                     </label>
             </div>
         </div>)
-    } else if (type === 'array'){
+    } else if (type === 'array' || type === 'array_expression'){
         return (<div className={styles.leftSideUtil}>
             <h2>Number of Terms:</h2>
             <div>

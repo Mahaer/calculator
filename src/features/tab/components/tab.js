@@ -1,7 +1,7 @@
 import React from 'react';
 import styles from '../css/tab.module.css';
 import { Dropdown } from './dropdown';
-import { Calculator } from '../../calculator/components/calculator';
+import { Calculator } from '../../calculator/components/hub/calculator';
 import { SelectedVariable } from '../../calculator/components/selectedVariable';
 import { LeftSideUtil } from '../../calculator/components/leftSideUtil';
 import { VariableDefinitions } from '../../calculator/components/variableDefinitions';
@@ -33,7 +33,7 @@ export function Tab() {
 			tV[key] = ''
 		}
 	}
-	if(type === 'array'){
+	if(type === 'array' || type === 'array_expression'){
 		tVArray[Object.keys(tV)[0]]= tV[Object.keys(tV)[0]]
 		for(let i = 0; i < Object.keys(tV).filter(val => val !== Object.keys(tV)[0]).length; i++){
 			tVArray.array[Object.keys(tV).filter(val => val !== Object.keys(tV)[0])[i]] = tV[Object.keys(tV).filter(val => val !== Object.keys(tV)[0])[i]]

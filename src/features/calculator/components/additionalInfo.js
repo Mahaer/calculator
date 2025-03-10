@@ -14,11 +14,10 @@ export function AdditionalInfo({mode, type}){
                 <div>
                     <label key={`feature_given_1`}>
                         <h3>{' - '}</h3>
-                        <h4>Use the up/down arrows to switch between inputs</h4>
-                    </label>
-                    <label key={`feature_given_2`}>
-                        <h3>{' - '}</h3>
-                        <h4>Also use tab/shift + tab to switch as well</h4>
+                        <span>
+                            <h4>Use the up/down arrow keys</h4>
+                            <h4>to switch between inputs</h4>
+                        </span>
                     </label>
                     {type === 'array'
                         ?(
@@ -37,7 +36,6 @@ export function AdditionalInfo({mode, type}){
                     }
                     {tD.moreInfo.features ? (
                     tD.moreInfo.features.map((feature, index) => {
-                        // Check if feature contains <br> and split it
                         const featureParts = feature.split('<br>');
                         
                         return (

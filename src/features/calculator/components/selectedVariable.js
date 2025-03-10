@@ -193,5 +193,5 @@ export function SelectedVariable(props){
                 </span>           
             </div>
         )
-    }
+    } 
 }

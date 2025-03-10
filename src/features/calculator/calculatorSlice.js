@@ -3,10 +3,173 @@ import { createSlice } from '@reduxjs/toolkit';
 const initialState = {
 	tabData:[
 		{
+			name: 'Addition',
+			type: 'array_expression',
+			defaultVariable: 'S',
+			defaultLeftSideUtilValue: '2',
+			startCharacter: '(',
+			endCharacter: ')',
+			wrapCharacters: true,
+			splitCharacter: '+',
+			lessThanZeroParen:true,
+			variables:[
+				'S', [
+					'a',
+					'b'
+				]
+			]
+		},{
+			name: 'Subtraction',
+			type: 'array_expression',
+			defaultVariable: 'D',
+			defaultLeftSideUtilValue: '2',
+			startCharacter: '(',
+			endCharacter: ')',
+			wrapCharacters: true,
+			splitCharacter: '-',
+			lessThanZeroParen:true,
+			variables:[
+				'D', [
+					'a',
+					'b'
+				]
+			]
+		},{
+			name: 'Multiplication',
+			type: 'array_expression',
+			defaultVariable: 'P',
+			defaultLeftSideUtilValue: '2',
+			startCharacter: '(',
+			endCharacter: ')',
+			wrapCharacters: true,
+			splitCharacter: '×',
+			lessThanZeroParen:true,
+			variables:[
+				'P', [
+					'a',
+					'b'
+				]
+			]
+		},{
+			name: 'Division',
+			type: 'array_expression',
+			defaultVariable: 'Q',
+			defaultLeftSideUtilValue: '2',
+			startCharacter: '(',
+			endCharacter: ')',
+			wrapCharacters: true,
+			splitCharacter: '÷',
+			lessThanZeroParen:true,
+			variables:[
+				'Q', [
+					'a',
+					'b'
+				]
+			]
+		},{
+			name: 'Modulus (Remainder)',
+			type: 'formula_expression',
+			formula: 'r = a % b',
+			defaultVariable: 'r',
+			variables: [
+				'r', 'a', 'b'
+			],
+			units: {},
+			formatTypes: {},
+			calculationType: {},
+			leftSideUtil: {},
+		},{
+			name: 'Factorial',
+			type: 'formula_expression',
+			formula: 'x = n!',
+			defaultVariable: 'x',
+			variables: [
+				'x', 'n'
+			],
+			units: {},
+			formatTypes: {},
+			calculationType: {},
+			leftSideUtil: {},
+		},{
+			name: 'Square',
+			type: 'formula_expression',
+			formula: 'y = x^2',
+			defaultVariable: 'y',
+			variables: [
+				'y', 'x'
+			],
+			units: {},
+			formatTypes: {},
+			calculationType: {},
+			leftSideUtil: {},
+		},{
+			name: 'Cube',
+			type: 'formula_expression',
+			formula: 'y = x^3',
+			defaultVariable: 'y',
+			variables: [
+				'y', 'x'
+			],
+			units: {},
+			formatTypes: {},
+			calculationType: {},
+			leftSideUtil: {},
+		},{
+			name: 'Nth Power',
+			type: 'formula_expression',
+			formula: 'y = x^n',
+			defaultVariable: 'y',
+			variables: [
+				'y', 'x', 'n'
+			],
+			units: {},
+			formatTypes: {},
+			calculationType: {},
+			leftSideUtil: {},
+		},{
+			name: 'Square Root',
+			type: 'formula_expression',
+			formula: 'y = sqrt(x)',
+			defaultVariable: 'y',
+			variables: [
+				'y', 'x'
+			],
+			units: {},
+			formatTypes: {},
+			calculationType: {},
+			leftSideUtil: {},
+		},{
+			name: 'Cube Root',
+			type: 'formula_expression',
+			formula: 'y = cbrt(x)',
+			defaultVariable: 'y',
+			variables: [
+				'y', 'x'
+			],
+			units: {},
+			formatTypes: {},
+			calculationType: {},
+			leftSideUtil: {},
+		},{
+			name: 'Nth Root',
+			type: 'formula_expression',
+			formula: 'y = n root of x',
+			defaultVariable: 'y',
+			variables: [
+				'y', 'x', 'n'
+			],
+			units: {},
+			formatTypes: {},
+			calculationType: {},
+			leftSideUtil: {},
+		},{
 			name: 'Algebraic Addition',
 			type: 'array',
 			defaultVariable: 'S',
 			defaultLeftSideUtilValue: '2',
+			startCharacter: '(',
+			endCharacter: ')',
+			wrapCharacters: true,
 			splitCharacter: '+',
 			variables:[
 				'S', [
@@ -25,6 +188,9 @@ const initialState = {
 			type: 'array',
 			defaultVariable: 'D',
 			defaultLeftSideUtilValue: '2',
+			startCharacter: '(',
+			endCharacter: ')',
+			wrapCharacters: true,
 			splitCharacter: '-',
 			variables:[
 				'D', [
@@ -43,6 +209,9 @@ const initialState = {
 			type: 'array',
 			defaultVariable: 'P',
 			defaultLeftSideUtilValue: '2',
+			startCharacter: '(',
+			endCharacter: ')',
+			wrapCharacters: true,
 			splitCharacter: '×',
 			variables:[
 				'P', [
@@ -54,6 +223,27 @@ const initialState = {
 			definitions: [
 				'Product',
 				'Factors'
+			],
+			moreInfo: {}
+		},{
+			name: 'Algebraic Division',
+			type: 'array',
+			defaultVariable: 'Q',
+			defaultLeftSideUtilValue: '2',
+			startCharacter: '(',
+			endCharacter: ')',
+			wrapCharacters: true,
+			splitCharacter: '÷',
+			variables:[
+				'Q', [
+					'a',
+					'b'
+				]
+			],
+			lessThanZeroParen:true,
+			definitions: [
+				'Quotient',
+				'Dividend/Divisor'
 			],
 			moreInfo: {}
 		},{
@@ -567,18 +757,40 @@ export const calculatorSlice = createSlice({
 					state.tabs.push({
 						id:newId,
 						mode: currentTabData.name,
-						type: 'formula',
+						type: currentTabData.type,
 						variables: currentTabData.variables.reduce((acc, curr) => ({ ...acc, [curr]: curr }), {}),
 						selectedVariable: currentTabData.defaultVariable,
 						leftSideUtilValue: currentTabData.defaultLeftSideUtilValue,
 						answer: 'Error: missing variable/s',
 						conversions: {}
 					})
-				} else if(currentTabData.type === 'array'){
+				} else if(currentTabData.type === 'formula_expression'){
+					state.tabs.push({
+						id:newId,
+						mode: currentTabData.name,
+						type: currentTabData.type,
+						variables: currentTabData.variables.reduce((acc, curr) => ({ ...acc, [curr]: curr }), {}),
+						selectedVariable: currentTabData.defaultVariable,
+						leftSideUtilValue: currentTabData.defaultLeftSideUtilValue,
+						answer: 'Error: missing variable/s',
+						conversions: {}
+					})
+				}else if(currentTabData.type === 'array'){
 					state.tabs.push({
 						id:newId,
 						mode:currentTabData.name,
-						type:'array',
+						type:currentTabData.type,
+						variables: { [currentTabData.variables[0]]: currentTabData.variables[0], ...currentTabData.variables[1].reduce((acc, item) => ({ ...acc, [item]: item }), {}) },
+						selectedVariable: currentTabData.defaultVariable,
+						leftSideUtilValue: currentTabData.defaultLeftSideUtilValue,
+						arrayVar: 'a',
+						answer: 'Error: missing variable/s'
+					})
+				} else if(currentTabData.type === 'array_expression'){
+					state.tabs.push({
+						id:newId,
+						mode:currentTabData.name,
+						type:currentTabData.type,
 						variables: { [currentTabData.variables[0]]: currentTabData.variables[0], ...currentTabData.variables[1].reduce((acc, item) => ({ ...acc, [item]: item }), {}) },
 						selectedVariable: currentTabData.defaultVariable,
 						leftSideUtilValue: currentTabData.defaultLeftSideUtilValue,

@@ -1,6 +1,6 @@
-import { Fraction } from "./features/calculator/components/fraction"
-import { create, all } from 'mathjs'
-import { MathRoot } from "./features/calculator/components/mathRoot"
+import { Fraction } from "./features/calculator/components/hub/fraction"
+import { MathRoot } from "./features/calculator/components/hub/mathRoot"
+import { create, all, isUndefined } from "mathjs"
 const math = create(all)
 
 export const nonSerializedFormulaData = {
@@ -44,17 +44,20 @@ export const nonSerializedFormulaData = {
         str !== '.0000' &&
         !isNaN(Number(str))
     ),
-    checkVar: (variables, selectedVariable, variable,{ lessThanZeroParen=false, paren=false, sub=false, subVar=false, subVal='', topBar=false, minusOne=false} = {}) => {
+    checkVar: (variables, selectedVariable, variable,{ lessThanZeroParen=false, paren=false, sub=false, subVar=false, subVal='', topBar=false, minusOne=false, format='standard'} = {}) => {
         if(!lessThanZeroParen && !paren && !sub && !topBar && !minusOne){
             return variables[variable] !== '' && variables[variable] !== undefined 
-            ? (isNaN(Number(variables[variable])) 
+            ? (!isNaN(Number(variables[variable]))
                 ? <span style={selectedVariable === variable
                     ? {color: 'darkred'}
                     : {}}>{variable}
                   </span>
                 : <span style={selectedVariable === variable
                     ? {color: 'darkred'}
-                    : {}}>{math.round(variables[variable], nonSerializedFormulaData.roundingValue)}
+                    : {}}>{String(variables[variable]).includes(',')
+                        ? variable
+                        : nonSerializedFormulaData.formatValue(variables[variable], format)
+                        }
                   </span>)
             : <span style={selectedVariable === variable
                 ? {color: 'darkred'}
@@ -65,7 +68,7 @@ export const nonSerializedFormulaData = {
                 ? <span style={selectedVariable === variable? {color: 'darkred'}: {}}>{variable}</span>
                 : <span style={selectedVariable === variable
                     ? {color: 'darkred'}
-                    : {}}>{`(${math.round(variables[variable], nonSerializedFormulaData.roundingValue)})`}
+                    : {}}>{`(${nonSerializedFormulaData.formatValue(variables[variable], format)})`}
                   </span>)
             : <span style={selectedVariable === variable? {color: 'darkred'}: {}}>{variable}</span>
         } else if(lessThanZeroParen && !sub && !topBar && !minusOne){
@@ -75,11 +78,11 @@ export const nonSerializedFormulaData = {
                     :(variables[variable] < 0
                         ?<span style={selectedVariable === variable
                             ? {color: 'darkred'}
-                            : {}}>{`(${math.round(variables[variable], nonSerializedFormulaData.roundingValue)})`}
+                            : {}}>{`(${nonSerializedFormulaData.formatValue(variables[variable], format)})`}
                           </span>
                         :<span style={selectedVariable === variable
                             ? {color: 'darkred'}
-                            : {}}>{math.round(variables[variable], nonSerializedFormulaData.roundingValue)}
+                            : {}}>{nonSerializedFormulaData.formatValue(variables[variable], format)}
                           </span>))
                 : <span style={selectedVariable === variable? {color: 'darkred'}: {}}>{variable}</span>
         } else if(sub && !lessThanZeroParen && !paren && !subVar && !topBar && !minusOne){
@@ -88,7 +91,7 @@ export const nonSerializedFormulaData = {
                     ? (<span style={selectedVariable === variable? {color: 'darkred'}: {}}>{variable.split('_')[0]}<sub>{variable.split('_')[1]}</sub></span>) 
                     :<span style={selectedVariable === variable
                         ? {color: 'darkred'}
-                        : {}}>{math.round(variables[variable], nonSerializedFormulaData.roundingValue)}
+                        : {}}>{nonSerializedFormulaData.formatValue(variables[variable], format)}
                       </span>)
                 : (<span style={selectedVariable === variable? {color: 'darkred'}: {}}>{variable.split('_')[0]}<sub>{variable.split('_')[1]}</sub></span>)
         } else if(sub && paren && !subVar && !topBar && !minusOne){
@@ -97,7 +100,7 @@ export const nonSerializedFormulaData = {
                     ? (<span style={selectedVariable === variable? {color: 'darkred'}: {}}>{variable.split('_')[0]}<sub>{variable.split('_')[1]}</sub></span>) 
                     :<span style={selectedVariable === variable
                         ? {color: 'darkred'}
-                        : {}}>{`(${math.round(variables[variable], nonSerializedFormulaData.roundingValue)})`}
+                        : {}}>{`(${nonSerializedFormulaData.formatValue(variables[variable], format)})`}
                       </span>)
                 : (<span style={selectedVariable === variable? {color: 'darkred'}: {}}>{variable.split('_')[0]}<sub>{variable.split('_')[1]}</sub></span>)
         } else if(sub && lessThanZeroParen && !subVar && !topBar && !minusOne){
@@ -107,9 +110,9 @@ export const nonSerializedFormulaData = {
                     :(variables[variable] < 0
                         ? <span style={selectedVariable === variable
                             ? {color: 'darkred'}
-                            : {}}>{`(${math.round(variables[variable], nonSerializedFormulaData.roundingValue)})`}
+                            : {}}>{`(${nonSerializedFormulaData.formatValue(variables[variable], format)})`}
                           </span>
-                        :math.round(variables[variable], nonSerializedFormulaData.roundingValue))) 
+                        : nonSerializedFormulaData.formatValue(variables[variable], format))) 
                     : (<span style={selectedVariable === variable? {color: 'darkred'}: {}}>{variable.split('_')[0]}<sub>{variable.split('_')[1]}</sub></span>)
         } else if(sub && !lessThanZeroParen && !paren && subVar && !topBar && !minusOne){
             return variables[variable] !== '' && variables[variable] !== undefined 
@@ -117,7 +120,7 @@ export const nonSerializedFormulaData = {
                 ? (<span style={selectedVariable === variable? {color: 'darkred'}: {}}>{variable.split('_')[0]}<sub>{subVal}</sub></span>) 
                 :<span style={selectedVariable === variable
                     ? {color: 'darkred'}
-                    : {}}>{math.round(variables[variable], nonSerializedFormulaData.roundingValue)}
+                    : {}}>{nonSerializedFormulaData.formatValue(variables[variable], format)}
                   </span>)
             : (<span style={selectedVariable === variable? {color: 'darkred'}: {}}>{variable.split('_')[0]}<sub>{subVal}</sub></span>)
         } else if(sub && !lessThanZeroParen && !paren && subVar && !topBar && minusOne){
@@ -126,7 +129,7 @@ export const nonSerializedFormulaData = {
                 ? (<span style={selectedVariable === variable? {color: 'darkred'}: {}}>{variable.split('_')[0]}<sub>{subVal}-1</sub></span>) 
                 :<span style={selectedVariable === variable
                     ? {color: 'darkred'}
-                    : {}}>{math.round(variables[variable], nonSerializedFormulaData.roundingValue)}
+                    : {}}>{nonSerializedFormulaData.formatValue(variables[variable], format)}
                   </span>) 
             : (<span style={selectedVariable === variable? {color: 'darkred'}: {}}>{variable.split('_')[0]}<sub>{subVal}-1</sub></span>)
         } else if(topBar && !lessThanZeroParen && !paren && !sub && !minusOne){
@@ -143,7 +146,7 @@ export const nonSerializedFormulaData = {
                    </span>)
                 :<span style={selectedVariable === variable
                     ? {color: 'darkred'}
-                    : {}}>{math.round(variables[variable], nonSerializedFormulaData.roundingValue)}
+                    : {}}>{nonSerializedFormulaData.formatValue(variables[variable], format)}
                   </span>) 
             : (<span style={selectedVariable === variable
                 ? {color: 'darkred', display:'inline-flex', flexDirection: 'column', alignItems: 'center'}
@@ -156,7 +159,752 @@ export const nonSerializedFormulaData = {
                </span>)
         }
     },
+    formatValue: (value, type='standard') => {
+        if(String(value).includes('i') 
+            || String(value) === '-'
+            || String(value) === '.'
+            || String(value) === '-.'
+            || String(value) === '-0'
+            || String(value) === '-0.'
+            || String(value) === '-.0'
+            || String(value) === '-.00'
+            || String(value) === '-.000'
+            || String(value) === '-.0000'
+            || String(value) === '-0.0'
+            || String(value) === '-0.00'
+            || String(value) === '-0.000'
+            || String(value) === '-0.0000'
+            || String(value) === '-00'
+            || String(value) === '-00.'
+            || String(value) === '-00.0'
+            || String(value) === '-00.00'
+            || String(value) === '-00.000'
+            || String(value) === '-00.0000'
+            || String(value) === '-000'
+            || String(value) === '-000.'
+            || String(value) === '-000.0'
+            || String(value) === '-000.00'
+            || String(value) === '-000.000'
+            || String(value) === '-000.0000'
+            || String(value) === '-0000'
+            || String(value) === '-0000.'
+            || String(value) === '-0000.0'
+            || String(value) === '-0000.00'
+            || String(value) === '-0000.000'
+            || String(value) === '-0000.0000'
+            || String(value) === '.0'
+            || String(value) === '.00'
+            || String(value) === '.000'
+            || String(value) === '.0000'
+            || String(value).startsWith('-e')
+            || String(value).startsWith('-.e')
+        ){
+            return value
+        } else if(type === 'money'){
+            return Number(value).toFixed(2)
+        } else {
+            return math.round(value, nonSerializedFormulaData.roundingValue)
+        }
+    },
     roundingValue:4,
+    'Addition': {
+        'math': (selectedVariable, variables) => {
+            let updatedVariables = {...variables}
+            let result = 0
+            for(let key in variables){
+                if(key === updatedVariables[key]){
+                    updatedVariables[key] = ''
+                }
+            }
+
+            let keys = Object.keys(variables).filter(val => val !== Object.keys(variables)[0])
+            let values = []
+            for(let i = 0; i < keys.length; i++){
+                values.push(variables[keys[i]])
+            }
+            switch(selectedVariable){
+                case 'S':
+                    if(nonSerializedFormulaData.check([...values])){
+                        result = math.sum(values)
+                    } else {
+                        result = 'Error: missing variable/s'
+                    }
+                    break;
+                default:
+                    result = 'Error'
+                    break;
+            }
+            if(result || result === 0){
+                if(String(result) === 'Infinity'){
+                    result = 'Error: result is too large'
+                    return result
+                } else {
+                    if(String(result) === '-Infinity'){
+                        result = 'Error: result is too small'
+                        return result
+                    } else {
+                        return result
+                    }
+                }
+            } else {
+                result = 'Error'
+                return result
+            }
+        }
+    },
+    'Subtraction': {
+        'math': (selectedVariable, variables) => {
+            let updatedVariables = {...variables}
+            let result = 0
+            for(let key in variables){
+                if(key === updatedVariables[key]){
+                    updatedVariables[key] = ''
+                }
+            }
+
+            let keys = Object.keys(variables).filter(val => val !== Object.keys(variables)[0])
+            let values = []
+            for(let i = 0; i < keys.length; i++){
+                values.push(variables[keys[i]])
+            }
+            switch(selectedVariable){
+                case 'D':
+                    if(nonSerializedFormulaData.check([...values])){
+                        result = values.reduce((acc, curr) => acc - curr)
+                    } else {
+                        result = 'Error: missing variable/s'
+                    }
+                    break;
+                default:
+                    result = 'Error'
+                    break;
+            }
+            if(result || result === 0){
+                if(String(result) === 'Infinity'){
+                    result = 'Error: result is too large'
+                    return result
+                } else {
+                    if(String(result) === '-Infinity'){
+                        result = 'Error: result is too small'
+                        return result
+                    } else {
+                        return result
+                    }
+                }
+            } else {
+                result = 'Error'
+                return result
+            }
+        }
+    },
+    'Multiplication': {
+        'math': (selectedVariable, variables) => {
+            let updatedVariables = {...variables}
+            let result = 0
+            for(let key in variables){
+                if(key === updatedVariables[key]){
+                    updatedVariables[key] = ''
+                }
+            }
+
+            let keys = Object.keys(variables).filter(val => val !== Object.keys(variables)[0])
+            let values = []
+            for(let i = 0; i < keys.length; i++){
+                values.push(variables[keys[i]])
+            }
+            switch(selectedVariable){
+                case 'P':
+                    if(nonSerializedFormulaData.check([...values])){
+                        result = values.reduce((acc, curr) => acc * curr)
+                    } else {
+                        result = 'Error: missing variable/s'
+                    }
+                    break;
+                default:
+                    result = 'Error'
+                    break;
+            }
+            if(result || result === 0){
+                if(String(result) === 'Infinity'){
+                    result = 'Error: result is too large'
+                    return result
+                } else {
+                    if(String(result) === '-Infinity'){
+                        result = 'Error: result is too small'
+                        return result
+                    } else {
+                        return result
+                    }
+                }
+            } else {
+                result = 'Error'
+                return result
+            }
+        }
+    },
+    'Division': {
+        'math': (selectedVariable, variables) => {
+            let updatedVariables = {...variables}
+            let result = 0
+            for(let key in variables){
+                if(key === updatedVariables[key]){
+                    updatedVariables[key] = ''
+                }
+            }
+            let keys = Object.keys(variables).filter(val => val !== Object.keys(variables)[0])
+            let values = []
+            for(let i = 0; i < keys.length; i++){
+                i===0 || !nonSerializedFormulaData.check([variables[keys[i]]])
+                    ?values.push(variables[keys[i]])
+                    :( Number(variables[keys[i]]) === 0
+                        ? values.push('Error: cannot divide by zero')
+                        : values.push(String(1 / variables[keys[i]]))
+                    )
+            }
+            switch(selectedVariable){
+                case 'Q':
+                    for(let i = 0; i < values.length; i++){
+                        if(String(values[i]) === 'Error: cannot divide by zero'){
+                            result = 'Error: cannot divide by zero'
+                            break;
+                        }
+                    }
+                    if (result === 'Error: cannot divide by zero') {
+                        break;
+                    }
+                    if(nonSerializedFormulaData.check([...values])){
+                        result = values.reduce((acc, num) => acc * num);
+                    } else {
+                        result = 'Error: missing variable/s'
+                    }
+                    break;
+                default:
+                    result = 'Error: try refreshing the page'
+                    break;
+            }
+            if(result || result === 0){
+                if(String(result) === 'Infinity'){
+                    result = 'Error: result is too large'
+                    return result
+                } else {
+                    if(String(result) === '-Infinity'){
+                        result = 'Error: result is too small'
+                        return result
+                    } else {
+                        return result
+                    }
+                }
+            } else {
+                result = 'Error'
+                return result
+            }
+        }
+    },
+    'Modulus (Remainder)': {
+        'display': (variables, selectedVariable) => (
+            <>
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'r')}
+                &nbsp;=&nbsp;
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'a')}
+                &nbsp;%&nbsp;
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'b', {lessThanZeroParen:true})}
+            </>
+        ),
+        'math':(selectedVariable, variables) => {
+            let updatedVariables = {...variables}
+            for(let key in variables){
+                if(key === updatedVariables[key]){
+                    updatedVariables[key] = ''
+                }
+            }
+            let {a, b} = updatedVariables
+
+            let result = 0
+            switch(selectedVariable){
+                case 'r':
+                    if(nonSerializedFormulaData.check([a, b])){
+                        if (Number(b) !== 0) {
+                            result = math.mod(a, b)
+                            break;
+                        } else {
+                            result = 'Error: cannot divide by zero';
+                            break;
+                        }
+                    } else {
+                        result = 'Error: missing variable/s'
+                        break;
+                    }
+                default:
+                    result = 'Error'
+                    break;
+            }
+            if(result || result === 0){
+                if(String(result) === 'Infinity'){
+                    result = 'Error: result is too large'
+                    return result
+                } else {
+                    if(String(result) === '-Infinity'){
+                        result = 'Error: result is too small'
+                        return result
+                    } else {
+                        return result
+                    }
+                }
+            } else {
+                result = 'Error'
+                return result
+            }
+        }
+    },
+    'Factorial': {
+        'display': (variables, selectedVariable) => (
+            <>
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'x')}
+                &nbsp;=&nbsp;
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'n', {lessThanZeroParen:true})}
+                !
+            </>
+        ),
+        'math':(selectedVariable, variables) => {
+            let updatedVariables = {...variables}
+            for(let key in variables){
+                if(key === updatedVariables[key]){
+                    updatedVariables[key] = ''
+                }
+            }
+            let {n} = updatedVariables
+
+            let result = 0
+            switch(selectedVariable){
+                case 'x':
+                    if(nonSerializedFormulaData.check([n])){
+                        if (Number(n) < 0 && Number.isInteger(Number(n))) {
+                            result = 'Error: undefined for negative integers'
+                            break;
+                        } else {
+                            result = math.gamma(Number(n) + 1)
+                            break;
+                        }
+                    } else {
+                        result = 'Error: missing variable/s'
+                        break;
+                    }
+                default:
+                    result = 'Error'
+                    break;
+            }
+            if(result || result === 0){
+                if(String(result) === 'Infinity'){
+                    result = 'Error: result is too large'
+                    return result
+                } else {
+                    if(String(result) === '-Infinity'){
+                        result = 'Error: result is too small'
+                        return result
+                    } else {
+                        return result
+                    }
+                }
+            } else {
+                result = 'Error'
+                return result
+            }
+        }
+    },
+    'Square': {
+        'display': (variables, selectedVariable) => (
+            <>
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'y')}
+                &nbsp;=&nbsp;
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'x', {lessThanZeroParen:true})}
+                <sup>2</sup>
+            </>
+        ),
+        'math':(selectedVariable, variables) => {
+            let updatedVariables = {...variables}
+            for(let key in variables){
+                if(key === updatedVariables[key]){
+                    updatedVariables[key] = ''
+                }
+            }
+            let {x} = updatedVariables
+
+            let result = 0
+            switch(selectedVariable){
+                case 'y':
+                    if(nonSerializedFormulaData.check([x])){
+                        result = math.pow(x, 2)
+                        break;
+                    } else {
+                        result = 'Error: missing variable/s'
+                        break;
+                    }
+                default:
+                    result = 'Error'
+                    break;
+            }
+            if(result || result === 0){
+                if(String(result) === 'Infinity'){
+                    result = 'Error: result is too large'
+                    return result
+                } else {
+                    if(String(result) === '-Infinity'){
+                        result = 'Error: result is too small'
+                        return result
+                    } else {
+                        return result
+                    }
+                }
+            } else {
+                result = 'Error'
+                return result
+            }
+        }
+    },
+    'Cube': {
+        'display': (variables, selectedVariable) => (
+            <>
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'y')}
+                &nbsp;=&nbsp;
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'x', {lessThanZeroParen:true})}
+                <sup>3</sup>
+            </>
+        ),
+        'math':(selectedVariable, variables) => {
+            let updatedVariables = {...variables}
+            for(let key in variables){
+                if(key === updatedVariables[key]){
+                    updatedVariables[key] = ''
+                }
+            }
+            let {x} = updatedVariables
+
+            let result = 0
+            switch(selectedVariable){
+                case 'y':
+                    if(nonSerializedFormulaData.check([x])){
+                        result = math.pow(x, 3)
+                        break;
+                    } else {
+                        result = 'Error: missing variable/s'
+                        break;
+                    }
+                default:
+                    result = 'Error'
+                    break;
+            }
+            if(result || result === 0){
+                if(String(result) === 'Infinity'){
+                    result = 'Error: result is too large'
+                    return result
+                } else {
+                    if(String(result) === '-Infinity'){
+                        result = 'Error: result is too small'
+                        return result
+                    } else {
+                        return result
+                    }
+                }
+            } else {
+                result = 'Error'
+                return result
+            }
+        }
+    },
+    'Nth Power': {
+        'display': (variables, selectedVariable) => (
+            <>
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'y')}
+                &nbsp;=&nbsp;
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'x', {lessThanZeroParen:true})}
+                <sup>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'n', {lessThanZeroParen:true})}</sup>
+            </>
+        ),
+        'math':(selectedVariable, variables) => {
+            let updatedVariables = {...variables}
+            for(let key in variables){
+                if(key === updatedVariables[key]){
+                    updatedVariables[key] = ''
+                }
+            }
+            let {x, n} = updatedVariables
+
+            let result = 0
+            switch(selectedVariable){
+                case 'y':
+                    if(nonSerializedFormulaData.check([x, n])){
+                        if(Number(x) === 0 && Number(n) < 0){
+                            result = 'Error: n cannot be < 0 for x = 0'
+                            break;
+                        } else {
+                            if(Number(x) < 0 && (Number(n) % 1 !== 0)){
+                                const complexResult = math.pow(x, n)
+                                const re = math.round(complexResult.re, 3)
+                                const im = math.round(complexResult.im, 3)
+                                if(im === 0){
+                                    result = `${re}`
+                                } else if(im > 0){
+                                    result = `${re !== 0? `${re} +`: ''} ${im !== 1? im:''}i`
+                                } else if(im < 0){
+                                    result = `${re !== 0? `${re} -`: ''} ${math.abs(im) !== 1?math.abs(im):''}i`
+                                } else {
+                                    result = 'Error'
+                                }
+                                break;
+                            } else {
+                                result = math.pow(x, n)
+                                break;
+                            }
+                        }
+                    } else {
+                        result = 'Error: missing variable/s'
+                        break;
+                    }
+                default:
+                    result = 'Error'
+                    break;
+            }
+            if(result || result === 0){
+                if(String(result) === 'Infinity'){
+                    result = 'Error: result is too large'
+                    return result
+                } else {
+                    if(String(result) === '-Infinity'){
+                        result = 'Error: result is too small'
+                        return result
+                    } else {
+                        return result
+                    }
+                }
+            } else {
+                result = 'Error'
+                return result
+            }
+        }
+    },
+    'Square Root': {
+        'display': (variables, selectedVariable) => (
+            <>
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'y')}
+                &nbsp;=&nbsp;
+                <MathRoot styling='normal'>
+                    <>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'x')}</p>
+                    </>
+                </MathRoot>
+            </>
+        ),
+        'math':(selectedVariable, variables) => {
+            let updatedVariables = {...variables}
+            for(let key in variables){
+                if(key === updatedVariables[key]){
+                    updatedVariables[key] = ''
+                }
+            }
+            let {x} = updatedVariables
+
+            let result = 0
+            switch(selectedVariable){
+                case 'y':
+                    if(nonSerializedFormulaData.check([x])){
+                        if(Number(x) < 0){
+                            const complexResult = math.pow(x, 0.5)
+                            const re = math.round(complexResult.re, 3)
+                            const im = math.round(complexResult.im, 3)
+                            if(im === 0){
+                                result = `${re}`
+                            } else if(im > 0){
+                                result = `${re !== 0? `${re} +`: ''} ${im !== 1? im:''}i`
+                            } else if(im < 0){
+                                result = `${re !== 0? `${re} -`: ''} ${math.abs(im) !== 1?math.abs(im):''}i`
+                            } else {
+                                result = 'Error'
+                            }
+                            break;
+                        } else {
+                            result = math.pow(x, 0.5)
+                            break;
+                        }
+                    } else {
+                        result = 'Error: missing variable/s'
+                        break;
+                    }
+                default:
+                    result = 'Error'
+                    break;
+            }
+            if(result || result === 0){
+                if(String(result) === 'Infinity'){
+                    result = 'Error: result is too large'
+                    return result
+                } else {
+                    if(String(result) === '-Infinity'){
+                        result = 'Error: result is too small'
+                        return result
+                    } else {
+                        return result
+                    }
+                }
+            } else {
+                result = 'Error'
+                return result
+            }
+        }
+    },
+    'Cube Root': {
+        'display': (variables, selectedVariable) => (
+            <>
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'y')}
+                &nbsp;=&nbsp;
+                <MathRoot styling='normal'>
+                    <>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'x')}</p>
+                        <p>3</p>
+                    </>
+                </MathRoot>
+            </>
+        ),
+        'math':(selectedVariable, variables) => {
+            let updatedVariables = {...variables}
+            for(let key in variables){
+                if(key === updatedVariables[key]){
+                    updatedVariables[key] = ''
+                }
+            }
+            let {x} = updatedVariables
+
+            let result = 0
+            switch(selectedVariable){
+                case 'y':
+                    if(nonSerializedFormulaData.check([x])){
+                        if(Number(x) < 0){
+                            const complexResult = math.pow(x, (1 / 3))
+                            const re = math.round(complexResult.re, 3)
+                            const im = math.round(complexResult.im, 3)
+                            if(im === 0){
+                                result = `${re}`
+                            } else if(im > 0){
+                                result = `${re !== 0? `${re} +`: ''} ${im !== 1? im:''}i`
+                            } else if(im < 0){
+                                result = `${re !== 0? `${re} -`: ''} ${math.abs(im) !== 1?math.abs(im):''}i`
+                            } else {
+                                result = 'Error'
+                            }
+                            break;
+                        } else {
+                            result = math.pow(x, (1 / 3))
+                            break;
+                        }
+                    } else {
+                        result = 'Error: missing variable/s'
+                        break;
+                    }
+                default:
+                    result = 'Error'
+                    break;
+            }
+            if(result || result === 0){
+                if(String(result) === 'Infinity'){
+                    result = 'Error: result is too large'
+                    return result
+                } else {
+                    if(String(result) === '-Infinity'){
+                        result = 'Error: result is too small'
+                        return result
+                    } else {
+                        return result
+                    }
+                }
+            } else {
+                result = 'Error'
+                return result
+            }
+        }
+    },
+    'Nth Root': {
+        'display': (variables, selectedVariable) => (
+            <>
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'y')}
+                &nbsp;=&nbsp;
+                <MathRoot styling='normal'>
+                    <>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'x')}</p>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'n')}</p>
+                    </>
+                </MathRoot>
+            </>
+        ),
+        'math':(selectedVariable, variables) => {
+            let updatedVariables = {...variables}
+            for(let key in variables){
+                if(key === updatedVariables[key]){
+                    updatedVariables[key] = ''
+                }
+            }
+            let {x, n} = updatedVariables
+
+            let result = 0
+            switch(selectedVariable){
+                case 'y':
+                    if(nonSerializedFormulaData.check([x, n])){
+                        if(Number(x) === 0 && Number(n) < 0){
+                            result = 'Error: cannot take negative roots if x = 0'
+                            break;
+                        } else {
+                            if(Number(n) !== 0){
+                                if(Number(x) < 0){
+                                    const complexResult = math.pow(x, (1 / n))
+                                    if(!isUndefined(complexResult?.re)){
+                                        const re = math.round(complexResult.re, 3)
+                                        const im = math.round(complexResult.im, 3)
+                                        if(im === 0){
+                                            result = `${re}`
+                                        } else if(im > 0){
+                                            result = `${re !== 0? `${re} +`: ''} ${im !== 1? im:''}i`
+                                        } else if(im < 0){
+                                            result = `${re !== 0? `${re} -`: ''} ${math.abs(im) !== 1?math.abs(im):''}i`
+                                        } else {
+                                            result = 'Error'
+                                        }
+                                    } else {
+                                        result = complexResult
+                                    }
+                                    break;
+                                } else {
+                                    result = math.pow(x, (1 / n))
+                                    break;
+                                }
+                            } else {
+                                result = 'Error: cannot take zeroth root'
+                                break;
+                            }
+                        }
+                    } else {
+                        result = 'Error: missing variable/s'
+                        break;
+                    }
+                default:
+                    result = 'Error'
+                    break;
+            }
+            if(result || result === 0){
+                if(String(result) === 'Infinity'){
+                    result = 'Error: result is too large'
+                    return result
+                } else {
+                    if(String(result) === '-Infinity'){
+                        result = 'Error: result is too small'
+                        return result
+                    } else {
+                        return result
+                    }
+                }
+            } else {
+                result = 'Error'
+                return result
+            }
+        }
+    },
     'Algebraic Addition': {
         'math': (selectedVariable, variables) => {
             let updatedVariables = {...variables}
@@ -324,6 +1072,96 @@ export const nonSerializedFormulaData = {
             }
         }
     },
+    'Algebraic Division': {
+        'math': (selectedVariable, variables) => {
+            let updatedVariables = {...variables}
+            let result = 0
+            for(let key in variables){
+                if(key === updatedVariables[key]){
+                    updatedVariables[key] = ''
+                }
+            }
+            let {Q} = updatedVariables
+            let keys = Object.keys(variables).filter(val => val !== Object.keys(variables)[0])
+            let values = []
+            for(let i = 0; i < keys.length; i++){
+                i===0 || !nonSerializedFormulaData.check([variables[keys[i]]])
+                    ?values.push(variables[keys[i]])
+                    :( Number(variables[keys[i]]) === 0
+                        ? values.push('Error: cannot divide by zero')
+                        : values.push(String(1 / variables[keys[i]]))
+                    )
+            }
+            switch(selectedVariable){
+                case 'Q':
+                    for(let i = 0; i < values.length; i++){
+                        if(String(values[i]) === 'Error: cannot divide by zero'){
+                            result = 'Error: cannot divide by zero'
+                            break;
+                        }
+                    }
+                    if (result === 'Error: cannot divide by zero') {
+                        break;
+                    }
+                    if(nonSerializedFormulaData.check([...values])){
+                        result = values.reduce((acc, num) => acc * num);
+                    } else {
+                        result = 'Error: missing variable/s'
+                    }
+                    break;
+                default:
+                    keys = (Object.keys(variables).filter(val => val !== Object.keys(variables)[0] && val !== selectedVariable))
+                    values = []
+                    for(let i = 0; i < keys.length; i++){
+                        values.push(variables[keys[i]])
+                    }
+                    if(selectedVariable === 'a'){
+                        for(let i = 0; i < values.length; i++){
+                            if(Number(values[i]) === 0){
+                                result = 'Error: cannot divide by zero'
+                                break;
+                            }
+                        }
+                    } else {
+                        for(let i = 0; i < values.length; i++){
+                            if(Number(values[i]) === 0 && i !== 0){
+                                result = 'Error: cannot divide by zero'
+                                break;
+                            }
+                        }   
+                    }
+                    if (result === 'Error: cannot divide by zero') {
+                        break;
+                    }
+                    if(nonSerializedFormulaData.check([...values, Q])){
+                        if(selectedVariable === 'a'){
+                            result = values.reduce((acc, num) => acc * num) * Q;
+                        } else {
+                            result = values.reduce((acc, num) => acc / num) / Q;
+                        }
+                    } else {
+                        result = 'Error: missing variable/s'
+                    }
+                    break;
+            }
+            if(result || result === 0){
+                if(String(result) === 'Infinity'){
+                    result = 'Error: result is too large'
+                    return result
+                } else {
+                    if(String(result) === '-Infinity'){
+                        result = 'Error: result is too small'
+                        return result
+                    } else {
+                        return result
+                    }
+                }
+            } else {
+                result = 'Error'
+                return result
+            }
+        }
+    },
     'Algebraic Proportions': {
         'display': (variables, selectedVariable) => (
             <>
@@ -333,7 +1171,7 @@ export const nonSerializedFormulaData = {
                         <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'b')}</p>
                     </>
                 </Fraction>
-                <h3>&nbsp;=&nbsp;</h3>
+                &nbsp;=&nbsp;
                 <Fraction parsing='children' size='35px'>
                     <>
                         <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'c')}</p>
@@ -777,7 +1615,11 @@ export const nonSerializedFormulaData = {
                                 const root1 = math.divide(math.subtract(-b, sqrtDiscriminant), denominator);
                                 const root2 = math.divide(math.add(-b, sqrtDiscriminant), denominator);
                             
-                                result = `${math.round(root1, 5)}, ${math.round(root2, 5)}`;
+                                if(math.round(root1, 5) === math.round(root2, 5)){
+                                    result = `${math.round(root1, 5)}`
+                                } else {
+                                    result = `${math.round(root1, 5)}, ${math.round(root2, 5)}`;
+                                }
                             }
                         } else {
                             result = 'Error: a cannot be zero';
@@ -1794,9 +2636,9 @@ export const nonSerializedFormulaData = {
     'Compound Interest': {
         'display':(variables, selectedVariable) => (
             <>
-                {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'A')}
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'A', {format:'money'})}
                 &nbsp;=&nbsp;
-                {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'P')}
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'P', {format:'money'})}
                 {`(`}
                 1&nbsp;+&nbsp; 
                 <Fraction 
