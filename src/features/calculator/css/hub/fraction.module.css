@@ -1,3 +1,8 @@
+.fractionWrapper{
+    display: flex;
+    align-items: center;
+    white-space: pre;
+}
 .fraction{
     width: min-content;
     font-family:var(--math-font);
@@ -26,4 +31,7 @@
 }
 .fraction p sup span{
     font-size: 20px;
+}
+.fraction .normalP{
+    font-size: 40px;
 }

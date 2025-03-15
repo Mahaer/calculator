@@ -51,7 +51,7 @@ const initialState = {
 					  	'Algebraic Division',
 						'Algebraic Proportions'
 					],
-					'Polynomial Equations and Functions': [
+					'Polynomial Equations': [
 					  	'Slope Intercept Form',
 					  	'Slope',
 					  	'General Form of a Quadratic',
@@ -63,14 +63,11 @@ const initialState = {
 					  	'Subtract Polynomials',
 					  	'Multiply Polynomials',
 					  	'Divide Polynomials',
-					  	'Absolute Value Function'
 					]
 				},
 				{
-					'Systems of Equations': [
-					  	'Two Variable Systems',
-					  	'Three Variable Systems',
-					  	'Systems with more than three Variables'
+					'Functions': [
+						'Absolute Value Function'
 					],
 					'Sequences and Series': [
 					  	'Arithmetic Sequence (Explicit Formula)',
@@ -86,7 +83,7 @@ const initialState = {
 					  	'Algebraic Addition of Complex Numbers',
 					  	'Algebraic Subtraction of Complex Numbers',
 					  	'Algebraic Multiplication of Complex Numbers',
-					  	'Algebraic Division of Compelx Numbers',
+					  	'Algebraic Division of Complex Numbers',
 					  	'Polar form',
 					  	'Euler\'s formula',
 					  	'Complex conjugate'
@@ -180,7 +177,6 @@ const initialState = {
 						'Ellipse',
 						'Regular Pentagon',
 						'Regular Hexagon',
-						'Regular Heptagon',
 						'Regular Octagon'
 					],
 					'3D Shape Diagrams': [

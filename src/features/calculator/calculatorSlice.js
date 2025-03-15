@@ -163,6 +163,116 @@ const initialState = {
 			calculationType: {},
 			leftSideUtil: {},
 		},{
+			name: 'Adding Fractions',
+			type: 'formula_expression',
+			formula: 'S = a/b + c/d',
+			fraction: true,
+			defaultVariable: 'S',
+			variables: [
+				'S', 'a', 'b', 'c', 'd'
+			],
+			units: {
+				S: 'Fraction'
+			},
+			formatTypes: {},
+			calculationType: {},
+			leftSideUtil: {},
+		},{
+			name: 'Subtracting Fractions',
+			type: 'formula_expression',
+			formula: 'D = a/b - c/d',
+			fraction: true,
+			defaultVariable: 'D',
+			variables: [
+				'D', 'a', 'b', 'c', 'd'
+			],
+			units: {
+				D: 'Fraction'
+			},
+			formatTypes: {},
+			calculationType: {},
+			leftSideUtil: {},
+		},{
+			name: 'Multiplying Fractions',
+			type: 'formula_expression',
+			formula: 'P = a/b * c/d',
+			defaultVariable: 'P',
+			variables: [
+				'P', 'a', 'b', 'c', 'd'
+			],
+			units: {
+				P: 'Fraction'
+			},
+			formatTypes: {},
+			calculationType: {},
+			leftSideUtil: {},
+		},{
+			name: 'Dividing Fractions',
+			type: 'formula_expression',
+			formula: 'Q = a/b ÷ c/d',
+			defaultVariable: 'Q',
+			variables: [
+				'Q', 'a', 'b', 'c', 'd'
+			],
+			units: {
+				Q: 'Fraction'
+			},
+			formatTypes: {},
+			calculationType: {},
+			leftSideUtil: {},
+		},{
+			name: 'Adding Complex Numbers',
+			type: 'formula_expression',
+			formula: 'S = (a/b + (c/d)i) + (e/f + (g/h)i)',
+			fraction: true,
+			defaultVariable: 'S',
+			variables: [
+				'S', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'
+			],
+			units: {},
+			formatTypes: {},
+			calculationType: {},
+			leftSideUtil: {},
+		},{
+			name: 'Subtracting Complex Numbers',
+			type: 'formula_expression',
+			formula: 'D = (a/b + (c/d)i) - (e/f + (g/h)i)',
+			fraction: true,
+			defaultVariable: 'D',
+			variables: [
+				'D', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'
+			],
+			units: {},
+			formatTypes: {},
+			calculationType: {},
+			leftSideUtil: {},
+		},{
+			name: 'Multiplying Complex Numbers',
+			type: 'formula_expression',
+			formula: 'P = (a/b + (c/d)i) * (e/f + (g/h)i)',
+			fraction: true,
+			defaultVariable: 'P',
+			variables: [
+				'P', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'
+			],
+			units: {},
+			formatTypes: {},
+			calculationType: {},
+			leftSideUtil: {},
+		},{
+			name: 'Dividing Complex Numbers',
+			type: 'formula_expression',
+			formula: 'Q = (a/b + (c/d)i) * (e/f + (g/h)i)',
+			fraction: true,
+			defaultVariable: 'Q',
+			variables: [
+				'Q', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'
+			],
+			units: {},
+			formatTypes: {},
+			calculationType: {},
+			leftSideUtil: {},
+		},{
 			name: 'Algebraic Addition',
 			type: 'array',
 			defaultVariable: 'S',
@@ -775,7 +885,7 @@ export const calculatorSlice = createSlice({
 						answer: 'Error: missing variable/s',
 						conversions: {}
 					})
-				}else if(currentTabData.type === 'array'){
+				} else if(currentTabData.type === 'array'){
 					state.tabs.push({
 						id:newId,
 						mode:currentTabData.name,

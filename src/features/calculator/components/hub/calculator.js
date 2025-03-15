@@ -66,7 +66,7 @@ export function Calculator(props) {
                 i++;
             }
         }
-        
+        console.log(groups)
         let formattedGroups = JSON.parse(JSON.stringify(groups));
 
         for (i = 0; i < formattedGroups.length; i++) {
@@ -91,13 +91,16 @@ export function Calculator(props) {
         }
 
         for (const variable in variableList) {
-            const value = variableList[variable];
+            const value = String(variableList[variable]).includes('|[')
+                        &&String(variableList[variable]).includes('|[')
+                            ? String(variableList[variable]).split('|[')[0]
+                            : variableList[variable]
             const replacement = value || variable;
             newFormula = newFormula.replace(new RegExp(`\\b${variable}\\b`, 'g'), replacement);
         }
 
         return newFormula
-    }
+    } // Fix this
     const getRoundedValue = (answer, variable) => {
         try{
             if(answer === ''){
@@ -164,16 +167,42 @@ export function Calculator(props) {
         const regex = /^-?\d*\.?\d*(e[+-]?\d*)?$/;
         const input = e.target;
         const cursorPos = input.selectionStart;
-        
         if (regex.test(newValue) && tV[variable] !== newValue) {
             dispatch(updateInputs({ 
-                id: tabId, variable, 
+                id: tabId, 
+                variable: variable, 
                 value: newValue
             }));
-            const updatedVariables = { 
-                ...tV, 
-                [variable]: newValue
-            };
+            let updatedVariables = {}
+            if(type === 'formula_expression' && 
+                (!isUndefined(tD.fraction)? tD.fraction: false) &&
+                ("acegikmoqsuwy".includes(variable)) &&
+                (e.nativeEvent.inputType !== 'deleteContentBackward')
+            ) {
+                const nextVar = String.fromCharCode(variable.charCodeAt(0) + 1)
+                if(currentTab.variables[nextVar] === nextVar || !currentTab.variables[nextVar]){
+                    dispatch(updateInputs({
+                        id: tabId,
+                        variable: nextVar,
+                        value: '1'
+                    }))
+                    updatedVariables = { 
+                        ...tV, 
+                        [variable]: newValue,
+                        [nextVar]: '1'
+                    };
+                } else {
+                    updatedVariables = { 
+                        ...tV, 
+                        [variable]: newValue
+                    };
+                }
+            } else {
+                updatedVariables = { 
+                    ...tV, 
+                    [variable]: newValue
+                };
+            }
             const answer = nonSerializedFormulaData[mode]['math'](currentTab.selectedVariable, updatedVariables);
             dispatch(getAnswer({ id: tabId, answer: answer, selectedVariable: currentTab.selectedVariable }));
         }
@@ -200,7 +229,7 @@ export function Calculator(props) {
                 } else if (nextIndex >= keys.length) {
                     nextIndex = 0;
                 }
-    
+                
             } while (
                 nextIndex >= 0 &&
                 nextIndex < keys.length &&
@@ -265,7 +294,7 @@ export function Calculator(props) {
             formattedValue = value
         }
         if(formattedValue === '-'
-            || formattedValue === '-.'
+            || (formattedValue === '-.'
             || formattedValue === '.'
             || formattedValue === '-0'
             || formattedValue === '-0.'
@@ -300,7 +329,7 @@ export function Calculator(props) {
             || formattedValue === '.000'
             || formattedValue === '.0000'
             || String(formattedValue).startsWith('-e')
-            || String(formattedValue).startsWith('-.e')
+            || String(formattedValue).startsWith('-.e'))
         ){
             formattedValue = ''
         }
@@ -316,8 +345,7 @@ export function Calculator(props) {
             answer: nonSerializedFormulaData[mode]['math'](currentTab.selectedVariable, tV),
             selectedVariable: currentTab.selectedVariable
         }));
-    };
-
+    }; 
     if(type === 'formula'){
         return (
             <div className={styles.calculator}>
@@ -403,7 +431,13 @@ export function Calculator(props) {
                                     />
                                 )
                         }
-                        <h3>{tD.units[currentTab.selectedVariable] === 'DecimalPercentage' || tD.units[currentTab.selectedVariable] === 'DecimalFraction' || tD.units[currentTab.selectedVariable] === undefined? '': tD.units[currentTab.selectedVariable]}</h3>
+                        <h3>{tD.units[currentTab.selectedVariable] === 'DecimalPercentage' 
+                        || tD.units[currentTab.selectedVariable] === 'DecimalFraction'
+                        || tD.units[currentTab.selectedVariable] === 'Fraction'
+                        || tD.units[currentTab.selectedVariable] === undefined
+                            ? ''
+                            : tD.units[currentTab.selectedVariable]
+                        }</h3>
                         {
                             tD.units[currentTab.selectedVariable] !== '' && tD.units[currentTab.selectedVariable] !== undefined
                             && (currentTab.selectedVariable !== tD.leftSideUtil.omittedVariable
@@ -420,10 +454,7 @@ export function Calculator(props) {
             <div className={styles.calculator}>
                 <div className={styles.formula}>
                     <h1>{mode} Calculator</h1>
-                    <div>
-                        <h3 
-                            onCopy={(e) => handleCopy(e, tD.formula)}
-                        >{nonSerializedFormulaData[mode]['display'](Object.keys(tD.variables), currentTab.selectedVariable)}</h3>
+                    <div>  
                         <h3 
                             onCopy={(e) => handleCopy(e, getCopyFormula(tD.formula, tV))} 
                             style={{marginTop:'10px'}}
@@ -433,25 +464,87 @@ export function Calculator(props) {
                 <div className={styles.enter}>
                     <h2>Enter:</h2>
                     <div className={styles.variables}>
-                        {Object.keys(tV).map((variable, index) => (
-                            (index !== 0 && <Variable
-                                styles={styles}
-                                getRoundedValue={getRoundedValue}
-                                handleInputChange={handleInputChange}
-                                handleKeyDown={handleKeyDown}
-                                handleBlur={handleBlur}
-                                currentTab={currentTab}
-                                tabVariables={tabVariables}
-                                tD={tD}
-                                tV={tV}
-                                tVArray={tVArray}
-                                variable={variable}
-                                index={index}
-                                key={index}
-                                minWidth={9}
-                                placeholder={'Enter Here'}
-                            />)
-                        ))}
+                        {(() => {
+                            const tVArray = {array: {...tV}}
+                            delete tVArray.array[Object.keys(tVArray.array)[0]]
+                            let variableConfig = {
+                                columnCount: 1,
+                                minWidth: 9,
+                                placeholder: 'Enter Here',
+                            }
+                            if(Object.keys(tVArray.array).length < 8){
+                                variableConfig = {
+                                    columnCount: 1,
+                                    minWidth: 9,
+                                    placeholder: 'Enter Here',
+                                }
+                            } else if (Object.keys(tVArray.array).length < 13){
+                                variableConfig = {
+                                    columnCount: 2,
+                                    minWidth: 6,
+                                    placeholder: 'Enter',
+                                }
+                            } else if (Object.keys(tVArray.array).length < 19){
+                                variableConfig = {
+                                    columnCount: 3,
+                                    minWidth: 5,
+                                    placeholder: 'Enter',
+                                    scrunch: true
+                                }
+                            } else {
+                                variableConfig = {
+                                    columnCount: 5,
+                                    minWidth: 2,
+                                    placeholder: '',
+                                    scrunch: true
+                                }
+                            }
+                            return (
+                                <div>
+                                    {(() => {
+                                        const variables = Object.keys(tVArray.array);
+                                        const columnCount = variableConfig.columnCount;
+                                        const rowCount = Math.ceil(variables.length / columnCount);
+
+                                        return Array.from({ length: rowCount }).map((_, rowIndex, arr) => (
+                                        <div key={rowIndex} className={styles.flex}>
+                                            {Array.from({ length: columnCount }).map((_, colIndex) => {
+                                            const varIndex = rowIndex + colIndex * rowCount;
+                                            const currentVar = variables[varIndex];
+                                            if (!currentVar) return null;
+                                            
+                                            return (
+                                                <React.Fragment key={varIndex}>
+                                                    <Variable
+                                                        styles={styles}
+                                                        getRoundedValue={getRoundedValue}
+                                                        handleInputChange={handleInputChange}
+                                                        handleKeyDown={handleKeyDown}
+                                                        handleBlur={handleBlur}
+                                                        currentTab={currentTab}
+                                                        tabVariables={tabVariables}
+                                                        tD={tD}
+                                                        tV={tV}
+                                                        tVArray={tVArray}
+                                                        variable={currentVar}
+                                                        index={varIndex+1}
+                                                        key={varIndex}
+                                                        minWidth={variableConfig.minWidth}
+                                                        placeholder={variableConfig.placeholder}
+                                                        scrunch={variableConfig.scrunch}
+                                                    />
+                                                    {varIndex !== variables.length - 1 && Object.keys(tVArray.array).length > 7
+                                                        && <h3 className={styles.comma}>,</h3>
+                                                    }
+                                                </React.Fragment>
+                                            );
+                                            })}
+                                        </div>
+                                        ));
+                                    })()}
+                                </div>
+                            )
+                        })()}
                     </div>
                 </div>
                 <div className={styles.answer}>
@@ -490,17 +583,33 @@ export function Calculator(props) {
                                         type='text'
                                         placeholder=''
                                         aria-label='answer'
-                                        value={getRoundedValue(currentTab.answer, currentTab.selectedVariable)}
+                                        value={(
+                                            String(getRoundedValue(currentTab.answer, currentTab.selectedVariable)).includes('|[') && 
+                                            String(getRoundedValue(currentTab.answer, currentTab.selectedVariable)).includes(']|')
+                                                ? getRoundedValue(String(currentTab.answer).split('|[')[0], currentTab.selectedVariable)
+                                                : getRoundedValue(currentTab.answer, currentTab.selectedVariable)
+                                        )}
                                         spellCheck='false'
                                         readOnly
                                         style={{
                                             minWidth:'10ch',
-                                            width: `${Math.max(8, String(getRoundedValue(currentTab.answer, currentTab.selectedVariable))?.length || 0) + 1}ch`
+                                            width: `${Math.max(8, String((
+                                                String(getRoundedValue(currentTab.answer, currentTab.selectedVariable)).includes('|[') && 
+                                                String(getRoundedValue(currentTab.answer, currentTab.selectedVariable)).includes(']|')
+                                                    ? getRoundedValue(String(currentTab.answer).split('|[')[0], currentTab.selectedVariable)
+                                                    : getRoundedValue(currentTab.answer, currentTab.selectedVariable)
+                                            ))?.length || 0) + 1}ch`
                                         }} 
                                     />
                                 )
                         }
-                        <h3>{tD.units[currentTab.selectedVariable] === 'DecimalPercentage' || tD.units[currentTab.selectedVariable] === 'DecimalFraction' || tD.units[currentTab.selectedVariable] === undefined? '': tD.units[currentTab.selectedVariable]}</h3>
+                        <h3>{tD.units[currentTab.selectedVariable] === 'DecimalPercentage' 
+                        || tD.units[currentTab.selectedVariable] === 'DecimalFraction'
+                        || tD.units[currentTab.selectedVariable] === 'Fraction'
+                        || tD.units[currentTab.selectedVariable] === undefined
+                            ? ''
+                            : tD.units[currentTab.selectedVariable]
+                        }</h3>
                         {
                             tD.units[currentTab.selectedVariable] !== '' && tD.units[currentTab.selectedVariable] !== undefined
                             && (currentTab.selectedVariable !== tD.leftSideUtil.omittedVariable
@@ -512,7 +621,7 @@ export function Calculator(props) {
                 </div>
             </div>
         );
-    }else if(type === 'array'){
+    } else if(type === 'array'){
         return (
             <div className={`${styles.calculator} ${currentTab.leftSideUtilValue === '' || currentTab.leftSideUtilValue < 2 || currentTab.leftSideUtilValue > 25? styles.borderFade: ''}`}>
                 <div className={currentTab.leftSideUtilValue === '' || currentTab.leftSideUtilValue < 2 || currentTab.leftSideUtilValue > 25? styles.extraFade: ''}>

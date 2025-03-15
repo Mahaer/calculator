@@ -46,19 +46,94 @@ export const nonSerializedFormulaData = {
     ),
     checkVar: (variables, selectedVariable, variable,{ lessThanZeroParen=false, paren=false, sub=false, subVar=false, subVal='', topBar=false, minusOne=false, format='standard'} = {}) => {
         if(!lessThanZeroParen && !paren && !sub && !topBar && !minusOne){
-            return variables[variable] !== '' && variables[variable] !== undefined 
-            ? (!isNaN(Number(variables[variable]))
-                ? <span style={selectedVariable === variable
-                    ? {color: 'darkred'}
-                    : {}}>{variable}
-                  </span>
+            let displayVar = variables[variable]
+            if(String(displayVar).includes('|[') && String(displayVar).includes(']|')){
+                displayVar = String(displayVar).split('|[')[1].split(']|')[0]
+            }
+            return displayVar !== '' && displayVar !== undefined 
+            ? (isNaN(Number(displayVar))
+                ? (String(displayVar).includes('/')
+                    ? (String(displayVar).includes('i')
+                        ? <span style={{display:'flex', alignItems:'center', color:(selectedVariable === variable? 'darkred': 'black')}}>
+                            {
+                                String(displayVar).split('/')[0].startsWith('-')
+                                    ? '-'
+                                    : ''
+                            }
+                            {math.abs(Number(String(displayVar).split('/')[0])) === 0
+                                ? ''
+                                : (Number(String(displayVar).split('/')[1].split(' ')[0]) === 1
+                                    ?math.abs(Number(String(displayVar).split('/')[0]))
+                                    :<Fraction parsing='children' scrunch={true} color={selectedVariable === variable? 'darkred': 'black'}>
+                                        <>
+                                            <p>{math.abs(Number(String(displayVar).split('/')[0]))}</p>
+                                            <p>{String(displayVar).split('/')[1].split(' ')[0]}</p>
+                                        </>
+                                    </Fraction>
+                                )
+                            }
+                            {math.abs(Number(String(displayVar).split('/')[0])) === 0
+                            && String(displayVar).split('/')[1].split(' ')[1] === '+'
+                                ? ''
+                                : String(displayVar).split('/')[1].split(' ')[1]
+                            }
+                            {math.abs(Number(String(displayVar).split('/')[1].split('(')[1])) === 0
+                            || (math.abs(Number(String(displayVar).split('/')[1].split('(')[1])) === 1
+                            && Number(String(displayVar).split('/')[2].split(')')[0]) === 1)
+                                ? ''
+                                : (Number(String(displayVar).split('/')[2].split(')')[0]) === 1
+                                    ? math.abs(Number(String(displayVar).split('/')[1].split('(')[1]))
+                                    :<Fraction parsing='children' scrunch={true} color={selectedVariable === variable? 'darkred': 'black'}>
+                                        <>
+                                            <p>{math.abs(Number(String(displayVar).split('/')[1].split('(')[1]))}</p>
+                                            <p>{String(displayVar).split('/')[2].split(')')[0]}</p>
+                                        </>
+                                    </Fraction>)
+                            }
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 100" width="20" height="100">
+                                <text 
+                                    x="10" 
+                                    y="65" 
+                                    fontSize="50" 
+                                    textAnchor="middle" 
+                                    fill={selectedVariable === variable? 'darkred': 'black'}
+                                    fontFamily="Times New Roman, serif" 
+                                    fontStyle="italic"
+                                >
+                                i
+                                </text>
+                            </svg>
+                        </span>
+                        : <span style={{display:'flex', alignItems:'center', color:(selectedVariable === variable? 'darkred': 'black')}}>
+                            {
+                                String(displayVar).split('/')[0].startsWith('-')
+                                    ? '-'
+                                    : ''
+                            }
+                            {String(displayVar).split('/')[1].split(' ')[0] === '1'
+                                ? math.abs(Number(String(displayVar).split('/')[0]))
+                                : <Fraction parsing='children' scrunch={true} color={selectedVariable === variable? 'darkred': 'black'}>
+                                    <>
+                                        <p>{math.abs(Number(String(displayVar).split('/')[0]))}</p>
+                                        <p>{String(displayVar).split('/')[1].split(' ')[0]}</p>
+                                    </>
+                                </Fraction>
+                            }
+                        </span>
+                    )
+                    :<span style={selectedVariable === variable
+                        ? {color: 'darkred'}
+                        : {}}>{variable}
+                    </span>
+                  )
                 : <span style={selectedVariable === variable
                     ? {color: 'darkred'}
-                    : {}}>{String(variables[variable]).includes(',')
+                    : {}}>{String(displayVar).includes(',')
                         ? variable
-                        : nonSerializedFormulaData.formatValue(variables[variable], format)
+                        : nonSerializedFormulaData.formatValue(displayVar, format)
                         }
-                  </span>)
+                  </span>
+                  )
             : <span style={selectedVariable === variable
                 ? {color: 'darkred'}
                 : {}}>{variable}</span>
@@ -161,6 +236,7 @@ export const nonSerializedFormulaData = {
     },
     formatValue: (value, type='standard') => {
         if(String(value).includes('i') 
+            || String(value).includes('/')
             || String(value) === '-'
             || String(value) === '.'
             || String(value) === '-.'
@@ -881,6 +957,824 @@ export const nonSerializedFormulaData = {
                         }
                     } else {
                         result = 'Error: missing variable/s'
+                        break;
+                    }
+                default:
+                    result = 'Error'
+                    break;
+            }
+            if(result || result === 0){
+                if(String(result) === 'Infinity'){
+                    result = 'Error: result is too large'
+                    return result
+                } else {
+                    if(String(result) === '-Infinity'){
+                        result = 'Error: result is too small'
+                        return result
+                    } else {
+                        return result
+                    }
+                }
+            } else {
+                result = 'Error'
+                return result
+            }
+        }
+    },
+    'Adding Fractions': {
+        'display':(variables, selectedVariable) => (
+            <>
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'S')}
+                &nbsp;=&nbsp;
+                <Fraction parsing='children' negativeStyling={true}>
+                    <>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'a')}</p>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'b')}</p>
+                    </>
+                </Fraction>
+                &nbsp;+&nbsp;
+                <Fraction parsing='children' negativeStyling={true} lessThanZeroParen={true}>
+                    <>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'c')}</p>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'd')}</p>
+                    </>
+                </Fraction>
+            </>
+        ),
+        'math':(selectedVariable, variables) => {
+            let updatedVariables = {...variables}
+            for(let key in variables){
+                if(key === updatedVariables[key]){
+                    updatedVariables[key] = ''
+                }
+            }
+            let {a, b, c, d} = updatedVariables
+
+            let result = 0
+            switch(selectedVariable){
+                case 'S':
+                    if (nonSerializedFormulaData.check([a, b, c, d])) {
+                        if(Number(b) === 0 || Number(d) === 0){
+                            result = 'Error: cannot divide by zero'
+                        } else {
+                            const fraction1Decimal = a / b;
+                            const fraction2Decimal = c / d;
+                            const resultDecimal = fraction1Decimal + fraction2Decimal;
+                            const resultFraction = math.fraction(resultDecimal);
+                            result = `${String(resultFraction.s) === '-1'? '-': ''}${resultFraction.n}/${resultFraction.d}`;
+                        }
+                        break;
+                    } else {
+                        result = 'Error: missing variable/s';
+                        break;
+                    }
+                default:
+                    result = 'Error'
+                    break;
+            }
+            if(result || result === 0){
+                if(String(result) === 'Infinity'){
+                    result = 'Error: result is too large'
+                    return result
+                } else {
+                    if(String(result) === '-Infinity'){
+                        result = 'Error: result is too small'
+                        return result
+                    } else {
+                        return result
+                    }
+                }
+            } else {
+                result = 'Error'
+                return result
+            }
+        }
+    },
+    'Subtracting Fractions': {
+        'display':(variables, selectedVariable) => (
+            <>
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'D')}
+                &nbsp;=&nbsp;
+                <Fraction parsing='children' negativeStyling={true}>
+                    <>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'a')}</p>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'b')}</p>
+                    </>
+                </Fraction>
+                &nbsp;-&nbsp;
+                <Fraction parsing='children' negativeStyling={true} lessThanZeroParen={true}>
+                    <>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'c')}</p>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'd')}</p>
+                    </>
+                </Fraction>
+            </>
+        ),
+        'math':(selectedVariable, variables) => {
+            let updatedVariables = {...variables}
+            for(let key in variables){
+                if(key === updatedVariables[key]){
+                    updatedVariables[key] = ''
+                }
+            }
+            let {a, b, c, d} = updatedVariables
+
+            let result = 0
+            switch(selectedVariable){
+                case 'D':
+                    if (nonSerializedFormulaData.check([a, b, c, d])) {
+                        if(Number(b) === 0 || Number(d) === 0){
+                            result = 'Error: cannot divide by zero'
+                        } else {
+                            const fraction1Decimal = a / b;
+                            const fraction2Decimal = c / d;
+                            const resultDecimal = fraction1Decimal - fraction2Decimal;
+                            const resultFraction = math.fraction(resultDecimal);
+                            result = `${String(resultFraction.s) === '-1'? '-': ''}${resultFraction.n}/${resultFraction.d}`;
+                        }
+                        break;
+                    } else {
+                        result = 'Error: missing variable/s';
+                        break;
+                    }
+                default:
+                    result = 'Error'
+                    break;
+            }
+            if(result || result === 0){
+                if(String(result) === 'Infinity'){
+                    result = 'Error: result is too large'
+                    return result
+                } else {
+                    if(String(result) === '-Infinity'){
+                        result = 'Error: result is too small'
+                        return result
+                    } else {
+                        return result
+                    }
+                }
+            } else {
+                result = 'Error'
+                return result
+            }
+        }
+    },
+    'Multiplying Fractions': {
+        'display':(variables, selectedVariable) => (
+            <>
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'P')}
+                &nbsp;=&nbsp;
+                <Fraction parsing='children' negativeStyling={true}>
+                    <>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'a')}</p>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'b')}</p>
+                    </>
+                </Fraction>
+                &nbsp;×&nbsp;
+                <Fraction parsing='children' negativeStyling={true} lessThanZeroParen={true}>
+                    <>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'c')}</p>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'd')}</p>
+                    </>
+                </Fraction>
+            </>
+        ),
+        'math':(selectedVariable, variables) => {
+            let updatedVariables = {...variables}
+            for(let key in variables){
+                if(key === updatedVariables[key]){
+                    updatedVariables[key] = ''
+                }
+            }
+            let {a, b, c, d} = updatedVariables
+
+            let result = 0
+            switch(selectedVariable){
+                case 'P':
+                    if (nonSerializedFormulaData.check([a, b, c, d])) {
+                        if(Number(b) === 0 || Number(d) === 0){
+                            result = 'Error: cannot divide by zero'
+                        } else {
+                            const fraction1Decimal = a / b;
+                            const fraction2Decimal = c / d;
+                            const resultDecimal = fraction1Decimal * fraction2Decimal;
+                            const resultFraction = math.fraction(resultDecimal);
+                            result = `${String(resultFraction.s) === '-1'? '-': ''}${resultFraction.n}/${resultFraction.d}`;
+                        }
+                        break;
+                    } else {
+                        result = 'Error: missing variable/s';
+                        break;
+                    }
+                default:
+                    result = 'Error'
+                    break;
+            }
+            if(result || result === 0){
+                if(String(result) === 'Infinity'){
+                    result = 'Error: result is too large'
+                    return result
+                } else {
+                    if(String(result) === '-Infinity'){
+                        result = 'Error: result is too small'
+                        return result
+                    } else {
+                        return result
+                    }
+                }
+            } else {
+                result = 'Error'
+                return result
+            }
+        }
+    },
+    'Dividing Fractions': {
+        'display':(variables, selectedVariable) => (
+            <>
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'Q')}
+                &nbsp;=&nbsp;
+                <Fraction parsing='children' negativeStyling={true}>
+                    <>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'a')}</p>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'b')}</p>
+                    </>
+                </Fraction>
+                &nbsp;÷&nbsp;
+                <Fraction parsing='children' negativeStyling={true} lessThanZeroParen={true}>
+                    <>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'c')}</p>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'd')}</p>
+                    </>
+                </Fraction>
+            </>
+        ),
+        'math':(selectedVariable, variables) => {
+            let updatedVariables = {...variables}
+            for(let key in variables){
+                if(key === updatedVariables[key]){
+                    updatedVariables[key] = ''
+                }
+            }
+            let {a, b, c, d} = updatedVariables
+
+            let result = 0
+            switch(selectedVariable){
+                case 'Q':
+                    if (nonSerializedFormulaData.check([a, b, c, d])) {
+                        if(Number(b) === 0 || Number(d) === 0 || Number(c) === 0){
+                            result = 'Error: cannot divide by zero'
+                        } else {
+                            const fraction1Decimal = a / b;
+                            const fraction2Decimal = c / d;
+                            const resultDecimal = fraction1Decimal / fraction2Decimal;
+                            const resultFraction = math.fraction(resultDecimal);
+                            result = `${String(resultFraction.s) === '-1'? '-': ''}${resultFraction.n}/${resultFraction.d}`;
+                        }
+                        break;
+                    } else {
+                        result = 'Error: missing variable/s';
+                        break;
+                    }
+                default:
+                    result = 'Error'
+                    break;
+            }
+            if(result || result === 0){
+                if(String(result) === 'Infinity'){
+                    result = 'Error: result is too large'
+                    return result
+                } else {
+                    if(String(result) === '-Infinity'){
+                        result = 'Error: result is too small'
+                        return result
+                    } else {
+                        return result
+                    }
+                }
+            } else {
+                result = 'Error'
+                return result
+            }
+        }
+    },
+    'Adding Complex Numbers': {
+        'display': (variables, selectedVariable) => (
+            <>
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'S')}
+                &nbsp;=&nbsp;(
+                <Fraction parsing='children' negativeStyling={true}>
+                    <>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'a')}</p>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'b')}</p>
+                    </>
+                </Fraction>
+                <Fraction parsing='children' negativeStyling={true} addPlus={true} negParen={true}>
+                    <>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'c')}</p>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'd')}</p>
+                    </>
+                </Fraction>
+                
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 100" width="20" height="100">
+                    <text x="10" y="65" fontSize="50" textAnchor="middle" fill="black" fontFamily="Times New Roman, serif" fontStyle="italic">
+                    i
+                    </text>
+                </svg>)
+                +&nbsp;(
+                <Fraction parsing='children' negativeStyling={true}>
+                    <>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'e')}</p>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'f')}</p>
+                    </>
+                </Fraction>
+                <Fraction parsing='children' negativeStyling={true} addPlus={true} negParen={true}>
+                    <>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'g')}</p>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'h')}</p>
+                    </>
+                </Fraction>
+                
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 100" width="20" height="100">
+                    <text x="10" y="65" fontSize="50" textAnchor="middle" fill="black" fontFamily="Times New Roman, serif" fontStyle="italic">
+                    i
+                    </text>
+                </svg>)
+            </>
+        ),
+        'math':(selectedVariable, variables) => {
+            let updatedVariables = {...variables}
+            for(let key in variables){
+                if(key === updatedVariables[key]){
+                    updatedVariables[key] = ''
+                }
+            }
+            let {a, b, c, d, e, f, g, h} = updatedVariables
+
+            let result = 0
+            switch(selectedVariable){
+                case 'S':
+                    if (nonSerializedFormulaData.check([a, b, c, d, e, f, g, h])) {
+                        if(Number(b) !== 0 && Number(f) !== 0 && Number(d) !== 0 && Number(h) !== 0) {
+                            const fraction1Decimal = a / b;
+                            const fraction2Decimal = e / f;
+                            const resultDecimal = fraction1Decimal + fraction2Decimal;
+                            const resultFraction = math.fraction(resultDecimal);
+                            const fraction3Decimal = c / d;
+                            const fraction4Decimal = g / h;
+                            const resultDecimal2 = fraction3Decimal + fraction4Decimal;
+                            const resultFraction2 = math.fraction(resultDecimal2);
+                            const realPart = `${String(resultFraction.s) === '-1'? '-': ''}${resultFraction.n}/${resultFraction.d}`
+                            const imaginaryPart = `(${resultFraction2.n}/${resultFraction2.d})`
+                            const imaginaryDisplay = String(resultFraction2.n) !== '0' ? 'i' : '';
+                            const displayPart = `${realPart} ${String(resultFraction2.s) === '-1'
+                                ? '-'
+                                : '+'
+                            } ${imaginaryPart}${imaginaryDisplay}`;
+                            const scrunchedRealPart = (String(resultFraction.n) === '0'
+                                ? ''
+                                : (String(resultFraction.d) === '1' 
+                                    ? `${String(resultFraction.s) === '-1'? '-': ''}${resultFraction.n}`
+                                    : realPart
+                                )
+                            )
+                            const scrunchedImaginaryPart = (String(resultFraction2.d) === '1' 
+                                ? (String(resultFraction2.n) === '1'
+                                    ? ''
+                                    :(String(resultFraction2.n) === '0'
+                                        ? ''
+                                        :`${resultFraction2.n}`
+                                    )
+                                )
+                                : imaginaryPart
+                            )
+                            const inputPart = `${scrunchedRealPart}${String(resultFraction2.s) === '-1'
+                                ? (scrunchedRealPart === ''
+                                    ? '-'
+                                    : ' - '
+                                )
+                                : (scrunchedRealPart === '' || scrunchedImaginaryPart === ''
+                                    ? ''
+                                    : ' + '
+                                )
+                            }${scrunchedImaginaryPart}${imaginaryDisplay}`;
+                            result = `${inputPart===''?'0':inputPart}|[${displayPart}]|`
+                        } else {
+                            result = 'Error: cannot divide by zero'
+                        }
+                        break;
+                    } else {
+                        result = 'Error: missing variable/s';
+                        break;
+                    }
+                default:
+                    result = 'Error'
+                    break;
+            }
+            if(result || result === 0){
+                if(String(result) === 'Infinity'){
+                    result = 'Error: result is too large'
+                    return result
+                } else {
+                    if(String(result) === '-Infinity'){
+                        result = 'Error: result is too small'
+                        return result
+                    } else {
+                        return result
+                    }
+                }
+            } else {
+                result = 'Error'
+                return result
+            }
+        }
+    },
+    'Subtracting Complex Numbers': {
+        'display': (variables, selectedVariable) => (
+            <>
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'D')}
+                &nbsp;=&nbsp;(
+                <Fraction parsing='children' negativeStyling={true}>
+                    <>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'a')}</p>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'b')}</p>
+                    </>
+                </Fraction>
+                <Fraction parsing='children' negativeStyling={true} addPlus={true} negParen={true}>
+                    <>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'c')}</p>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'd')}</p>
+                    </>
+                </Fraction>
+                
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 100" width="20" height="100">
+                    <text x="10" y="65" fontSize="50" textAnchor="middle" fill="black" fontFamily="Times New Roman, serif" fontStyle="italic">
+                    i
+                    </text>
+                </svg>)
+                -&nbsp;(
+                <Fraction parsing='children' negativeStyling={true}>
+                    <>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'e')}</p>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'f')}</p>
+                    </>
+                </Fraction>
+                <Fraction parsing='children' negativeStyling={true} addPlus={true} negParen={true}>
+                    <>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'g')}</p>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'h')}</p>
+                    </>
+                </Fraction>
+                
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 100" width="20" height="100">
+                    <text x="10" y="65" fontSize="50" textAnchor="middle" fill="black" fontFamily="Times New Roman, serif" fontStyle="italic">
+                    i
+                    </text>
+                </svg>)
+            </>
+        ),
+        'math':(selectedVariable, variables) => {
+            let updatedVariables = {...variables}
+            for(let key in variables){
+                if(key === updatedVariables[key]){
+                    updatedVariables[key] = ''
+                }
+            }
+            let {a, b, c, d, e, f, g, h} = updatedVariables
+
+            let result = 0
+            switch(selectedVariable){
+                case 'D':
+                    if (nonSerializedFormulaData.check([a, b, c, d, e, f, g, h])) {
+                        if(Number(b) !== 0 && Number(f) !== 0 && Number(d) !== 0 && Number(h) !== 0) {
+                            const fraction1Decimal = a / b;
+                            const fraction2Decimal = e / f;
+                            const resultDecimal = fraction1Decimal - fraction2Decimal;
+                            const resultFraction = math.fraction(resultDecimal);
+                            const fraction3Decimal = c / d;
+                            const fraction4Decimal = g / h;
+                            const resultDecimal2 = fraction3Decimal - fraction4Decimal;
+                            const resultFraction2 = math.fraction(resultDecimal2);
+                            const realPart = `${String(resultFraction.s) === '-1'? '-': ''}${resultFraction.n}/${resultFraction.d}`
+                            const imaginaryPart = `(${resultFraction2.n}/${resultFraction2.d})`
+                            const imaginaryDisplay = String(resultFraction2.n) !== '0' ? 'i' : '';
+                            const displayPart = `${realPart} ${String(resultFraction2.s) === '-1'
+                                ? '-'
+                                : '+'
+                            } ${imaginaryPart}${imaginaryDisplay}`;
+                            const scrunchedRealPart = (String(resultFraction.n) === '0'
+                                ? ''
+                                : (String(resultFraction.d) === '1' 
+                                    ? `${String(resultFraction.s) === '-1'? '-': ''}${resultFraction.n}`
+                                    : realPart
+                                )
+                            )
+                            const scrunchedImaginaryPart = (String(resultFraction2.d) === '1' 
+                                ? (String(resultFraction2.n) === '1'
+                                    ? ''
+                                    :(String(resultFraction2.n) === '0'
+                                        ? ''
+                                        :`${resultFraction2.n}`
+                                    )
+                                )
+                                : imaginaryPart
+                            )
+                            const inputPart = `${scrunchedRealPart}${String(resultFraction2.s) === '-1'
+                                ? (scrunchedRealPart === ''
+                                    ? '-'
+                                    : ' - '
+                                )
+                                : (scrunchedRealPart === '' || scrunchedImaginaryPart === ''
+                                    ? ''
+                                    : ' + '
+                                )
+                            }${scrunchedImaginaryPart}${imaginaryDisplay}`;
+                            result = `${inputPart===''?'0':inputPart}|[${displayPart}]|`
+                        } else {
+                            result = 'Error: cannot divide by zero'
+                        }
+                        break;
+                    } else {
+                        result = 'Error: missing variable/s';
+                        break;
+                    }
+                default:
+                    result = 'Error'
+                    break;
+            }
+            if(result || result === 0){
+                if(String(result) === 'Infinity'){
+                    result = 'Error: result is too large'
+                    return result
+                } else {
+                    if(String(result) === '-Infinity'){
+                        result = 'Error: result is too small'
+                        return result
+                    } else {
+                        return result
+                    }
+                }
+            } else {
+                result = 'Error'
+                return result
+            }
+        }
+    },
+    'Multiplying Complex Numbers': {
+        'display': (variables, selectedVariable) => (
+            <>
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'P')}
+                &nbsp;=&nbsp;(
+                <Fraction parsing='children' negativeStyling={true}>
+                    <>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'a')}</p>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'b')}</p>
+                    </>
+                </Fraction>
+                <Fraction parsing='children' negativeStyling={true} addPlus={true} negParen={true}>
+                    <>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'c')}</p>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'd')}</p>
+                    </>
+                </Fraction>
+                
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 100" width="20" height="100">
+                    <text x="10" y="65" fontSize="50" textAnchor="middle" fill="black" fontFamily="Times New Roman, serif" fontStyle="italic">
+                    i
+                    </text>
+                </svg>)
+                ×&nbsp;(
+                <Fraction parsing='children' negativeStyling={true}>
+                    <>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'e')}</p>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'f')}</p>
+                    </>
+                </Fraction>
+                <Fraction parsing='children' negativeStyling={true} addPlus={true} negParen={true}>
+                    <>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'g')}</p>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'h')}</p>
+                    </>
+                </Fraction>
+                
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 100" width="20" height="100">
+                    <text x="10" y="65" fontSize="50" textAnchor="middle" fill="black" fontFamily="Times New Roman, serif" fontStyle="italic">
+                    i
+                    </text>
+                </svg>)
+            </>
+        ),
+        'math':(selectedVariable, variables) => {
+            let updatedVariables = {...variables}
+            for(let key in variables){
+                if(key === updatedVariables[key]){
+                    updatedVariables[key] = ''
+                }
+            }
+            let {a, b, c, d, e, f, g, h} = updatedVariables
+
+            let result = 0
+            switch(selectedVariable){
+                case 'P':
+                    if (nonSerializedFormulaData.check([a, b, c, d, e, f, g, h])) {
+                        if(Number(b) !== 0 && Number(f) !== 0 && Number(d) !== 0 && Number(h) !== 0) {
+                            const fractionReal1 = math.fraction(a / b);
+                            const fractionImag1 = math.fraction(c / d);
+                            const fractionReal2 = math.fraction(e / f);
+                            const fractionImag2 = math.fraction(g / h); 
+                            const complex1 = math.complex(
+                                math.number(fractionReal1), 
+                                math.number(fractionImag1)
+                            );
+                            const complex2 = math.complex(
+                                math.number(fractionReal2), 
+                                math.number(fractionImag2)
+                            );
+                            const resultFrac = math.multiply(complex1, complex2);
+                            const resultFraction = math.fraction(resultFrac.re);
+                            const resultFraction2 = math.fraction(resultFrac.im);
+                            const realPart = `${String(resultFraction.s) === '-1'? '-': ''}${resultFraction.n}/${resultFraction.d}`
+                            const imaginaryPart = `(${resultFraction2.n}/${resultFraction2.d})`
+                            const imaginaryDisplay = String(resultFraction2.n) !== '0' ? 'i' : '';
+                            const displayPart = `${realPart} ${String(resultFraction2.s) === '-1'
+                                ? '-'
+                                : '+'
+                            } ${imaginaryPart}${imaginaryDisplay}`;
+                            const scrunchedRealPart = (String(resultFraction.n) === '0'
+                                ? ''
+                                : (String(resultFraction.d) === '1' 
+                                    ? `${String(resultFraction.s) === '-1'? '-': ''}${resultFraction.n}`
+                                    : realPart
+                                )
+                            )
+                            const scrunchedImaginaryPart = (String(resultFraction2.d) === '1' 
+                                ? (String(resultFraction2.n) === '1'
+                                    ? ''
+                                    :(String(resultFraction2.n) === '0'
+                                        ? ''
+                                        :`${resultFraction2.n}`
+                                    )
+                                )
+                                : imaginaryPart
+                            )
+                            const inputPart = `${scrunchedRealPart}${String(resultFraction2.s) === '-1'
+                                ? (scrunchedRealPart === ''
+                                    ? '-'
+                                    : ' - '
+                                )
+                                : (scrunchedRealPart === '' || scrunchedImaginaryPart === ''
+                                    ? ''
+                                    : ' + '
+                                )
+                            }${scrunchedImaginaryPart}${imaginaryDisplay}`;
+                            result = `${inputPart===''?'0':inputPart}|[${displayPart}]|`
+                        } else {
+                            result = 'Error: cannot divide by zero'
+                        }
+                        break;
+                    } else {
+                        result = 'Error: missing variable/s';
+                        break;
+                    }
+                default:
+                    result = 'Error'
+                    break;
+            }
+            if(result || result === 0){
+                if(String(result) === 'Infinity'){
+                    result = 'Error: result is too large'
+                    return result
+                } else {
+                    if(String(result) === '-Infinity'){
+                        result = 'Error: result is too small'
+                        return result
+                    } else {
+                        return result
+                    }
+                }
+            } else {
+                result = 'Error'
+                return result
+            }
+        }
+    },
+    'Dividing Complex Numbers': {
+        'display': (variables, selectedVariable) => (
+            <>
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'Q')}
+                &nbsp;=&nbsp;(
+                <Fraction parsing='children' negativeStyling={true}>
+                    <>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'a')}</p>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'b')}</p>
+                    </>
+                </Fraction>
+                <Fraction parsing='children' negativeStyling={true} addPlus={true} negParen={true}>
+                    <>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'c')}</p>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'd')}</p>
+                    </>
+                </Fraction>
+                
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 100" width="20" height="100">
+                    <text x="10" y="65" fontSize="50" textAnchor="middle" fill="black" fontFamily="Times New Roman, serif" fontStyle="italic">
+                    i
+                    </text>
+                </svg>)
+                ÷&nbsp;(
+                <Fraction parsing='children' negativeStyling={true}>
+                    <>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'e')}</p>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'f')}</p>
+                    </>
+                </Fraction>
+                <Fraction parsing='children' negativeStyling={true} addPlus={true} negParen={true}>
+                    <>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'g')}</p>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'h')}</p>
+                    </>
+                </Fraction>
+                
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 100" width="20" height="100">
+                    <text x="10" y="65" fontSize="50" textAnchor="middle" fill="black" fontFamily="Times New Roman, serif" fontStyle="italic">
+                    i
+                    </text>
+                </svg>)
+            </>
+        ),
+        'math':(selectedVariable, variables) => {
+            let updatedVariables = {...variables}
+            for(let key in variables){
+                if(key === updatedVariables[key]){
+                    updatedVariables[key] = ''
+                }
+            }
+            let {a, b, c, d, e, f, g, h} = updatedVariables
+
+            let result = 0
+            switch(selectedVariable){
+                case 'Q':
+                    if (nonSerializedFormulaData.check([a, b, c, d, e, f, g, h])) {
+                        if(Number(e) === 0 && Number(g) === 0){
+                            result = 'Error: e and g cannot both be zero'
+                        } else {
+                            if(Number(b) !== 0 && Number(f) !== 0 && Number(d) !== 0 && Number(h) !== 0) {
+                                const fractionReal1 = math.fraction(a / b);
+                                const fractionImag1 = math.fraction(c / d);
+                                const fractionReal2 = math.fraction(e / f);
+                                const fractionImag2 = math.fraction(g / h); 
+                                const complex1 = math.complex(
+                                    math.number(fractionReal1), 
+                                    math.number(fractionImag1)
+                                );
+                                const complex2 = math.complex(
+                                    math.number(fractionReal2), 
+                                    math.number(fractionImag2)
+                                );
+                                const resultFrac = math.divide(complex1, complex2);
+                                const resultFraction = math.fraction(resultFrac.re);
+                                const resultFraction2 = math.fraction(resultFrac.im);
+                                const realPart = `${String(resultFraction.s) === '-1'? '-': ''}${resultFraction.n}/${resultFraction.d}`
+                                const imaginaryPart = `(${resultFraction2.n}/${resultFraction2.d})`
+                                const imaginaryDisplay = String(resultFraction2.n) !== '0' ? 'i' : '';
+                                const displayPart = `${realPart} ${String(resultFraction2.s) === '-1'
+                                    ? '-'
+                                    : '+'
+                                } ${imaginaryPart}${imaginaryDisplay}`;
+                                const scrunchedRealPart = (String(resultFraction.n) === '0'
+                                    ? ''
+                                    : (String(resultFraction.d) === '1' 
+                                        ? `${String(resultFraction.s) === '-1'? '-': ''}${resultFraction.n}`
+                                        : realPart
+                                    )
+                                )
+                                const scrunchedImaginaryPart = (String(resultFraction2.d) === '1' 
+                                    ? (String(resultFraction2.n) === '1'
+                                        ? ''
+                                        :(String(resultFraction2.n) === '0'
+                                            ? ''
+                                            :`${resultFraction2.n}`
+                                        )
+                                    )
+                                    : imaginaryPart
+                                )
+                                const inputPart = `${scrunchedRealPart}${String(resultFraction2.s) === '-1'
+                                    ? (scrunchedRealPart === ''
+                                        ? '-'
+                                        : ' - '
+                                    )
+                                    : (scrunchedRealPart === '' || scrunchedImaginaryPart === ''
+                                        ? ''
+                                        : ' + '
+                                    )
+                                }${scrunchedImaginaryPart}${imaginaryDisplay}`;
+                                result = `${inputPart===''?'0':inputPart}|[${displayPart}]|`
+                            } else {
+                                result = 'Error: cannot divide by zero'
+                            }
+                        }
+                        break;
+                    } else {
+                        result = 'Error: missing variable/s';
                         break;
                     }
                 default:

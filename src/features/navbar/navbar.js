@@ -7,7 +7,7 @@ export function Navbar() {
 			<div className={styles.siteName}>
 				<h1>
 					<span style={{color:'blue'}}>C</span>omplex
-					<span style={{color:'blue'}}>C</span>alculator.
+					<span style={{color:'blue'}}>C</span>alculators.
 					<span style={{color:'blue'}}>C</span>om
 				</h1>
 			</div>

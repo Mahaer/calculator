@@ -22,8 +22,11 @@ export function Variable(props){
         errorMsg,
         scrunch
     } = props
-
-    if (tD.type === 'formula' || tD.type === 'formula_expression'){
+    if (
+        tD.type === 'formula' 
+        || tD.type === 'formula_expression' 
+        || tD.type === 'formula_fraction_expression'
+    ){
         return (
             <div 
                 className={
@@ -33,8 +36,8 @@ export function Variable(props){
                         Object.keys(tD.fadedVariables).includes(variable) && 
                         !tD.fadedVariables[variable].includes(currentTab.selectedVariable)
                             ? styles.fade
-                            : null
-                        :null
+                            : ''
+                        :''
                     }`
                 } 
                 key={index}
@@ -86,7 +89,7 @@ export function Variable(props){
                         type='text' 
                         inputMode='numeric' 
                         value={variable === currentTab.selectedVariable
-                            ? getRoundedValue(currentTab.answer, variable) 
+                            ? getRoundedValue(currentTab.answer, variable)
                             : getRoundedValue(tV[variable], variable)
                         }
                         autoComplete='off'
@@ -100,7 +103,13 @@ export function Variable(props){
                         aria-label={`enter the ${variable} value here`}
                     />)
                 }
-                <h3>{tD.units[variable] === 'DecimalPercentage' || tD.units[variable] === 'DecimalFraction' || tD.units[variable] === undefined? '': tD.units[variable]}</h3>
+                <h3>{tD.units[currentTab.variables[variable]] === 'DecimalPercentage' 
+                || tD.units[currentTab.variables[variable]] === 'DecimalFraction'
+                || tD.units[currentTab.variables[variable]] === 'Fraction'
+                || tD.units[currentTab.variables[variable]] === undefined
+                    ? ''
+                    : tD.units[currentTab.variables[variable]]
+                }</h3>
                 {
                     currentTab.selectedVariable !== variable 
                     && tD.units[variable] !== '' && tD.units[variable] !== undefined

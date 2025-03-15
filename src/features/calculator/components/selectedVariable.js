@@ -54,7 +54,7 @@ export function SelectedVariable(props){
             selectedVariable: variable
         }));
 
-        if(type === 'array' && variable !== Object.keys(tVArray)[1]){
+        if((type === 'array') && variable !== Object.keys(tVArray)[1]){
             dispatch(changeArrayVar({id:tabId, value:variable}))
         }
     }
