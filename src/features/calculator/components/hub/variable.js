@@ -25,7 +25,7 @@ export function Variable(props){
     if (
         tD.type === 'formula' 
         || tD.type === 'formula_expression' 
-        || tD.type === 'formula_fraction_expression'
+        || tD.type === 'polynomial_expression'
     ){
         return (
             <div 
@@ -46,36 +46,40 @@ export function Variable(props){
                     ?<h3 style={{color: variable === currentTab.selectedVariable? 'darkred': 'black'}}>{variable.split('_')[0]}<sub><h3 style={{color: variable === currentTab.selectedVariable? 'darkred': 'black'}}>{variable.split('_')[1]}</h3></sub></h3>
                     :<h3 style={{color: variable === currentTab.selectedVariable? 'darkred': 'black'}}>{variable}</h3>
                 }
-                <h3>&nbsp;=</h3>
+                <h3 style={{marginLeft:(!isUndefined(scrunch)
+                    ? '-25px'
+                    : '0px'
+                )}}>&nbsp;=</h3>
                 {tabVariables[variable].includes(',') && variable === currentTab.selectedVariable
                     ? tabVariables[variable].split(',').map((value, index, array) => (
-                        <React.Fragment key={index}>
-                            <input 
-                                style={{
-                                    minWidth:`${minWidth}ch`,
-                                    width: `${Math.max(Number(minWidth), 
-                                        (variable === currentTab.selectedVariable
-                                            ? String(getRoundedValue(value), variable) 
-                                            : String(getRoundedValue(tV[variable], variable))
-                                        )?.length || 0) + 1}ch`,
-                                    color: `${variable === currentTab.selectedVariable? 'darkred' : (variable === tD.leftSideUtil.omittedVariable && currentTab.leftSideUtilValue !== 'Custom Value'? 'darkgreen': 'black')}`
-                                }}
-                                type='text' 
-                                inputMode='numeric' 
-                                value={getRoundedValue(value.trim(), variable)}
-                                autoComplete='off'
-                                autoCorrect='off'
-                                spellCheck='false'
-                                onChange={(e) => handleInputChange(e, variable)}
-                                onKeyDown={(e) => handleKeyDown(e, index)}
-                                name={variable}
-                                onBlur={(e) => handleBlur(e, variable)}
-                                placeholder=''
-                                aria-label={`enter the ${variable} value here`}
-                            />
-                            {index < array.length - 1 && <p key={`comma_${index}`} className={styles.comma}>, </p>}
-                        </React.Fragment>
-                    ))
+                            <React.Fragment key={index}>
+                                <input 
+                                    style={{
+                                        minWidth:`${minWidth}ch`,
+                                        width: `${Math.max(Number(minWidth), 
+                                            (variable === currentTab.selectedVariable
+                                                ? String(getRoundedValue(value), variable) 
+                                                : String(getRoundedValue(tV[variable], variable))
+                                            )?.length || 0) + 1}ch`,
+                                        color: `${variable === currentTab.selectedVariable? 'darkred' : (variable === tD.leftSideUtil.omittedVariable && currentTab.leftSideUtilValue !== 'Custom Value'? 'darkgreen': 'black')}`
+                                    }}
+                                    type='text' 
+                                    inputMode='numeric' 
+                                    value={getRoundedValue(value.trim(), variable)}
+                                    autoComplete='off'
+                                    autoCorrect='off'
+                                    spellCheck='false'
+                                    onChange={(e) => handleInputChange(e, variable)}
+                                    onKeyDown={(e) => handleKeyDown(e, index)}
+                                    name={variable}
+                                    onBlur={(e) => handleBlur(e, variable)}
+                                    placeholder=''
+                                    aria-label={`enter the ${variable} value here`}
+                                />
+                                {index < array.length - 1 && <p key={`comma_${index}`} className={styles.comma}>, </p>}
+                            </React.Fragment>
+                        )
+                    )
                     : (<input 
                         style={{
                             minWidth:`${minWidth}ch`,
@@ -84,7 +88,11 @@ export function Variable(props){
                                     ? String(getRoundedValue(currentTab.answer, variable)) 
                                     : String(getRoundedValue(tV[variable], variable))
                                 )?.length || 0) + 1}ch`,
-                            color: `${variable === currentTab.selectedVariable? 'darkred' : (variable === tD.leftSideUtil.omittedVariable && currentTab.leftSideUtilValue !== 'Custom Value'? 'darkgreen': 'black')}`
+                            color: `${variable === currentTab.selectedVariable? 'darkred' : (variable === tD.leftSideUtil.omittedVariable && currentTab.leftSideUtilValue !== 'Custom Value'? 'darkgreen': 'black')}`,
+                            marginLeft: (!isUndefined(scrunch)
+                                ? '0px'
+                                : '25px'
+                            )
                         }}
                         type='text' 
                         inputMode='numeric' 
@@ -103,13 +111,15 @@ export function Variable(props){
                         aria-label={`enter the ${variable} value here`}
                     />)
                 }
-                <h3>{tD.units[currentTab.variables[variable]] === 'DecimalPercentage' 
-                || tD.units[currentTab.variables[variable]] === 'DecimalFraction'
-                || tD.units[currentTab.variables[variable]] === 'Fraction'
-                || tD.units[currentTab.variables[variable]] === undefined
-                    ? ''
-                    : tD.units[currentTab.variables[variable]]
-                }</h3>
+                {!isUndefined(tD?.units?.[variable])
+                    ? (tD.units[variable] === 'DecimalPercentage' 
+                    || tD.units[variable] === 'DecimalFraction'
+                    || tD.units[variable] === 'Fraction'
+                        ? null
+                        : <h3>{tD.units[variable]}</h3>
+                    )
+                    : null
+                }
                 {
                     currentTab.selectedVariable !== variable 
                     && tD.units[variable] !== '' && tD.units[variable] !== undefined
@@ -120,7 +130,9 @@ export function Variable(props){
                 )}
             </div>
         )
-    } else if (tD.type === 'array' || tD.type === 'array_expression'){
+    } else if (tD.type === 'array' 
+        || tD.type === 'array_expression'
+    ){
         return (
             <div 
                 className={
@@ -130,17 +142,17 @@ export function Variable(props){
                 key={index}
             >
                 {String(variable).includes('_')
-                    ?<h3>{variable.split('_')[0]}<sub><h3>{variable.split('_')[1]}</h3></sub></h3>
+                    ?<h3 style={{color:currentTab.selectedVariable === variable ? 'darkred' : 'black'}}>{variable.split('_')[0]}<sub><h3>{variable.split('_')[1]}</h3></sub></h3>
                     :(isUndefined(tD.topBar)
-                        ?<h3>{variable}</h3>
+                        ?<h3 style={{color:currentTab.selectedVariable === variable ? 'darkred' : 'black'}}>{variable}</h3>
                         :(Object.keys(tV)[0] === variable
-                            ?<h3>{nonSerializedFormulaData.checkVar(
+                            ?<h3 style={{color:currentTab.selectedVariable === variable ? 'darkred' : 'black'}}>{nonSerializedFormulaData.checkVar(
                                 tVArray.array, 
                                 '7Ru42hF72M', 
                                 variable, 
                                 {topBar:true}
                             )}</h3>
-                            :<h3>{variable}</h3>
+                            :<h3 style={{color:currentTab.selectedVariable === variable ? 'darkred' : 'black'}}>{variable}</h3>
                         )
                     )
                 }
@@ -175,7 +187,6 @@ export function Variable(props){
                                     aria-label={`enter the ${variable} value here`}
                                 />
                                 {index < array.length - 1 && <p key={`comma_${index}`} className={styles.comma}>, </p>}
-                                {console.log(getRoundedValue(value.trim()))}
                             </React.Fragment>
                         ))
                         : (<input 

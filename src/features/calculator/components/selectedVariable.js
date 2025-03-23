@@ -29,23 +29,22 @@ export function SelectedVariable(props){
             id: tabId,
             value: variable
         }));
-    
         let updatedTab = tabs.find(obj => obj.id === tabId).variables;
         if(updatedTab[oldVariable].includes(',')){
-            let newVar;
-            if(updatedTab[oldVariable].includes('i')){
-                newVar = ''
-            } else {
-                let values = updatedTab[oldVariable].split(',')
-                newVar = String(Math.max(...values.map(str => Number(str))))
+            const currentValues = updatedTab[oldVariable].split(',')
+            let values = []
+            for(let i = 0; i < currentValues.length; i++){
+                if(!isNaN(currentValues[i])){
+                    values.push(currentValues[i])
+                }
             }
+            let newVar = String(Math.max(...values.map(str => Number(str))))
             
             dispatch(updateInputs({id:tabId, variable: oldVariable, value: newVar}))
             updatedVariables = { ...updatedTab, [oldVariable]: newVar };
         } else{
             updatedVariables = { ...updatedTab };
         }
-    
         updatedVariables[variable] = ''; 
         const answer = nonSerializedFormulaData[mode]['math'](variable, updatedVariables);
         dispatch(getAnswer({
@@ -54,7 +53,7 @@ export function SelectedVariable(props){
             selectedVariable: variable
         }));
 
-        if((type === 'array') && variable !== Object.keys(tVArray)[1]){
+        if((type === 'array') && variable !== Object.keys(tVArray)[1] && variable !== Object.keys(tVArray)[0]){
             dispatch(changeArrayVar({id:tabId, value:variable}))
         }
     }
@@ -98,8 +97,8 @@ export function SelectedVariable(props){
                                 onChange={() => handleVariableChange(variable)}
                             />
                             {variable.includes('_')
-                                ?<h3>{variable.split('_')[0]}<sub><h3>{variable.split('_')[1]}</h3></sub></h3>
-                                :<h3>{variable}</h3>
+                                ?<h3 style={{color:currentTab.selectedVariable === variable?'darkred':'black'}}>{variable.split('_')[0]}<sub><h3 style={{color:currentTab.selectedVariable === variable?'darkred':'black'}}>{variable.split('_')[1]}</h3></sub></h3>
+                                :<h3 style={{color:currentTab.selectedVariable === variable?'darkred':'black'}}>{variable}</h3>
                             }
                         </label>:'')
                     ))}
@@ -121,12 +120,12 @@ export function SelectedVariable(props){
                     {Object.keys(tVArray)[1].includes('_')
                         ?<h3>{Object.keys(tVArray)[1].split('_')[0]}<sub><h3>{Object.keys(tVArray)[1].split('_')[1]}</h3></sub></h3>
                         :(isUndefined(tD.topBar)
-                            ?<h3>{Object.keys(tVArray)[1]}</h3>
+                            ?<h3 style={{color:currentTab.selectedVariable === Object.keys(tVArray)[1]?'darkred':'black'}}>{Object.keys(tVArray)[1]}</h3>
                             :(<span style={{display:'inline-flex', flexDirection: 'column', alignItems: 'center'}}>
-                                <h3 style={{height:'5px', fontWeight:'bold'}}>&#772;
+                                <h3 style={{height:'5px', fontWeight:'bold', color:currentTab.selectedVariable === Object.keys(tVArray)[1]?'darkred':'black'}}>&#772;
                                     <span style={{color: 'transparent'}}>-</span>
                                 </h3>
-                                <h3 style={{fontSize:'32px'}}>{Object.keys(tVArray)[1]}</h3>
+                                <h3 style={{fontSize:'32px', color:currentTab.selectedVariable === Object.keys(tVArray)[1]?'darkred':'black'}}>{Object.keys(tVArray)[1]}</h3>
                                </span>)
                         )
                     }
@@ -147,7 +146,15 @@ export function SelectedVariable(props){
                             onMouseLeave={(e) => setDropdownArrowDown(false)}
                         >
                             <h3>
-                                {Object.keys(tVArray.array).includes(currentTab.arrayVar)? currentTab.arrayVar: Object.keys(tVArray.array)[Object.keys(tVArray.array).length - 1]}
+                                <span 
+                                    style={{color:currentTab.selectedVariable === (Object.keys(tVArray.array).includes(currentTab.arrayVar)
+                                        ? currentTab.arrayVar
+                                        : Object.keys(tVArray.array)[Object.keys(tVArray.array).length - 1])?'darkred':'black'}
+                                    }
+                                >{Object.keys(tVArray.array).includes(currentTab.arrayVar)
+                                    ? currentTab.arrayVar
+                                    : Object.keys(tVArray.array)[Object.keys(tVArray.array).length - 1]
+                                }</span>
                                 {
                                     dropdownArrowDown
                                     ?<span className={styles.dropdownArrow}>&#9660;</span>
@@ -177,7 +184,9 @@ export function SelectedVariable(props){
                                                     :''
                                             }
                                         >
-                                            <h3 data-name={variable}>{variable}</h3>
+                                            <h3 data-name={variable}
+                                                style={{color:currentTab.selectedVariable === variable?'darkred':'black'}}
+                                            >{variable}</h3>
                                             {
                                                 (index % numColumns !==  numColumns - 1 )
                                                     ? (array.length < numColumns + 1 && index === array.length -1 

@@ -43,8 +43,9 @@ export function AdditionalInfo({mode, type}){
                             <h3>{' - '}</h3>
                             {featureParts.length > 1 ? (
                             <span>
-                                <h4>{featureParts[0]}</h4>
-                                <h4>{featureParts[1]}</h4>
+                                {featureParts.map((featurePart, index) => (
+                                    <h4 key={`feature-part-${index}`}>{featurePart}</h4>
+                                ))}
                             </span>
                             ) : (
                             <h4>{feature}</h4>

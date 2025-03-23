@@ -101,3 +101,13 @@
     transition: 0.2s;
     border: 1px solid black;
 }
+.polynomialButtons button{
+    right: 125px;
+}
+.polynomialButtons button:last-child{
+    right: 100px;
+} 
+.extraFade{
+    opacity: 0.2;
+    pointer-events: none;
+}

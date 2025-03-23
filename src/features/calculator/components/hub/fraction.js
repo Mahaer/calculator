@@ -1,6 +1,7 @@
 import React from 'react';
 import styles from '../../css/hub/fraction.module.css';
-import { create, all } from "mathjs";
+import { create, all, isUndefined } from "mathjs";
+import { nonSerializedFormulaData } from '../../../../nonSerializedFormulaData';
 
 export function Fraction(props) {
     const math = create(all)
@@ -14,7 +15,9 @@ export function Fraction(props) {
         lessThanZeroParen=false,
         scrunch=false,
         addPlus=false,
-        negParen=false
+        negParen=false,
+        numColor='black',
+        denColor='black',
     } = props
     let num;
     let den;
@@ -76,7 +79,7 @@ export function Fraction(props) {
                         </p>
                     </span>
                     :<span className={styles.fraction} style={{color:color}}>
-                        <p style={{ fontSize: size }}>
+                        <p style={{ fontSize: size, color:numColor }}>
                             {parsing === 'children'
                                 ?(negativeStyling
                                     ? (isNaN(Number(num))
@@ -96,7 +99,7 @@ export function Fraction(props) {
                             }
                         </p>
                         <hr style={{borderColor:color}}/>
-                        <p style={{ fontSize: size }}>
+                        <p style={{ fontSize: size, color:denColor }}>
                             {parsing === 'children'
                                 ?(negativeStyling
                                     ? (isNaN(Number(den))
@@ -128,6 +131,78 @@ export function Fraction(props) {
                 )}
             </span>
         );
+    } else if(!isUndefined(props.polynomials)){
+        return (
+            <span className={styles.fraction} style={{color:color}}>
+                <p style={{fontSize: size}}>{(()=>{
+                    const coefficients = num.split('???')[1].split('/')
+                    const exponents = num.split('???')[0].split('"')
+                    return (
+                        <span>
+                            {coefficients.map((term, index) => (
+                                (nonSerializedFormulaData.formatValue(math.abs(Number(term)), 'standard') !== 0 &&
+                                    <span key={`term_${index+1}`}>
+                                        {(index !== 0) 
+                                            ? <span>{String(term).startsWith('-')
+                                                ? <>&nbsp;-&nbsp;</>
+                                                : <>&nbsp;+&nbsp;</>
+                                            }</span>
+                                            : <>{String(term).startsWith('-')
+                                                ? <>-</>
+                                                : null
+                                            }</>
+                                        }
+                                        {(nonSerializedFormulaData.formatValue(math.abs(Number(term)), 'standard') !== 1 || Number(exponents[index]) === 0) &&
+                                            <span>{nonSerializedFormulaData.formatValue(math.abs(Number(term)), 'standard')}</span>
+                                        }
+                                        {Number(exponents[index]) !== 0 &&
+                                            <span>x</span>
+                                        }
+                                        {(Number(exponents[index]) !== 1 && Number(exponents[index]) !== 0) &&
+                                            <sup className={styles.denominatorSup}>{exponents[index]}</sup>
+                                        }
+                                    </span>
+                                )
+                            ))}
+                        </span>
+                    )
+                })()}</p>
+                <hr style={{borderColor:color}}/>
+                <p style={{fontSize: size}}>{(()=>{
+                    const coefficients = den.split('%%%')[1].split('*')
+                    const exponents = den.split('%%%')[0].split('!')
+                    return (
+                        <span>
+                            {coefficients.map((term, index) => (
+                                (nonSerializedFormulaData.formatValue(math.abs(Number(term)), 'standard') !== 0 &&
+                                    <span key={`term_${index+1}`}>
+                                        {(index !== 0) 
+                                            ? <span>{String(term).startsWith('-')
+                                                ? <>&nbsp;-&nbsp;</>
+                                                : <>&nbsp;+&nbsp;</>
+                                            }</span>
+                                            : <>{String(term).startsWith('-')
+                                                ? <>-</>
+                                                : null
+                                            }</>
+                                        }
+                                        {(nonSerializedFormulaData.formatValue(math.abs(Number(term)), 'standard') !== 1 || Number(exponents[index]) === 0) &&
+                                            <span>{nonSerializedFormulaData.formatValue(math.abs(Number(term)), 'standard')}</span>
+                                        }
+                                        {Number(exponents[index]) !== 0 &&
+                                            <span>x</span>
+                                        }
+                                        {(Number(exponents[index]) !== 1 && Number(exponents[index]) !== 0) &&
+                                            <sup className={styles.denominatorSup}>{exponents[index]}</sup>
+                                        }
+                                    </span>
+                                )
+                            ))}
+                        </span>
+                    )
+                })()}</p>
+            </span>
+        )
     } else {
         return (
             <span className={styles.fraction} style={{color:color}}>

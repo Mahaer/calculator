@@ -1,7 +1,55 @@
+import { Fragment } from "react"
 import { Fraction } from "./features/calculator/components/hub/fraction"
 import { MathRoot } from "./features/calculator/components/hub/mathRoot"
+import Polynomial from "polynomial"
 import { create, all, isUndefined } from "mathjs"
 const math = create(all)
+
+const styles={
+    polynomialFormula:{
+        fontSize:'20px', 
+        marginLeft:'42px',
+    },
+    polynomialFlexColumn:{
+        display:'flex',
+        flexDirection:'column',
+        marginLeft:'-10px',
+        marginTop:'-10px',
+        position:'relative'
+    },
+    polynomialExponent:{
+        fontSize:'16px'
+    },
+    polynomialDash:{
+        fontSize:'18px',
+        marginLeft:'0px',
+        width:'inherit',
+        backgroundColor: 'black',
+        height:'2px',
+        marginTop:'0px'
+    },
+    polynomialOperation:{
+        fontSize:'40px',
+        position:'absolute',
+        left:10,
+        top:12
+    },
+    checkVarSelectedVariableColor:{
+        color:'darkred',
+    },
+    complexNumberIAndEFontSize:'50',
+    trigDisplayFontSize:'40',
+    checkVarTopBarFontSize:{
+        fontSize:'32px'
+    },
+    inlineBlockDisplay:{
+        display:'inline-block'
+    },
+    alignItemsDisplay:{
+        display:'flex',
+        alignItems:'center'
+    },
+}
 
 export const nonSerializedFormulaData = {
     check: (variables) => variables.every((str) => 
@@ -44,8 +92,21 @@ export const nonSerializedFormulaData = {
         str !== '.0000' &&
         !isNaN(Number(str))
     ),
-    checkVar: (variables, selectedVariable, variable,{ lessThanZeroParen=false, paren=false, sub=false, subVar=false, subVal='', topBar=false, minusOne=false, format='standard'} = {}) => {
-        if(!lessThanZeroParen && !paren && !sub && !topBar && !minusOne){
+    checkVar: (variables, selectedVariable, variable, { 
+        lessThanZeroParen=false, 
+        paren=false, 
+        sub=false, 
+        subVar=false, 
+        subVal='', 
+        topBar=false, 
+        minusOne=false, 
+        format='standard', 
+        alwaysDarkRed=false,
+        addPlus=false,
+        polynomial=false,
+        dividePolynomial=false,
+    } = {}) => {
+        if(!lessThanZeroParen && !paren && !sub && !topBar && !minusOne && !addPlus && !polynomial){
             let displayVar = variables[variable]
             if(String(displayVar).includes('|[') && String(displayVar).includes(']|')){
                 displayVar = String(displayVar).split('|[')[1].split(']|')[0]
@@ -54,7 +115,7 @@ export const nonSerializedFormulaData = {
             ? (isNaN(Number(displayVar))
                 ? (String(displayVar).includes('/')
                     ? (String(displayVar).includes('i')
-                        ? <span style={{display:'flex', alignItems:'center', color:(selectedVariable === variable? 'darkred': 'black')}}>
+                        ? <span style={{display:'flex', alignItems:'center', color:alwaysDarkRed?'darkred':(selectedVariable === variable? 'darkred': 'black')}}>
                             {
                                 String(displayVar).split('/')[0].startsWith('-')
                                     ? '-'
@@ -64,7 +125,7 @@ export const nonSerializedFormulaData = {
                                 ? ''
                                 : (Number(String(displayVar).split('/')[1].split(' ')[0]) === 1
                                     ?math.abs(Number(String(displayVar).split('/')[0]))
-                                    :<Fraction parsing='children' scrunch={true} color={selectedVariable === variable? 'darkred': 'black'}>
+                                    :<Fraction parsing='children' scrunch={true} color={alwaysDarkRed?'darkred':(selectedVariable === variable? 'darkred': 'black')}>
                                         <>
                                             <p>{math.abs(Number(String(displayVar).split('/')[0]))}</p>
                                             <p>{String(displayVar).split('/')[1].split(' ')[0]}</p>
@@ -83,18 +144,18 @@ export const nonSerializedFormulaData = {
                                 ? ''
                                 : (Number(String(displayVar).split('/')[2].split(')')[0]) === 1
                                     ? math.abs(Number(String(displayVar).split('/')[1].split('(')[1]))
-                                    :<Fraction parsing='children' scrunch={true} color={selectedVariable === variable? 'darkred': 'black'}>
+                                    :<Fraction parsing='children' scrunch={true} color={alwaysDarkRed?'darkred':(selectedVariable === variable? 'darkred': 'black')}>
                                         <>
                                             <p>{math.abs(Number(String(displayVar).split('/')[1].split('(')[1]))}</p>
                                             <p>{String(displayVar).split('/')[2].split(')')[0]}</p>
                                         </>
                                     </Fraction>)
                             }
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 100" width="20" height="100">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 32" width="20" height="32">
                                 <text 
                                     x="10" 
-                                    y="65" 
-                                    fontSize="50" 
+                                    y="36" 
+                                    fontSize={styles.complexNumberIAndEFontSize}
                                     textAnchor="middle" 
                                     fill={selectedVariable === variable? 'darkred': 'black'}
                                     fontFamily="Times New Roman, serif" 
@@ -104,7 +165,7 @@ export const nonSerializedFormulaData = {
                                 </text>
                             </svg>
                         </span>
-                        : <span style={{display:'flex', alignItems:'center', color:(selectedVariable === variable? 'darkred': 'black')}}>
+                        : <span style={{display:'flex', alignItems:'center', color:(alwaysDarkRed?'darkred':(selectedVariable === variable? 'darkred': 'black'))}}>
                             {
                                 String(displayVar).split('/')[0].startsWith('-')
                                     ? '-'
@@ -112,7 +173,7 @@ export const nonSerializedFormulaData = {
                             }
                             {String(displayVar).split('/')[1].split(' ')[0] === '1'
                                 ? math.abs(Number(String(displayVar).split('/')[0]))
-                                : <Fraction parsing='children' scrunch={true} color={selectedVariable === variable? 'darkred': 'black'}>
+                                : <Fraction parsing='children' scrunch={true} color={alwaysDarkRed?'darkred':(selectedVariable === variable? 'darkred': 'black')}>
                                     <>
                                         <p>{math.abs(Number(String(displayVar).split('/')[0]))}</p>
                                         <p>{String(displayVar).split('/')[1].split(' ')[0]}</p>
@@ -121,23 +182,17 @@ export const nonSerializedFormulaData = {
                             }
                         </span>
                     )
-                    :<span style={selectedVariable === variable
-                        ? {color: 'darkred'}
-                        : {}}>{variable}
+                    :<span style={{color:alwaysDarkRed?'darkred':(selectedVariable === variable?'darkred':'black')}}>{variable}
                     </span>
                   )
-                : <span style={selectedVariable === variable
-                    ? {color: 'darkred'}
-                    : {}}>{String(displayVar).includes(',')
+                : <span style={{color:alwaysDarkRed?'darkred':(selectedVariable === variable?'darkred':'black')}}>{String(displayVar).includes(',')
                         ? variable
                         : nonSerializedFormulaData.formatValue(displayVar, format)
                         }
                   </span>
                   )
-            : <span style={selectedVariable === variable
-                ? {color: 'darkred'}
-                : {}}>{variable}</span>
-        } else if(paren && !sub && !topBar && !minusOne){
+            : <span style={{color:alwaysDarkRed?'darkred':(selectedVariable === variable?'darkred':'black')}}>{variable}</span>
+        } else if(paren && !sub && !topBar && !minusOne && !addPlus && !polynomial){
             return variables[variable] !== '' && variables[variable] !== undefined 
             ? (isNaN(Number(variables[variable])) 
                 ? <span style={selectedVariable === variable? {color: 'darkred'}: {}}>{variable}</span>
@@ -146,21 +201,19 @@ export const nonSerializedFormulaData = {
                     : {}}>{`(${nonSerializedFormulaData.formatValue(variables[variable], format)})`}
                   </span>)
             : <span style={selectedVariable === variable? {color: 'darkred'}: {}}>{variable}</span>
-        } else if(lessThanZeroParen && !sub && !topBar && !minusOne){
+        } else if(lessThanZeroParen && !sub && !topBar && !minusOne && !addPlus && !polynomial){
             return variables[variable] !== '' && variables[variable] !== undefined 
                 ? (isNaN(Number(variables[variable])) 
-                    ? <span style={selectedVariable === variable? {color: 'darkred'}: {}}>{variable}</span>
+                    ? <span style={selectedVariable === variable || alwaysDarkRed? {color: 'darkred'}: {}}>{variable}</span>
                     :(variables[variable] < 0
-                        ?<span style={selectedVariable === variable
+                        ?<span style={selectedVariable === variable || alwaysDarkRed
                             ? {color: 'darkred'}
                             : {}}>{`(${nonSerializedFormulaData.formatValue(variables[variable], format)})`}
                           </span>
-                        :<span style={selectedVariable === variable
-                            ? {color: 'darkred'}
-                            : {}}>{nonSerializedFormulaData.formatValue(variables[variable], format)}
+                        :<span style={{color:selectedVariable === variable || alwaysDarkRed?'darkred':'black'}}>{nonSerializedFormulaData.formatValue(variables[variable], format)}
                           </span>))
-                : <span style={selectedVariable === variable? {color: 'darkred'}: {}}>{variable}</span>
-        } else if(sub && !lessThanZeroParen && !paren && !subVar && !topBar && !minusOne){
+                : <span style={selectedVariable === variable || alwaysDarkRed? {color: 'darkred'}: {}}>{variable}</span>
+        } else if(sub && !lessThanZeroParen && !paren && !subVar && !topBar && !minusOne && !addPlus && !polynomial){
             return variables[variable] !== '' && variables[variable] !== undefined 
                 ? (isNaN(Number(variables[variable])) 
                     ? (<span style={selectedVariable === variable? {color: 'darkred'}: {}}>{variable.split('_')[0]}<sub>{variable.split('_')[1]}</sub></span>) 
@@ -169,7 +222,7 @@ export const nonSerializedFormulaData = {
                         : {}}>{nonSerializedFormulaData.formatValue(variables[variable], format)}
                       </span>)
                 : (<span style={selectedVariable === variable? {color: 'darkred'}: {}}>{variable.split('_')[0]}<sub>{variable.split('_')[1]}</sub></span>)
-        } else if(sub && paren && !subVar && !topBar && !minusOne){
+        } else if(sub && paren && !subVar && !topBar && !minusOne && !addPlus && !polynomial){
             return variables[variable] !== '' && variables[variable] !== undefined 
                 ? (isNaN(Number(variables[variable])) 
                     ? (<span style={selectedVariable === variable? {color: 'darkred'}: {}}>{variable.split('_')[0]}<sub>{variable.split('_')[1]}</sub></span>) 
@@ -178,7 +231,7 @@ export const nonSerializedFormulaData = {
                         : {}}>{`(${nonSerializedFormulaData.formatValue(variables[variable], format)})`}
                       </span>)
                 : (<span style={selectedVariable === variable? {color: 'darkred'}: {}}>{variable.split('_')[0]}<sub>{variable.split('_')[1]}</sub></span>)
-        } else if(sub && lessThanZeroParen && !subVar && !topBar && !minusOne){
+        } else if(sub && lessThanZeroParen && !subVar && !topBar && !minusOne && !addPlus && !polynomial){
             return variables[variable] !== '' && variables[variable] !== undefined 
                 ? (isNaN(Number(variables[variable])) 
                     ? (<span style={selectedVariable === variable? {color: 'darkred'}: {}}>{variable.split('_')[0]}<sub>{variable.split('_')[1]}</sub></span>)
@@ -189,7 +242,7 @@ export const nonSerializedFormulaData = {
                           </span>
                         : nonSerializedFormulaData.formatValue(variables[variable], format))) 
                     : (<span style={selectedVariable === variable? {color: 'darkred'}: {}}>{variable.split('_')[0]}<sub>{variable.split('_')[1]}</sub></span>)
-        } else if(sub && !lessThanZeroParen && !paren && subVar && !topBar && !minusOne){
+        } else if(sub && !lessThanZeroParen && !paren && subVar && !topBar && !minusOne && !addPlus && !polynomial){
             return variables[variable] !== '' && variables[variable] !== undefined 
             ? (isNaN(Number(variables[variable])) 
                 ? (<span style={selectedVariable === variable? {color: 'darkred'}: {}}>{variable.split('_')[0]}<sub>{subVal}</sub></span>) 
@@ -198,7 +251,7 @@ export const nonSerializedFormulaData = {
                     : {}}>{nonSerializedFormulaData.formatValue(variables[variable], format)}
                   </span>)
             : (<span style={selectedVariable === variable? {color: 'darkred'}: {}}>{variable.split('_')[0]}<sub>{subVal}</sub></span>)
-        } else if(sub && !lessThanZeroParen && !paren && subVar && !topBar && minusOne){
+        } else if(sub && !lessThanZeroParen && !paren && subVar && !topBar && minusOne && !addPlus && !polynomial){
             return variables[variable] !== '' && variables[variable] !== undefined 
             ? (isNaN(Number(variables[variable])) 
                 ? (<span style={selectedVariable === variable? {color: 'darkred'}: {}}>{variable.split('_')[0]}<sub>{subVal}-1</sub></span>) 
@@ -207,7 +260,7 @@ export const nonSerializedFormulaData = {
                     : {}}>{nonSerializedFormulaData.formatValue(variables[variable], format)}
                   </span>) 
             : (<span style={selectedVariable === variable? {color: 'darkred'}: {}}>{variable.split('_')[0]}<sub>{subVal}-1</sub></span>)
-        } else if(topBar && !lessThanZeroParen && !paren && !sub && !minusOne){
+        } else if(topBar && !lessThanZeroParen && !paren && !sub && !minusOne && !addPlus && !polynomial){
             return variables[variable] !== '' && variables[variable] !== undefined 
             ? (isNaN(Number(variables[variable])) 
                 ? (<span style={selectedVariable === variable
@@ -217,7 +270,7 @@ export const nonSerializedFormulaData = {
                     <h3 style={{height:'8px'}}>&#772;
                         <span style={{color: 'transparent'}}>-</span>
                     </h3>
-                    <h3 style={{fontSize:'32px'}}>{variable}</h3>
+                    <h3 style={styles.checkVarTopBarFontSize}>{variable}</h3>
                    </span>)
                 :<span style={selectedVariable === variable
                     ? {color: 'darkred'}
@@ -230,8 +283,135 @@ export const nonSerializedFormulaData = {
                 <h3 style={{height:'8px'}}>&#772;
                     <span style={{color: 'transparent'}}>-</span>
                 </h3>
-                <h3 style={{fontSize:'32px'}}>{variable}</h3>
+                <h3 style={styles.checkVarTopBarFontSize}>{variable}</h3>
                </span>)
+        } else if(!lessThanZeroParen && !sub && !topBar && !minusOne && addPlus && !polynomial){
+            return variables[variable] !== '' && variables[variable] !== undefined 
+                ? (isNaN(Number(variables[variable])) 
+                    ? <>&nbsp;+&nbsp;<span style={selectedVariable === variable || alwaysDarkRed? {color: 'darkred'}: {}}>{variable}</span></>
+                    :(variables[variable] < 0
+                        ?<span style={selectedVariable === variable || alwaysDarkRed
+                            ? {color: 'darkred'}
+                            : {}}>&nbsp;-&nbsp;{math.abs(nonSerializedFormulaData.formatValue(variables[variable], format))}
+                          </span>
+                        :<>&nbsp;+&nbsp;<span style={{color:selectedVariable === variable || alwaysDarkRed?'darkred':'black'}}>
+                            {nonSerializedFormulaData.formatValue(variables[variable], format)}
+                          </span></>))
+                : <>&nbsp;+&nbsp;<span style={selectedVariable === variable || alwaysDarkRed? {color: 'darkred'}: {}}>{variable}</span></>
+        } else if(!lessThanZeroParen && !paren && !sub && !topBar && !minusOne && !addPlus && polynomial){
+            if (dividePolynomial){
+                try{ 
+                    const polyData = String(variables[variable].split('|[')[1]).slice(0, -2)
+                    const coefficients = polyData.split(':::')[1].split('&&&')[0].split('$')
+                    const exponents = polyData.split(':::')[0].split('#')
+                    const remainder = polyData.split('&&&')[1].split('@@@')[0]
+                    if(remainder === 'NOREMAINDER'){
+                        return variables[variable] !== '' && variables[variable] !== undefined 
+                        ? <span style={selectedVariable === variable? {color: 'darkred'}: {}}>
+                            {coefficients.map((term, index) => (
+                                <span key={`term_${index+1}`}>
+                                    {(index !== 0) 
+                                        ? <span>{String(term).startsWith('-')
+                                            ? <>&nbsp;-&nbsp;</>
+                                            : <>&nbsp;+&nbsp;</>
+                                        }</span>
+                                        : <>{String(term).startsWith('-')
+                                            ? <>-</>
+                                            : null
+                                        }</>
+                                    }
+                                    {(nonSerializedFormulaData.formatValue(math.abs(Number(term)), format) !== 1 || Number(exponents[index]) === 0) &&
+                                        <span>{nonSerializedFormulaData.formatValue(math.abs(Number(term)), format)}</span>
+                                    }
+                                    {Number(exponents[index]) !== 0 &&
+                                        <span>x</span>
+                                    }
+                                    {(Number(exponents[index]) !== 1 && Number(exponents[index]) !== 0) &&
+                                        <sup style={styles.polynomialExponent}>{exponents[index]}</sup>
+                                    }
+                                </span>
+                            ))}
+                        </span>
+                        : <span style={selectedVariable === variable? {color: 'darkred'}: {}}>{variable}</span>
+                    } else {
+                        return variables[variable] !== '' && variables[variable] !== undefined 
+                        ? <span style={styles.alignItemsDisplay}>
+                            <span style={selectedVariable === variable? {color: 'darkred'}: {}}>
+                                {coefficients.map((term, index) => (
+                                    (nonSerializedFormulaData.formatValue((math.abs(term)), 'standard') !== 0 &&
+                                        <span key={`term_${index+1}`}>
+                                            {(index !== 0) 
+                                                ? <span>{String(term).startsWith('-')
+                                                    ? <>&nbsp;-&nbsp;</>
+                                                    : <>&nbsp;+&nbsp;</>
+                                                }</span>
+                                                : <>{String(term).startsWith('-')
+                                                    ? <>-</>
+                                                    : null
+                                                }</>
+                                            }
+                                            {(nonSerializedFormulaData.formatValue(math.abs(Number(term)), format) !== 1 || Number(exponents[index]) === 0) &&
+                                                <span>{nonSerializedFormulaData.formatValue(math.abs(Number(term)), format)}</span>
+                                            }
+                                            {Number(exponents[index]) !== 0 &&
+                                                <span>x</span>
+                                            }
+                                            {(Number(exponents[index]) !== 1 && Number(exponents[index]) !== 0) &&
+                                                <sup style={styles.polynomialExponent}>{exponents[index]}</sup>
+                                            }
+                                        </span>
+                                    )
+                                ))}
+                                <span>&nbsp;+&nbsp;</span>
+                            </span>
+                            <Fraction parsing='children' color='darkred' size='16px' polynomials={true}>
+                                <>
+                                    <p>{remainder}</p>
+                                    <p>{polyData.split('@@@')[1]}</p>
+                                </>
+                            </Fraction>
+                        </span>
+                        : <span style={selectedVariable === variable? {color: 'darkred'}: {}}>{variable}</span>
+                    }
+                } catch (e) {
+                    return  <span style={selectedVariable === variable? {color: 'darkred'}: {}}>{variable}</span>
+                }
+            } else {
+                try{ 
+                    const polyData = String(variables[variable].split('|[')[1]).slice(0, -2)
+                    const coefficients = polyData.split(':::')[1].split('$')
+                    const exponents = polyData.split(':::')[0].split('#')
+                    return variables[variable] !== '' && variables[variable] !== undefined 
+                    ? <span style={selectedVariable === variable? {color: 'darkred'}: {}}>
+                        {coefficients.map((term, index) => (
+                            <span key={`term_${index+1}`}>
+                                {(index !== 0) 
+                                    ? <span>{String(term).startsWith('-')
+                                        ? <>&nbsp;-&nbsp;</>
+                                        : <>&nbsp;+&nbsp;</>
+                                    }</span>
+                                    : <>{String(term).startsWith('-')
+                                        ? <>-</>
+                                        : null
+                                    }</>
+                                }
+                                {(nonSerializedFormulaData.formatValue(math.abs(Number(term)), format) !== 1 || Number(exponents[index]) === 0) &&
+                                    <span>{nonSerializedFormulaData.formatValue(math.abs(Number(term)), format)}</span>
+                                }
+                                {Number(exponents[index]) !== 0 &&
+                                    <span>x</span>
+                                }
+                                {(Number(exponents[index]) !== 1 && Number(exponents[index]) !== 0) &&
+                                    <sup style={styles.polynomialExponent}>{exponents[index]}</sup>
+                                }
+                            </span>
+                        ))}
+                    </span>
+                    : <span style={selectedVariable === variable? {color: 'darkred'}: {}}>{variable}</span>
+                } catch (e) {
+                    return  <span style={selectedVariable === variable? {color: 'darkred'}: {}}>{variable}</span>
+                }
+            }
         }
     },
     formatValue: (value, type='standard') => {
@@ -281,6 +461,67 @@ export const nonSerializedFormulaData = {
         } else {
             return math.round(value, nonSerializedFormulaData.roundingValue)
         }
+    },
+    complexNumberI: (
+        <>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 32" width="20" height="32">
+                <text x="10" y="36" fontSize='50' textAnchor="middle" fill="black" fontFamily="Times New Roman, serif" fontStyle="italic">
+                i
+                </text>
+            </svg>
+        </>
+    ),
+    e: (
+        <>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 32" width="20" height="32">
+                <text x="10" y="30" fontSize='50' textAnchor="middle" fill="black" fontFamily="Times New Roman, serif" fontStyle="italic">
+                e
+                </text>
+            </svg>
+        </>
+    ),
+    trigDisplay: (trig) => (
+        <>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 32" width="54" height="32">
+                <text x="14" y="26" fontSize={styles.trigDisplayFontSize} textAnchor="middle" fill="black" fontFamily="Times New Roman, serif" fontStyle="italic">
+                {trig}
+                </text>
+            </svg>
+        </>
+    ),
+    formatComplex: (c) => {
+        let realPart;
+        let imagPart;
+        if(String(c.re).includes('e')){
+            const ePart = `e${String(c.re).split('e')[1]}`
+            const nonEPart = math.round(Number(String(c.re).split('e')[0]), nonSerializedFormulaData.roundingValue)
+            realPart = `${nonEPart}${ePart}`
+        } else {
+            realPart = math.round(c.re, 4);
+        }
+        if(String(c.im).includes('e')){
+            const ePart = `e${String(c.im).split('e')[1]}`
+            const nonEPart = math.round(Number(String(c.im).split('e')[0]), nonSerializedFormulaData.roundingValue)
+            imagPart = `${nonEPart}${ePart}`
+        } else {
+            imagPart = math.round(c.im, 4);
+        }
+      
+        if (imagPart === 1) {
+          imagPart = 'i';
+        } else if (imagPart === -1) {
+          imagPart = '-i';
+        } else if (imagPart > 0) {
+          imagPart = `${imagPart}i`;
+        } else if (imagPart < 0) {
+          imagPart = `${imagPart}i`;
+        }
+        if(String(imagPart).startsWith('-')){
+            imagPart = ` - ${imagPart.split('-')[1]}`
+        } else {
+            imagPart = ` + ${imagPart}`
+        }
+        return `${realPart}${imagPart}`;
     },
     roundingValue:4,
     'Addition': {
@@ -1275,11 +1516,7 @@ export const nonSerializedFormulaData = {
                     </>
                 </Fraction>
                 
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 100" width="20" height="100">
-                    <text x="10" y="65" fontSize="50" textAnchor="middle" fill="black" fontFamily="Times New Roman, serif" fontStyle="italic">
-                    i
-                    </text>
-                </svg>)
+                {nonSerializedFormulaData.complexNumberI})
                 +&nbsp;(
                 <Fraction parsing='children' negativeStyling={true}>
                     <>
@@ -1293,12 +1530,8 @@ export const nonSerializedFormulaData = {
                         <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'h')}</p>
                     </>
                 </Fraction>
-                
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 100" width="20" height="100">
-                    <text x="10" y="65" fontSize="50" textAnchor="middle" fill="black" fontFamily="Times New Roman, serif" fontStyle="italic">
-                    i
-                    </text>
-                </svg>)
+
+                {nonSerializedFormulaData.complexNumberI})
             </>
         ),
         'math':(selectedVariable, variables) => {
@@ -1406,11 +1639,7 @@ export const nonSerializedFormulaData = {
                     </>
                 </Fraction>
                 
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 100" width="20" height="100">
-                    <text x="10" y="65" fontSize="50" textAnchor="middle" fill="black" fontFamily="Times New Roman, serif" fontStyle="italic">
-                    i
-                    </text>
-                </svg>)
+                {nonSerializedFormulaData.complexNumberI})
                 -&nbsp;(
                 <Fraction parsing='children' negativeStyling={true}>
                     <>
@@ -1425,11 +1654,7 @@ export const nonSerializedFormulaData = {
                     </>
                 </Fraction>
                 
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 100" width="20" height="100">
-                    <text x="10" y="65" fontSize="50" textAnchor="middle" fill="black" fontFamily="Times New Roman, serif" fontStyle="italic">
-                    i
-                    </text>
-                </svg>)
+                {nonSerializedFormulaData.complexNumberI})
             </>
         ),
         'math':(selectedVariable, variables) => {
@@ -1537,11 +1762,7 @@ export const nonSerializedFormulaData = {
                     </>
                 </Fraction>
                 
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 100" width="20" height="100">
-                    <text x="10" y="65" fontSize="50" textAnchor="middle" fill="black" fontFamily="Times New Roman, serif" fontStyle="italic">
-                    i
-                    </text>
-                </svg>)
+                {nonSerializedFormulaData.complexNumberI})
                 ×&nbsp;(
                 <Fraction parsing='children' negativeStyling={true}>
                     <>
@@ -1556,11 +1777,7 @@ export const nonSerializedFormulaData = {
                     </>
                 </Fraction>
                 
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 100" width="20" height="100">
-                    <text x="10" y="65" fontSize="50" textAnchor="middle" fill="black" fontFamily="Times New Roman, serif" fontStyle="italic">
-                    i
-                    </text>
-                </svg>)
+                {nonSerializedFormulaData.complexNumberI})
             </>
         ),
         'math':(selectedVariable, variables) => {
@@ -1675,11 +1892,7 @@ export const nonSerializedFormulaData = {
                     </>
                 </Fraction>
                 
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 100" width="20" height="100">
-                    <text x="10" y="65" fontSize="50" textAnchor="middle" fill="black" fontFamily="Times New Roman, serif" fontStyle="italic">
-                    i
-                    </text>
-                </svg>)
+                {nonSerializedFormulaData.complexNumberI})
                 ÷&nbsp;(
                 <Fraction parsing='children' negativeStyling={true}>
                     <>
@@ -1694,11 +1907,7 @@ export const nonSerializedFormulaData = {
                     </>
                 </Fraction>
                 
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 100" width="20" height="100">
-                    <text x="10" y="65" fontSize="50" textAnchor="middle" fill="black" fontFamily="Times New Roman, serif" fontStyle="italic">
-                    i
-                    </text>
-                </svg>)
+                {nonSerializedFormulaData.complexNumberI})
             </>
         ),
         'math':(selectedVariable, variables) => {
@@ -1775,6 +1984,786 @@ export const nonSerializedFormulaData = {
                         break;
                     } else {
                         result = 'Error: missing variable/s';
+                        break;
+                    }
+                default:
+                    result = 'Error'
+                    break;
+            }
+            if(result || result === 0){
+                if(String(result) === 'Infinity'){
+                    result = 'Error: result is too large'
+                    return result
+                } else {
+                    if(String(result) === '-Infinity'){
+                        result = 'Error: result is too small'
+                        return result
+                    } else {
+                        return result
+                    }
+                }
+            } else {
+                result = 'Error'
+                return result
+            }
+        }
+    },
+    'Algebraic Complex Addition': {
+        'display': (variables, selectedVariable) => (
+            <>
+                (<Fraction parsing='children' negativeStyling={true}
+                    numColor={'p' === selectedVariable?'darkred':'black'}
+                    denColor={'q' === selectedVariable?'darkred':'black'}
+                >
+                    <>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'p')}</p>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'q')}</p>
+                    </>
+                </Fraction>
+                <Fraction parsing='children' negativeStyling={true} addPlus={true} negParen={true}
+                    numColor={'r' === selectedVariable?'darkred':'black'}
+                    denColor={'s' === selectedVariable?'darkred':'black'}
+                >
+                    <>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'r')}</p>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 's')}</p>
+                    </>
+                </Fraction>
+                {nonSerializedFormulaData.complexNumberI})=(<Fraction parsing='children' negativeStyling={true}
+                    numColor={'a' === selectedVariable?'darkred':'black'}
+                    denColor={'b' === selectedVariable?'darkred':'black'}
+                >
+                    <>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'a')}</p>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'b')}</p>
+                    </>
+                </Fraction>
+                <Fraction parsing='children' negativeStyling={true} addPlus={true} negParen={true}
+                    numColor={'c' === selectedVariable?'darkred':'black'}
+                    denColor={'d' === selectedVariable?'darkred':'black'}
+                >
+                    <>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'c')}</p>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'd')}</p>
+                    </>
+                </Fraction>
+                {nonSerializedFormulaData.complexNumberI})+(<Fraction parsing='children' negativeStyling={true}
+                    numColor={'e' === selectedVariable?'darkred':'black'}
+                    denColor={'f' === selectedVariable?'darkred':'black'}
+                >
+                    <>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'e')}</p>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'f')}</p>
+                    </>
+                </Fraction>
+                <Fraction parsing='children' negativeStyling={true} addPlus={true} negParen={true}
+                    numColor={'g' === selectedVariable?'darkred':'black'}
+                    denColor={'h' === selectedVariable?'darkred':'black'}
+                >
+                    <>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'g')}</p>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'h')}</p>
+                    </>
+                </Fraction>
+                {nonSerializedFormulaData.complexNumberI})
+            </>
+        ),
+        'math': (selectedVariable, variables) => {
+            let updatedVariables = {...variables}
+            let result = 0
+            for(let key in variables){
+                if(key === updatedVariables[key]){
+                    updatedVariables[key] = ''
+                }
+            }
+            let {a, b, c, d, e, f, g, h, p, q, r, s} = updatedVariables
+
+            switch(selectedVariable){
+                case 'p':
+                    if(nonSerializedFormulaData.check([a, b, e, f, q])){
+                        if(Number(b) !== 0 && Number(f) !== 0 && Number(q) !== 0){
+                            const frac1 = math.fraction(a/b)
+                            const frac2 = math.fraction(e/f)
+                            const resultFrac = math.add(frac1, frac2)
+                            result = math.number(math.multiply(resultFrac, q))
+                        } else {
+                            result = 'Error: cannot divide by zero'
+                        }
+                    } else {
+                        result = 'Error: missing variable/s'
+                    }
+                    break;
+                case 'q':
+                    if(nonSerializedFormulaData.check([a, b, e, f, p])){
+                        if(Number(b) !== 0 && Number(f) !== 0){
+                            const frac1 = math.fraction(a/b)
+                            const frac2 = math.fraction(e/f)
+                            const resultFrac = math.add(frac1, frac2)
+                            if (String(resultFrac.n) === '0'){
+                                result = 'Error: a/b + e/f cannot be zero'
+                            } else {
+                                result = math.number(math.divide(p, resultFrac))
+                            }
+                        } else {
+                            result = 'Error: cannot divide by zero'
+                        }
+                    } else {
+                        result = 'Error: missing variable/s'
+                    }
+                    break;
+                case 'a':
+                    if(nonSerializedFormulaData.check([q, b, e, f, p])){
+                        if(Number(b) !== 0 && Number(f) !== 0 && Number(q) !== 0){
+                            const frac1 = math.fraction(p/q)
+                            const frac2 = math.fraction(e/f)
+                            const resultFrac = math.subtract(frac1, frac2)
+                            result = math.number(math.multiply(b, resultFrac))
+                        } else {
+                            result = 'Error: cannot divide by zero'
+                        }
+                    } else {
+                        result = 'Error: missing variable/s'
+                    }
+                    break;
+                case 'b':
+                    if(nonSerializedFormulaData.check([q, a, e, f, p])){
+                        if(Number(f) !== 0 && Number(q) !== 0){
+                            const frac1 = math.fraction(p/q)
+                            const frac2 = math.fraction(e/f)
+                            const resultFrac = math.subtract(frac1, frac2)
+                            if (String(resultFrac.n) === '0'){
+                                result = 'Error: p/q - e/f cannot be zero'
+                            } else {
+                                result = math.number(math.divide(a, resultFrac))
+                            }
+                        } else {
+                            result = 'Error: cannot divide by zero'
+                        }
+                    } else {
+                        result = 'Error: missing variable/s'
+                    }
+                    break;
+                case 'e':
+                    if(nonSerializedFormulaData.check([q, a, b, f, p])){
+                        if(Number(f) !== 0 && Number(q) !== 0 && Number(b) !== 0){
+                            const frac1 = math.fraction(p/q)
+                            const frac2 = math.fraction(a/b)
+                            const resultFrac = math.subtract(frac1, frac2)
+                            result = math.number(math.multiply(f, resultFrac))
+                        } else {
+                            result = 'Error: cannot divide by zero'
+                        }
+                    } else {
+                        result = 'Error: missing variable/s'
+                    }
+                    break;
+                case 'f':
+                    if(nonSerializedFormulaData.check([q, a, e, b, p])){
+                        if(Number(q) !== 0 && Number(b) !== 0){
+                            const frac1 = math.fraction(p/q)
+                            const frac2 = math.fraction(a/b)
+                            const resultFrac = math.subtract(frac1, frac2)
+                            if (String(resultFrac.n) === '0'){
+                                result = 'Error: p/q - a/b cannot be zero'
+                            } else {
+                                result = math.number(math.divide(e, resultFrac))
+                            }
+                        } else {
+                            result = 'Error: cannot divide by zero'
+                        }
+                    } else {
+                        result = 'Error: missing variable/s'
+                    }
+                    break;
+                case 'r':
+                    if(nonSerializedFormulaData.check([c, d, s, g, h])){
+                        if(Number(d) !== 0 && Number(h) !== 0 && Number(s) !== 0){
+                            const frac1 = math.fraction(c/d)
+                            const frac2 = math.fraction(g/h)
+                            const resultFrac = math.add(frac1, frac2)
+                            result = math.number(math.multiply(s, resultFrac))
+                        } else {
+                            result = 'Error: cannot divide by zero'
+                        }
+                    } else {
+                        result = 'Error: missing variable/s'
+                    }
+                    break;
+                case 's':
+                    if(nonSerializedFormulaData.check([c, d, r, g, h])){
+                        if(Number(d) !== 0 && Number(h) !== 0){
+                            const frac1 = math.fraction(c/d)
+                            const frac2 = math.fraction(g/h)
+                            const resultFrac = math.add(frac1, frac2)
+                            if (String(resultFrac.n) === '0'){
+                                result = 'Error: c/d + g/h cannot be zero'
+                            } else {
+                                result = math.number(math.divide(r, resultFrac))
+                            }
+                        } else {
+                            result = 'Error: cannot divide by zero'
+                        }
+                    } else {
+                        result = 'Error: missing variable/s'
+                    }
+                    break;
+                case 'c':
+                    if(nonSerializedFormulaData.check([r, d, s, g, h])){
+                        if(Number(d) !== 0 && Number(h) !== 0 && Number(s) !== 0){
+                            const frac1 = math.fraction(r/s)
+                            const frac2 = math.fraction(g/h)
+                            const resultFrac = math.subtract(frac1, frac2)
+                            result = math.number(math.multiply(d, resultFrac))
+                        } else {
+                            result = 'Error: cannot divide by zero'
+                        }
+                    } else {
+                        result = 'Error: missing variable/s'
+                    }
+                    break;
+                case 'd':
+                    if(nonSerializedFormulaData.check([c, s, r, g, h])){
+                        if(Number(s) !== 0 && Number(h) !== 0){
+                            const frac1 = math.fraction(r/s)
+                            const frac2 = math.fraction(g/h)
+                            const resultFrac = math.subtract(frac1, frac2)
+                            if (String(resultFrac.n) === '0'){
+                                result = 'Error: r/s - g/h cannot be zero'
+                            } else {
+                                result = math.number(math.divide(c, resultFrac))
+                            }
+                        } else {
+                            result = 'Error: cannot divide by zero'
+                        }
+                    } else {
+                        result = 'Error: missing variable/s'
+                    }
+                    break;
+                case 'g':
+                    if(nonSerializedFormulaData.check([r, d, s, c, h])){
+                        if(Number(d) !== 0 && Number(h) !== 0 && Number(s) !== 0){
+                            const frac1 = math.fraction(r/s)
+                            const frac2 = math.fraction(c/d)
+                            const resultFrac = math.subtract(frac1, frac2)
+                            result = math.number(math.multiply(h, resultFrac))
+                        } else {
+                            result = 'Error: cannot divide by zero'
+                        }
+                    } else {
+                        result = 'Error: missing variable/s'
+                    }
+                    break;
+                case 'h':
+                    if(nonSerializedFormulaData.check([c, s, r, g, d])){
+                        if(Number(s) !== 0 && Number(d) !== 0){
+                            const frac1 = math.fraction(r/s)
+                            const frac2 = math.fraction(c/d)
+                            const resultFrac = math.subtract(frac1, frac2)
+                            if (String(resultFrac.n) === '0'){
+                                result = 'Error: r/s - c/d cannot be zero'
+                            } else {
+                                result = math.number(math.divide(g, resultFrac))
+                            }
+                        } else {
+                            result = 'Error: cannot divide by zero'
+                        }
+                    } else {
+                        result = 'Error: missing variable/s'
+                    }
+                    break;
+                default:
+                    result = 'Error'
+                    break;
+            }
+            if(result || result === 0){
+                if(String(result) === 'Infinity'){
+                    result = 'Error: result is too large'
+                    return result
+                } else {
+                    if(String(result) === '-Infinity'){
+                        result = 'Error: result is too small'
+                        return result
+                    } else {
+                        return result
+                    }
+                }
+            } else {
+                result = 'Error'
+                return result
+            }
+        }
+    },
+    'Algebraic Complex Subtraction': {
+        'display': (variables, selectedVariable) => (
+            <>
+                (<Fraction parsing='children' negativeStyling={true}
+                    numColor={'p' === selectedVariable?'darkred':'black'}
+                    denColor={'q' === selectedVariable?'darkred':'black'}
+                >
+                    <>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'p')}</p>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'q')}</p>
+                    </>
+                </Fraction>
+                <Fraction parsing='children' negativeStyling={true} addPlus={true} negParen={true}
+                    numColor={'r' === selectedVariable?'darkred':'black'}
+                    denColor={'s' === selectedVariable?'darkred':'black'}
+                >
+                    <>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'r')}</p>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 's')}</p>
+                    </>
+                </Fraction>
+                {nonSerializedFormulaData.complexNumberI})=(<Fraction parsing='children' negativeStyling={true}
+                    numColor={'a' === selectedVariable?'darkred':'black'}
+                    denColor={'b' === selectedVariable?'darkred':'black'}
+                >
+                    <>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'a')}</p>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'b')}</p>
+                    </>
+                </Fraction>
+                <Fraction parsing='children' negativeStyling={true} addPlus={true} negParen={true}
+                    numColor={'c' === selectedVariable?'darkred':'black'}
+                    denColor={'d' === selectedVariable?'darkred':'black'}
+                >
+                    <>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'c')}</p>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'd')}</p>
+                    </>
+                </Fraction>
+                {nonSerializedFormulaData.complexNumberI})-(<Fraction parsing='children' negativeStyling={true}
+                    numColor={'e' === selectedVariable?'darkred':'black'}
+                    denColor={'f' === selectedVariable?'darkred':'black'}
+                >
+                    <>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'e')}</p>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'f')}</p>
+                    </>
+                </Fraction>
+                <Fraction parsing='children' negativeStyling={true} addPlus={true} negParen={true}
+                    numColor={'g' === selectedVariable?'darkred':'black'}
+                    denColor={'h' === selectedVariable?'darkred':'black'}
+                >
+                    <>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'g')}</p>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'h')}</p>
+                    </>
+                </Fraction>
+                {nonSerializedFormulaData.complexNumberI})
+            </>
+        ),
+        'math': (selectedVariable, variables) => {
+            let updatedVariables = {...variables}
+            let result = 0
+            for(let key in variables){
+                if(key === updatedVariables[key]){
+                    updatedVariables[key] = ''
+                }
+            }
+            let {a, b, c, d, e, f, g, h, p, q, r, s} = updatedVariables
+
+            switch(selectedVariable){
+                case 'p':
+                    if(nonSerializedFormulaData.check([a, b, e, f, q])){
+                        if(Number(b) !== 0 && Number(f) !== 0 && Number(q) !== 0){
+                            const frac1 = math.fraction(a/b)
+                            const frac2 = math.fraction(e/f)
+                            const resultFrac = math.subtract(frac1, frac2)
+                            result = math.number(math.multiply(resultFrac, q))
+                        } else {
+                            result = 'Error: cannot divide by zero'
+                        }
+                    } else {
+                        result = 'Error: missing variable/s'
+                    }
+                    break;
+                case 'q':
+                    if(nonSerializedFormulaData.check([a, b, e, f, p])){
+                        if(Number(b) !== 0 && Number(f) !== 0){
+                            const frac1 = math.fraction(a/b)
+                            const frac2 = math.fraction(e/f)
+                            const resultFrac = math.subtract(frac1, frac2)
+                            if (String(resultFrac.n) === '0'){
+                                result = 'Error: a/b - e/f cannot be zero'
+                            } else {
+                                result = math.number(math.divide(p, resultFrac))
+                            }
+                        } else {
+                            result = 'Error: cannot divide by zero'
+                        }
+                    } else {
+                        result = 'Error: missing variable/s'
+                    }
+                    break;
+                case 'a':
+                    if(nonSerializedFormulaData.check([q, b, e, f, p])){
+                        if(Number(b) !== 0 && Number(f) !== 0 && Number(q) !== 0){
+                            const frac1 = math.fraction(p/q)
+                            const frac2 = math.fraction(e/f)
+                            const resultFrac = math.add(frac1, frac2)
+                            result = math.number(math.multiply(b, resultFrac))
+                        } else {
+                            result = 'Error: cannot divide by zero'
+                        }
+                    } else {
+                        result = 'Error: missing variable/s'
+                    }
+                    break;
+                case 'b':
+                    if(nonSerializedFormulaData.check([q, a, e, f, p])){
+                        if(Number(f) !== 0 && Number(q) !== 0){
+                            const frac1 = math.fraction(p/q)
+                            const frac2 = math.fraction(e/f)
+                            const resultFrac = math.add(frac1, frac2)
+                            if (String(resultFrac.n) === '0'){
+                                result = 'Error: p/q + e/f cannot be zero'
+                            } else {
+                                result = math.number(math.divide(a, resultFrac))
+                            }
+                        } else {
+                            result = 'Error: cannot divide by zero'
+                        }
+                    } else {
+                        result = 'Error: missing variable/s'
+                    }
+                    break;
+                case 'e':
+                    if(nonSerializedFormulaData.check([q, a, b, f, p])){
+                        if(Number(f) !== 0 && Number(q) !== 0 && Number(b) !== 0){
+                            const frac1 = math.fraction(a/b)
+                            const frac2 = math.fraction(p/q)
+                            const resultFrac = math.subtract(frac1, frac2)
+                            result = math.number(math.multiply(f, resultFrac))
+                        } else {
+                            result = 'Error: cannot divide by zero'
+                        }
+                    } else {
+                        result = 'Error: missing variable/s'
+                    }
+                    break;
+                case 'f':
+                    if(nonSerializedFormulaData.check([q, a, e, b, p])){
+                        if(Number(q) !== 0 && Number(b) !== 0){
+                            const frac1 = math.fraction(a/b)
+                            const frac2 = math.fraction(p/q)
+                            const resultFrac = math.subtract(frac1, frac2)
+                            if (String(resultFrac.n) === '0'){
+                                result = 'Error: p/q - a/b cannot be zero'
+                            } else {
+                                result = math.number(math.divide(e, resultFrac))
+                            }
+                        } else {
+                            result = 'Error: cannot divide by zero'
+                        }
+                    } else {
+                        result = 'Error: missing variable/s'
+                    }
+                    break;
+                case 'r':
+                    if(nonSerializedFormulaData.check([c, d, s, g, h])){
+                        if(Number(d) !== 0 && Number(h) !== 0 && Number(s) !== 0){
+                            const frac1 = math.fraction(c/d)
+                            const frac2 = math.fraction(g/h)
+                            const resultFrac = math.subtract(frac1, frac2)
+                            result = math.number(math.multiply(resultFrac, s))
+                        } else {
+                            result = 'Error: cannot divide by zero'
+                        }
+                    } else {
+                        result = 'Error: missing variable/s'
+                    }
+                    break;
+                case 's':
+                    if(nonSerializedFormulaData.check([c, d, r, g, h])){
+                        if(Number(d) !== 0 && Number(h) !== 0){
+                            const frac1 = math.fraction(c/d)
+                            const frac2 = math.fraction(g/h)
+                            const resultFrac = math.subtract(frac1, frac2)
+                            if (String(resultFrac.n) === '0'){
+                                result = 'Error: c/d - g/h cannot be zero'
+                            } else {
+                                result = math.number(math.divide(r, resultFrac))
+                            }
+                        } else {
+                            result = 'Error: cannot divide by zero'
+                        }
+                    } else {
+                        result = 'Error: missing variable/s'
+                    }
+                    break;
+                case 'c':
+                    if(nonSerializedFormulaData.check([r, d, s, g, h])){
+                        if(Number(d) !== 0 && Number(h) !== 0 && Number(s) !== 0){
+                            const frac1 = math.fraction(r/s)
+                            const frac2 = math.fraction(g/h)
+                            const resultFrac = math.add(frac1, frac2)
+                            result = math.number(math.multiply(d, resultFrac))
+                        } else {
+                            result = 'Error: cannot divide by zero'
+                        }
+                    } else {
+                        result = 'Error: missing variable/s'
+                    }
+                    break;
+                case 'd':
+                    if(nonSerializedFormulaData.check([c, s, r, g, h])){
+                        if(Number(s) !== 0 && Number(h) !== 0){
+                            const frac1 = math.fraction(r/s)
+                            const frac2 = math.fraction(g/h)
+                            const resultFrac = math.add(frac1, frac2)
+                            if (String(resultFrac.n) === '0'){
+                                result = 'Error: r/s + g/h cannot be zero'
+                            } else {
+                                result = math.number(math.divide(c, resultFrac))
+                            }
+                        } else {
+                            result = 'Error: cannot divide by zero'
+                        }
+                    } else {
+                        result = 'Error: missing variable/s'
+                    }
+                    break;
+                case 'g':
+                    if(nonSerializedFormulaData.check([r, d, s, c, h])){
+                        if(Number(d) !== 0 && Number(h) !== 0 && Number(s) !== 0){
+                            const frac1 = math.fraction(c/d)
+                            const frac2 = math.fraction(r/s)
+                            const resultFrac = math.subtract(frac1, frac2)
+                            result = math.number(math.multiply(h, resultFrac))
+                        } else {
+                            result = 'Error: cannot divide by zero'
+                        }
+                    } else {
+                        result = 'Error: missing variable/s'
+                    }
+                    break;
+                case 'h':
+                    if(nonSerializedFormulaData.check([c, s, r, g, d])){
+                        if(Number(s) !== 0 && Number(d) !== 0){
+                            const frac1 = math.fraction(c/d)
+                            const frac2 = math.fraction(r/s)
+                            const resultFrac = math.subtract(frac1, frac2)
+                            if (String(resultFrac.n) === '0'){
+                                result = 'Error: r/s - c/d cannot be zero'
+                            } else {
+                                result = math.number(math.divide(g, resultFrac))
+                            }
+                        } else {
+                            result = 'Error: cannot divide by zero'
+                        }
+                    } else {
+                        result = 'Error: missing variable/s'
+                    }
+                    break;
+                default:
+                    result = 'Error'
+                    break;
+            }
+            if(result || result === 0){
+                if(String(result) === 'Infinity'){
+                    result = 'Error: result is too large'
+                    return result
+                } else {
+                    if(String(result) === '-Infinity'){
+                        result = 'Error: result is too small'
+                        return result
+                    } else {
+                        return result
+                    }
+                }
+            } else {
+                result = 'Error'
+                return result
+            }
+        }
+    },
+    'Factors of an Integer': {
+        'display': (variables, selectedVariable) => (
+            <></>
+        ),
+        'math':(selectedVariable, variables) => {
+            let updatedVariables = {...variables}
+            for(let key in variables){
+                if(key === updatedVariables[key]){
+                    updatedVariables[key] = ''
+                }
+            }
+            let {n} = updatedVariables
+
+            let result = 0
+            switch(selectedVariable){
+                case 'Factors':
+                    if(nonSerializedFormulaData.check([n])){
+                        if(!math.isInteger(Number(n)) || Number(n) === 0) {
+                            result = 'Error: number must be non-zero integer'
+                        } else {
+                            const absN = Math.abs(n);
+                            let divisors = [];
+                            for (let i = 1; i <= Math.sqrt(absN); i++) {
+                                if (absN % i === 0) {
+                                    divisors.push(i);
+                                    if (i !== absN / i) {
+                                        divisors.push(absN / i);
+                                    }
+                                }
+                            }
+                            const negativeDivisors = (divisors.length > 36 && !math.isNegative(n)
+                                ? []
+                                : divisors.map(d => -d)
+                            )
+                            const finalResult = [...divisors, ...negativeDivisors].sort((a, b) => a - b).reverse();
+                            if(finalResult.length > 72){
+                                result = `Error: too many factors(${math.isNegative(n)?finalResult.length:finalResult.length * 2})`
+                            } else {
+                                result = finalResult
+                            }
+                        }
+                        break;
+                    } else {
+                        result = 'Error: missing variable/s'
+                        break;
+                    }
+                default:
+                    result = 'Error'
+                    break;
+            }
+            if(result || result === 0){
+                if(String(result) === 'Infinity'){
+                    result = 'Error: result is too large'
+                    return result
+                } else {
+                    if(String(result) === '-Infinity'){
+                        result = 'Error: result is too small'
+                        return result
+                    } else {
+                        return result
+                    }
+                }
+            } else {
+                result = 'Error'
+                return result
+            }
+        }
+    },
+    'Greatest Common Factor (GCF)': {
+        'display': (variables, selectedVariable) => (
+            <>
+                <span>
+                The GCF of&nbsp; 
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'n_1', {sub:true})}
+                &nbsp;and&nbsp; 
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'n_2', {sub:true})}
+                &nbsp;is:&nbsp; 
+                <br/>
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'GCF')}
+                </span>
+            </>
+        ),
+        'math':(selectedVariable, variables) => {
+            let updatedVariables = {...variables}
+            for(let key in variables){
+                if(key === updatedVariables[key]){
+                    updatedVariables[key] = ''
+                }
+            }
+            let {n_1, n_2} = updatedVariables
+
+            let result = 0
+            switch(selectedVariable){
+                case 'GCF':
+                    if(nonSerializedFormulaData.check([n_1, n_2])){
+                        if(Number(n_1) <= 0 
+                            || Number(n_2) <= 0 
+                            || !math.isInteger(Number(n_1)) 
+                            || !math.isInteger(Number(n_2)))
+                        {
+                            result = 'Error: numbers must be whole numbers'
+                        } else {
+                            function gcd(a, b) {
+                                while (b !== 0) {
+                                    let remainder = a % b;
+                                    a = b;
+                                    b = remainder;
+                                }
+                                return a;
+                            }
+                            result = gcd(n_1, n_2)
+                        }
+                        break;
+                    } else {
+                        result = 'Error: missing variable/s'
+                        break;
+                    }
+                default:
+                    result = 'Error'
+                    break;
+            }
+            if(result || result === 0){
+                if(String(result) === 'Infinity'){
+                    result = 'Error: result is too large'
+                    return result
+                } else {
+                    if(String(result) === '-Infinity'){
+                        result = 'Error: result is too small'
+                        return result
+                    } else {
+                        return result
+                    }
+                }
+            } else {
+                result = 'Error'
+                return result
+            }
+        }
+    },
+    'Least Common Multiple (LCM)': {
+        'display': (variables, selectedVariable) => (
+            <>
+                <span>
+                The LCM of&nbsp; 
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'n_1', {sub:true})}
+                &nbsp;and&nbsp; 
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'n_2', {sub:true})}
+                &nbsp;is:&nbsp; 
+                <br/>
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'LCM')}
+                </span>
+            </>
+        ),
+        'math':(selectedVariable, variables) => {
+            let updatedVariables = {...variables}
+            for(let key in variables){
+                if(key === updatedVariables[key]){
+                    updatedVariables[key] = ''
+                }
+            }
+            let {n_1, n_2} = updatedVariables
+
+            let result = 0
+            switch(selectedVariable){
+                case 'LCM':
+                    if(nonSerializedFormulaData.check([n_1, n_2])){
+                        if(Number(n_1) <= 0 
+                            || Number(n_2) <= 0 
+                            || !math.isInteger(Number(n_1)) 
+                            || !math.isInteger(Number(n_2)))
+                        {
+                            result = 'Error: numbers must be whole numbers'
+                        } else {
+                            function gcd(a, b) {
+                                while (b !== 0) {
+                                    let remainder = a % b;
+                                    a = b;
+                                    b = remainder;
+                                }
+                                return a;
+                            }
+                            result = math.abs(n_1 * n_2) / gcd(n_1, n_2)
+                        }
+                        break;
+                    } else {
+                        result = 'Error: missing variable/s'
                         break;
                     }
                 default:
@@ -2497,8 +3486,8 @@ export const nonSerializedFormulaData = {
                                 const imaginaryPart = math.sqrt(math.abs(discriminant));
                                 
                                 // Format as a complex number
-                                const root1 = `${math.round(realPart, 5)} + ${math.round(imaginaryPart, 5)}i`;
-                                const root2 = `${math.round(realPart, 5)} - ${math.round(imaginaryPart, 5)}i`;
+                                const root1 = `${math.round(realPart, 4)} + ${math.round(imaginaryPart, 4)}i`;
+                                const root2 = `${math.round(realPart, 4)} - ${math.round(imaginaryPart, 4)}i`;
                     
                                 result = `${root1}, ${root2}`;
                             } else {
@@ -2509,10 +3498,10 @@ export const nonSerializedFormulaData = {
                                 const root1 = math.divide(math.subtract(-b, sqrtDiscriminant), denominator);
                                 const root2 = math.divide(math.add(-b, sqrtDiscriminant), denominator);
                             
-                                if(math.round(root1, 5) === math.round(root2, 5)){
-                                    result = `${math.round(root1, 5)}`
+                                if(math.round(root1, 4) === math.round(root2, 4)){
+                                    result = `${math.round(root1, 4)}`
                                 } else {
-                                    result = `${math.round(root1, 5)}, ${math.round(root2, 5)}`;
+                                    result = `${math.round(root1, 4)}, ${math.round(root2, 4)}`;
                                 }
                             }
                         } else {
@@ -2681,6 +3670,689 @@ export const nonSerializedFormulaData = {
             }
         }
     },
+    'Absolute Value Equation': {
+        'display': (variables, selectedVariable) => (
+            <>
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'y')}
+                &nbsp;=&nbsp;
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'a')}|
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'x')}
+                &nbsp;-&nbsp;
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'h', {lessThanZeroParen:true})}
+                |&nbsp;+&nbsp;
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'k', {lessThanZeroParen:true})}
+            </>
+        ),
+        'math': (selectedVariable, variables) => {
+            let updatedVariables = {...variables}
+            let result = 0
+            for(let key in variables){
+                if(key === updatedVariables[key]){
+                    updatedVariables[key] = ''
+                }
+            }
+            let {y, a, x, h, k} = updatedVariables
+
+            switch(selectedVariable){
+                case 'y':
+                    if(nonSerializedFormulaData.check([a, x, h, k])){
+                        result = (a * math.abs(x - h)) + Number(k)
+                    } else {
+                        result = 'Error: missing variable/s'
+                    }
+                    break;
+                case 'a':
+                    if(nonSerializedFormulaData.check([y, x, h, k])){
+                        if (Number(x) !== Number(h)) {
+                            result = (y - k) / (math.abs(x-h))
+                        } else {
+                            result = 'x and h cannot be the same value';
+                        }
+                    } else {
+                        result = 'Error: missing variable/s'
+                    }
+                    break;
+                case 'k':
+                    if(nonSerializedFormulaData.check([a, x, h, y])){
+                        result = y - (a * (math.abs(x-h))) 
+                    } else {
+                        result = 'Error: missing variable/s'
+                    }
+                    break;
+                case 'x':
+                    if(nonSerializedFormulaData.check([a, h, k, y])){
+                        if (Number(a) === 0) {
+                            result = 'Error: a cannot be zero'
+                        } else {
+                            if(y === k){
+                                result = String(h)
+                            } else {
+                                const firstAns = Number(h) + ((y-k) / a)
+                                const secondAns = Number(h) - ((y-k) / a)
+                                result=`${firstAns},${secondAns}`
+                            }
+                        }
+                    } else {
+                        result = 'Error: missing variable/s'
+                    }
+                    break;
+                case 'h':
+                    if(nonSerializedFormulaData.check([a, x, k, y])){
+                        if (Number(a) === 0) {
+                            result = 'Error: a cannot be zero'
+                        } else {
+                            if(y === k){
+                                result = String(x)
+                            } else {
+                                const firstAns = Number(x) - ((y-k) / a)
+                                const secondAns = Number(x) + ((y-k) / a)
+                                result=`${firstAns},${secondAns}`
+                            }
+                        }
+                    } else {
+                        result = 'Error: missing variable/s'
+                    }
+                    break;
+                default:
+                    result = 'Error'
+                    break;
+            }
+            if(result || result === 0){
+                if(String(result) === 'Infinity'){
+                    result = 'Error: result is too large'
+                    return result
+                } else {
+                    if(String(result) === '-Infinity'){
+                        result = 'Error: result is too small'
+                        return result
+                    } else {
+                        return result
+                    }
+                }
+            } else {
+                result = 'Error'
+                return result
+            }
+        }
+    },
+    'Adding Polynomial Expressions': {
+        'display': (variables, selectedVariable) => {
+            const {S, ...rest} = variables 
+            let arr = Object.keys(rest)
+            const dashIndex = arr.indexOf("--");
+            const polyVariables = [arr.slice(0, dashIndex), arr.slice(dashIndex + 1)]
+            const tVArray1 = {}
+            for(let i=0;i<polyVariables[0].length;i++){
+                tVArray1[polyVariables[0][i]] = variables[polyVariables[0][i]]
+            }
+            let tVArray2 = {}
+            for(let i=0;i<polyVariables[1].length;i++){
+                tVArray2[polyVariables[1][i]] = variables[polyVariables[1][i]]
+            }
+            return(
+                <>
+                    <span style={styles.polynomialFlexColumn}>
+                        <span style={styles.polynomialFormula}> 
+                            {Object.keys(tVArray1).map((variable, index, arr) => {
+                                return (
+                                    <Fragment key={index}>
+                                        <span 
+                                            key={index} 
+                                            style={styles.inlineBlockDisplay}
+                                        >
+                                            {nonSerializedFormulaData.checkVar(variables, selectedVariable, variable, { addPlus: index === 0 ? false : true })}
+                                            {index !== arr.length - 1 &&
+                                                <span>x</span>}
+                                            {(arr.length - 1 - index !== 0 && arr.length - 1 - index !== 1) &&
+                                                <sup style={styles.polynomialExponent}>{arr.length - 1 - index}</sup>
+                                            }
+                                        </span>
+                                    </Fragment>
+                                );
+                            })}
+                        </span>
+                        <span style={styles.polynomialFormula}> 
+                            <span style={styles.polynomialOperation}>+</span>
+                            {Object.keys(tVArray2).map((variable, index, arr) => {
+                                return (
+                                    <Fragment key={index}>
+                                        <span 
+                                            key={index} 
+                                            style={styles.inlineBlockDisplay}
+                                        >
+                                            {nonSerializedFormulaData.checkVar(variables, selectedVariable, variable, { addPlus: index === 0 ? false : true })}
+                                            {index !== arr.length - 1 &&
+                                                <span>x</span>}
+                                            {(arr.length - 1 - index !== 0 && arr.length - 1 - index !== 1) &&
+                                                <sup style={styles.polynomialExponent}>{arr.length - 1 - index}</sup>
+                                            }
+                                        </span>
+                                    </Fragment>
+                                );
+                            })}
+                        </span>
+                        <span style={styles.polynomialDash}></span>
+                        <span style={styles.polynomialFormula}>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'S', {polynomial:true})} </span> 
+                    </span>
+                </>
+            )
+        },
+        'math': (selectedVariable, variables) => {
+            let updatedVariables = {...variables}
+            let result = 0
+            for(let key in variables){
+                if(key === updatedVariables[key]){
+                    updatedVariables[key] = ''
+                }
+            }
+            const {S, ...rest} = updatedVariables 
+            let arr = Object.keys(rest)
+            const dashIndex = arr.indexOf("--");
+            const polyVariables = [arr.slice(0, dashIndex), arr.slice(dashIndex + 1)]
+            const tVArray1 = {}
+            for(let i=0;i<polyVariables[0].length;i++){
+                tVArray1[polyVariables[0][i]] = updatedVariables[polyVariables[0][i]]
+            }
+            let tVArray2 = {}
+            for(let i=0;i<polyVariables[1].length;i++){
+                tVArray2[polyVariables[1][i]] = updatedVariables[polyVariables[1][i]]
+            }
+
+            switch(selectedVariable){
+                case 'S':
+                    const allValues = [...Object.values(tVArray1), ...Object.values(tVArray2)]
+                    if(nonSerializedFormulaData.check(allValues)){
+                        const firstPolyValues = Object.values(tVArray1).reverse()
+                        const secondPolyValues = Object.values(tVArray2).reverse()
+                        const firstPoly = new Polynomial(firstPolyValues)
+                        const secondPoly = new Polynomial(secondPolyValues)
+                        const sumPoly = firstPoly.add(secondPoly)
+                        const sumExponents = Object.keys(sumPoly.coeff).reverse()
+                        const sumCoefficients = Object.values(sumPoly.coeff).reverse()
+                        let sumString = ''
+                        for(let i=0; i < sumCoefficients.length; i++){
+                            const sign = String(sumCoefficients[i]).startsWith('-') || i===0?'':'+'
+                            const coefficient = nonSerializedFormulaData.formatValue(sumCoefficients[i], 'standard') === 1 && Number(sumExponents[i]) !== 0
+                                ? ''
+                                : (nonSerializedFormulaData.formatValue(sumCoefficients[i], 'standard') === -1 && Number(sumExponents[i]) !== 0
+                                    ? '-'
+                                    : nonSerializedFormulaData.formatValue(sumCoefficients[i], 'standard')
+                                )
+                            const x = Number(sumExponents[i]) === 0 ?'':'x'
+                            const exponent = (Number(sumExponents[i]) !== 0 && Number(sumExponents[i]) !== 1)
+                                ? `^${sumExponents[i]}`
+                                : ''
+                            sumString += `${sign}${coefficient}${x}${exponent}`
+                        }
+                        if(sumString === ''){
+                            sumString = '0'
+                        }
+                        result = `${sumString}|[${sumExponents.join('#')}:::${sumCoefficients.join('$')}]|`
+                    } else {
+                        result = 'Error: missing variable/s'
+                    }
+                    break;
+                default:
+                    result = 'Error'
+                    break;
+            }
+            if(result || result === 0){
+                if(String(result) === 'Infinity'){
+                    result = 'Error: result is too large'
+                    return result
+                } else {
+                    if(String(result) === '-Infinity'){
+                        result = 'Error: result is too small'
+                        return result
+                    } else {
+                        return result
+                    }
+                }
+            } else {
+                result = 'Error'
+                return result
+            }
+        }
+    },
+    'Subtracting Polynomial Expressions': {
+        'display': (variables, selectedVariable) => {
+            const {D, ...rest} = variables 
+            let arr = Object.keys(rest)
+            const dashIndex = arr.indexOf("--");
+            const polyVariables = [arr.slice(0, dashIndex), arr.slice(dashIndex + 1)]
+            const tVArray1 = {}
+            for(let i=0;i<polyVariables[0].length;i++){
+                tVArray1[polyVariables[0][i]] = variables[polyVariables[0][i]]
+            }
+            let tVArray2 = {}
+            for(let i=0;i<polyVariables[1].length;i++){
+                tVArray2[polyVariables[1][i]] = variables[polyVariables[1][i]]
+            }
+            return(
+                <>
+                    <span style={styles.polynomialFlexColumn}>
+                        <span style={styles.polynomialFormula}> 
+                            {Object.keys(tVArray1).map((variable, index, arr) => {
+                                return (
+                                    <Fragment key={index}>
+                                        <span 
+                                            key={index} 
+                                            style={styles.inlineBlockDisplay}
+                                        >
+                                            {nonSerializedFormulaData.checkVar(variables, selectedVariable, variable, { addPlus: index === 0 ? false : true })}
+                                            {index !== arr.length - 1 &&
+                                                <span>x</span>}
+                                            {(arr.length - 1 - index !== 0 && arr.length - 1 - index !== 1) &&
+                                                <sup style={styles.polynomialExponent}>{arr.length - 1 - index}</sup>
+                                            }
+                                        </span>
+                                    </Fragment>
+                                );
+                            })}
+                        </span>
+                        <span style={styles.polynomialFormula}> 
+                            <span style={styles.polynomialOperation}>-</span>
+                            {Object.keys(tVArray2).map((variable, index, arr) => {
+                                return (
+                                    <Fragment key={index}>
+                                        <span 
+                                            key={index} 
+                                            style={styles.inlineBlockDisplay}
+                                        >
+                                            {nonSerializedFormulaData.checkVar(variables, selectedVariable, variable, { addPlus: index === 0 ? false : true })}
+                                            {index !== arr.length - 1 &&
+                                                <span>x</span>}
+                                            {(arr.length - 1 - index !== 0 && arr.length - 1 - index !== 1) &&
+                                                <sup style={styles.polynomialExponent}>{arr.length - 1 - index}</sup>
+                                            }
+                                        </span>
+                                    </Fragment>
+                                );
+                            })}
+                        </span>
+                        <span style={styles.polynomialDash}></span>
+                        <span style={styles.polynomialFormula}>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'D', {polynomial:true})} </span> 
+                    </span>
+                </>
+            )
+        },
+        'math': (selectedVariable, variables) => {
+            let updatedVariables = {...variables}
+            let result = 0
+            for(let key in variables){
+                if(key === updatedVariables[key]){
+                    updatedVariables[key] = ''
+                }
+            }
+            const {D, ...rest} = updatedVariables 
+            let arr = Object.keys(rest)
+            const dashIndex = arr.indexOf("--");
+            const polyVariables = [arr.slice(0, dashIndex), arr.slice(dashIndex + 1)]
+            const tVArray1 = {}
+            for(let i=0;i<polyVariables[0].length;i++){
+                tVArray1[polyVariables[0][i]] = updatedVariables[polyVariables[0][i]]
+            }
+            let tVArray2 = {}
+            for(let i=0;i<polyVariables[1].length;i++){
+                tVArray2[polyVariables[1][i]] = updatedVariables[polyVariables[1][i]]
+            }
+
+            switch(selectedVariable){
+                case 'D':
+                    const allValues = [...Object.values(tVArray1), ...Object.values(tVArray2)]
+                    if(nonSerializedFormulaData.check(allValues)){
+                        const firstPolyValues = Object.values(tVArray1).reverse()
+                        const secondPolyValues = Object.values(tVArray2).reverse()
+                        const firstPoly = new Polynomial(firstPolyValues)
+                        const secondPoly = new Polynomial(secondPolyValues)
+                        const sumPoly = firstPoly.sub(secondPoly)
+                        const sumExponents = Object.keys(sumPoly.coeff).reverse()
+                        const sumCoefficients = Object.values(sumPoly.coeff).reverse()
+                        let sumString = ''
+                        for(let i=0; i < sumCoefficients.length; i++){
+                            const sign = String(sumCoefficients[i]).startsWith('-') || i===0?'':'+'
+                            const coefficient = nonSerializedFormulaData.formatValue(sumCoefficients[i], 'standard') === 1 && Number(sumExponents[i]) !== 0
+                                ? ''
+                                : (nonSerializedFormulaData.formatValue(sumCoefficients[i], 'standard') === -1 && Number(sumExponents[i]) !== 0
+                                    ? '-'
+                                    : nonSerializedFormulaData.formatValue(sumCoefficients[i], 'standard')
+                                )
+                            const x = Number(sumExponents[i]) === 0 ?'':'x'
+                            const exponent = (Number(sumExponents[i]) !== 0 && Number(sumExponents[i]) !== 1)
+                                ? `^${sumExponents[i]}`
+                                : ''
+                            sumString += `${sign}${coefficient}${x}${exponent}`
+                        }
+                        if(sumString === ''){
+                            sumString = '0'
+                        }
+                        result = `${sumString}|[${sumExponents.join('#')}:::${sumCoefficients.join('$')}]|`
+                    } else {
+                        result = 'Error: missing variable/s'
+                    }
+                    break;
+                default:
+                    result = 'Error'
+                    break;
+            }
+            if(result || result === 0){
+                if(String(result) === 'Infinity'){
+                    result = 'Error: result is too large'
+                    return result
+                } else {
+                    if(String(result) === '-Infinity'){
+                        result = 'Error: result is too small'
+                        return result
+                    } else {
+                        return result
+                    }
+                }
+            } else {
+                result = 'Error'
+                return result
+            }
+        }
+    },
+    'Multiplying Polynomial Expressions': {
+        'display': (variables, selectedVariable) => {
+            const {P, ...rest} = variables 
+            let arr = Object.keys(rest)
+            const dashIndex = arr.indexOf("--");
+            const polyVariables = [arr.slice(0, dashIndex), arr.slice(dashIndex + 1)]
+            const tVArray1 = {}
+            for(let i=0;i<polyVariables[0].length;i++){
+                tVArray1[polyVariables[0][i]] = variables[polyVariables[0][i]]
+            }
+            let tVArray2 = {}
+            for(let i=0;i<polyVariables[1].length;i++){
+                tVArray2[polyVariables[1][i]] = variables[polyVariables[1][i]]
+            }
+            return(
+                <>
+                    <span style={styles.polynomialFlexColumn}>
+                        <span style={styles.polynomialFormula}> 
+                            {Object.keys(tVArray1).map((variable, index, arr) => {
+                                return (
+                                    <Fragment key={index}>
+                                        <span 
+                                            key={index} 
+                                            style={styles.inlineBlockDisplay}
+                                        >
+                                            {nonSerializedFormulaData.checkVar(variables, selectedVariable, variable, { addPlus: index === 0 ? false : true })}
+                                            {index !== arr.length - 1 &&
+                                                <span>x</span>}
+                                            {(arr.length - 1 - index !== 0 && arr.length - 1 - index !== 1) &&
+                                                <sup style={styles.polynomialExponent}>{arr.length - 1 - index}</sup>
+                                            }
+                                        </span>
+                                    </Fragment>
+                                );
+                            })}
+                        </span>
+                        <span style={styles.polynomialFormula}> 
+                            <span style={styles.polynomialOperation}>×</span>
+                            {Object.keys(tVArray2).map((variable, index, arr) => {
+                                return (
+                                    <Fragment key={index}>
+                                        <span 
+                                            key={index} 
+                                            style={styles.inlineBlockDisplay}
+                                        >
+                                            {nonSerializedFormulaData.checkVar(variables, selectedVariable, variable, { addPlus: index === 0 ? false : true })}
+                                            {index !== arr.length - 1 &&
+                                                <span>x</span>}
+                                            {(arr.length - 1 - index !== 0 && arr.length - 1 - index !== 1) &&
+                                                <sup style={styles.polynomialExponent}>{arr.length - 1 - index}</sup>
+                                            }
+                                        </span>
+                                    </Fragment>
+                                );
+                            })}
+                        </span>
+                        <span style={styles.polynomialDash}></span>
+                        <span style={styles.polynomialFormula}>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'P', {polynomial:true})} </span> 
+                    </span>
+                </>
+            )
+        },
+        'math': (selectedVariable, variables) => {
+            let updatedVariables = {...variables}
+            let result = 0
+            for(let key in variables){
+                if(key === updatedVariables[key]){
+                    updatedVariables[key] = ''
+                }
+            }
+            const {P, ...rest} = updatedVariables 
+            let arr = Object.keys(rest)
+            const dashIndex = arr.indexOf("--");
+            const polyVariables = [arr.slice(0, dashIndex), arr.slice(dashIndex + 1)]
+            const tVArray1 = {}
+            for(let i=0;i<polyVariables[0].length;i++){
+                tVArray1[polyVariables[0][i]] = updatedVariables[polyVariables[0][i]]
+            }
+            let tVArray2 = {}
+            for(let i=0;i<polyVariables[1].length;i++){
+                tVArray2[polyVariables[1][i]] = updatedVariables[polyVariables[1][i]]
+            }
+
+            switch(selectedVariable){
+                case 'P':
+                    const allValues = [...Object.values(tVArray1), ...Object.values(tVArray2)]
+                    if(nonSerializedFormulaData.check(allValues)){
+                        const firstPolyValues = Object.values(tVArray1).reverse()
+                        const secondPolyValues = Object.values(tVArray2).reverse()
+                        const firstPoly = new Polynomial(firstPolyValues)
+                        const secondPoly = new Polynomial(secondPolyValues)
+                        const sumPoly = firstPoly.mul(secondPoly)
+                        const sumExponents = Object.keys(sumPoly.coeff).reverse()
+                        const sumCoefficients = Object.values(sumPoly.coeff).reverse()
+                        let sumString = ''
+                        for(let i=0; i < sumCoefficients.length; i++){
+                            const sign = String(sumCoefficients[i]).startsWith('-') || i===0?'':'+'
+                            const coefficient = nonSerializedFormulaData.formatValue(sumCoefficients[i], 'standard') === 1 && Number(sumExponents[i]) !== 0
+                                ? ''
+                                : (nonSerializedFormulaData.formatValue(sumCoefficients[i], 'standard') === -1 && Number(sumExponents[i]) !== 0
+                                    ? '-'
+                                    : nonSerializedFormulaData.formatValue(sumCoefficients[i], 'standard')
+                                )
+                            const x = Number(sumExponents[i]) === 0 ?'':'x'
+                            const exponent = (Number(sumExponents[i]) !== 0 && Number(sumExponents[i]) !== 1)
+                                ? `^${sumExponents[i]}`
+                                : ''
+                            sumString += `${sign}${coefficient}${x}${exponent}`
+                        }
+                        if(sumString === ''){
+                            sumString = '0'
+                        }
+                        result = `${sumString}|[${sumExponents.join('#')}:::${sumCoefficients.join('$')}]|`
+                    } else {
+                        result = 'Error: missing variable/s'
+                    }
+                    break;
+                default:
+                    result = 'Error'
+                    break;
+            }
+            if(result || result === 0){
+                if(String(result) === 'Infinity'){
+                    result = 'Error: result is too large'
+                    return result
+                } else {
+                    if(String(result) === '-Infinity'){
+                        result = 'Error: result is too small'
+                        return result
+                    } else {
+                        return result
+                    }
+                }
+            } else {
+                result = 'Error'
+                return result
+            }
+        }
+    },
+    'Dividing Polynomial Expressions': {
+        'display': (variables, selectedVariable) => {
+            const {Q, ...rest} = variables 
+            let arr = Object.keys(rest)
+            const dashIndex = arr.indexOf("--");
+            const polyVariables = [arr.slice(0, dashIndex), arr.slice(dashIndex + 1)]
+            const tVArray1 = {}
+            for(let i=0;i<polyVariables[0].length;i++){
+                tVArray1[polyVariables[0][i]] = variables[polyVariables[0][i]]
+            }
+            let tVArray2 = {}
+            for(let i=0;i<polyVariables[1].length;i++){
+                tVArray2[polyVariables[1][i]] = variables[polyVariables[1][i]]
+            }
+            return(
+                <>
+                    <span style={styles.polynomialFlexColumn}>
+                        <span style={styles.polynomialFormula}> 
+                            {Object.keys(tVArray1).map((variable, index, arr) => {
+                                return (
+                                    <Fragment key={index}>
+                                        <span 
+                                            key={index} 
+                                            style={styles.inlineBlockDisplay}
+                                        >
+                                            {nonSerializedFormulaData.checkVar(variables, selectedVariable, variable, { addPlus: index === 0 ? false : true })}
+                                            {index !== arr.length - 1 &&
+                                                <span>x</span>}
+                                            {(arr.length - 1 - index !== 0 && arr.length - 1 - index !== 1) &&
+                                                <sup style={styles.polynomialExponent}>{arr.length - 1 - index}</sup>
+                                            }
+                                        </span>
+                                    </Fragment>
+                                );
+                            })}
+                        </span>
+                        <span style={styles.polynomialFormula}> 
+                            <span style={styles.polynomialOperation}>÷</span>
+                            {Object.keys(tVArray2).map((variable, index, arr) => {
+                                return (
+                                    <Fragment key={index}>
+                                        <span 
+                                            key={index} 
+                                            style={styles.inlineBlockDisplay}
+                                        >
+                                            {nonSerializedFormulaData.checkVar(variables, selectedVariable, variable, { addPlus: index === 0 ? false : true })}
+                                            {index !== arr.length - 1 &&
+                                                <span>x</span>}
+                                            {(arr.length - 1 - index !== 0 && arr.length - 1 - index !== 1) &&
+                                                <sup style={styles.polynomialExponent}>{arr.length - 1 - index}</sup>
+                                            }
+                                        </span>
+                                    </Fragment>
+                                );
+                            })}
+                        </span>
+                        <span style={styles.polynomialDash}></span>
+                        <span style={styles.polynomialFormula}>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'Q', {polynomial:true, dividePolynomial:true})} </span> 
+                    </span>
+                </>
+            )
+        },
+        'math': (selectedVariable, variables) => {
+            let updatedVariables = {...variables}
+            let result = 0
+            for(let key in variables){
+                if(key === updatedVariables[key]){
+                    updatedVariables[key] = ''
+                }
+            }
+            const {Q, ...rest} = updatedVariables 
+            let arr = Object.keys(rest)
+            const dashIndex = arr.indexOf("--");
+            const polyVariables = [arr.slice(0, dashIndex), arr.slice(dashIndex + 1)]
+            const tVArray1 = {}
+            for(let i=0;i<polyVariables[0].length;i++){
+                tVArray1[polyVariables[0][i]] = updatedVariables[polyVariables[0][i]]
+            }
+            let tVArray2 = {}
+            for(let i=0;i<polyVariables[1].length;i++){
+                tVArray2[polyVariables[1][i]] = updatedVariables[polyVariables[1][i]]
+            }
+
+            switch(selectedVariable){
+                case 'Q':
+                    const allValues = [...Object.values(tVArray1), ...Object.values(tVArray2)]
+                    if(nonSerializedFormulaData.check(allValues)){
+                        try {
+                            const firstPolyValues = Object.values(tVArray1).reverse()
+                            const secondPolyValues = Object.values(tVArray2).reverse()
+                            const firstPoly = new Polynomial(firstPolyValues)
+                            const secondPoly = new Polynomial(secondPolyValues)
+                            const sumPoly = firstPoly.div(secondPoly)
+                            const sumExponents = Object.keys(sumPoly.coeff).reverse()
+                            const sumCoefficients = Object.values(sumPoly.coeff).reverse()
+
+                            let quotientCoeffs = [];
+                            let remainder = new Polynomial(firstPoly.coeff)
+                            while (remainder.degree() >= secondPoly.degree()) { 
+                                const leadCoeffQuotient = remainder.coeff[remainder.degree()] / secondPoly.coeff[secondPoly.degree()];
+                                const degreeDiff = remainder.degree() - secondPoly.degree();
+                                const termQuotient = new Polynomial({ [degreeDiff]: leadCoeffQuotient });
+                                quotientCoeffs[degreeDiff] = (quotientCoeffs[degreeDiff] || 0) + leadCoeffQuotient;
+                                remainder = remainder.sub(termQuotient.mul(secondPoly));
+                            }
+                            remainder = Object.values(remainder.coeff)
+
+                            let sumString = ''
+                            for(let i=0; i < sumCoefficients.length; i++){
+                                const sign = String(sumCoefficients[i]).startsWith('-') || i===0?'':'+'
+                                const coefficient = nonSerializedFormulaData.formatValue(sumCoefficients[i], 'standard') === 1 && Number(sumExponents[i]) !== 0
+                                    ? ''
+                                    : (nonSerializedFormulaData.formatValue(sumCoefficients[i], 'standard') === -1 && Number(sumExponents[i]) !== 0
+                                        ? '-'
+                                        : nonSerializedFormulaData.formatValue(sumCoefficients[i], 'standard')
+                                    )
+                                const x = Number(sumExponents[i]) === 0 ?'':'x'
+                                const exponent = (Number(sumExponents[i]) !== 0 && Number(sumExponents[i]) !== 1)
+                                    ? `^${sumExponents[i]}`
+                                    : ''
+                                sumString += `${sign}${coefficient}${x}${exponent}`
+                            }
+                            if(sumString === ''){
+                                sumString = '0'
+                            }
+                            let remExponents = Object.keys(new Polynomial(remainder).coeff)
+                            let remCoefficients = Object.values(new Polynomial(remainder).coeff)
+                            let remNumerator = remainder.map((val) => nonSerializedFormulaData.formatValue(val, 'standard'))
+                            let remainderString = isUndefined(remainder[0])
+                                ? ''
+                                : `+((${new Polynomial(remNumerator).toString()})/(${secondPoly.toString()}))`
+                            result = `${sumString}${remainderString}|[${sumExponents.join('#')}:::${sumCoefficients.join('$')}&&&${remainder.length===0?'NOREMAINDER':`${remExponents.reverse().join('"')}???${remCoefficients.reverse().join('/')}`}@@@${Object.keys(secondPoly.coeff).reverse().join('!')}%%%${Object.values(secondPoly.coeff).reverse().join('*')}]|`
+                        } catch (e) {
+                            result = 'Error: cannot divide by zero'
+                        }
+                    } else {
+                        result = 'Error: missing variable/s'
+                    }
+                    break;
+                default:
+                    result = 'Error'
+                    break;
+            }
+            if(result || result === 0){
+                if(String(result) === 'Infinity'){
+                    result = 'Error: result is too large'
+                    return result
+                } else {
+                    if(String(result) === '-Infinity'){
+                        result = 'Error: result is too small'
+                        return result
+                    } else {
+                        return result
+                    }
+                }
+            } else {
+                result = 'Error'
+                return result
+            }
+        }
+    },
     'Axis of Symmetry': {
         'display': (variables, selectedVariable) => (
             <>
@@ -2702,10 +4374,10 @@ export const nonSerializedFormulaData = {
                     updatedVariables[key] = ''
                 }
             }
-            let {h, a, b} = updatedVariables
+            let {x, a, b} = updatedVariables
 
             switch(selectedVariable){
-                case 'h':
+                case 'x':
                     if(nonSerializedFormulaData.check([a, b])){
                         if(Number(a) !== 0){
                             result = (b * -1) / (2 * a)
@@ -2717,19 +4389,135 @@ export const nonSerializedFormulaData = {
                     }
                     break;
                 case 'a':
-                    if(nonSerializedFormulaData.check([h, b])){
-                        if(Number(h) !== 0){
-                            result = (b * -1) / (2 * h)
+                    if(nonSerializedFormulaData.check([x, b])){
+                        if(Number(x) !== 0){
+                            result = (b * -1) / (2 * x)
                         } else {
-                            result = 'Error: h cannot be zero'
+                            result = 'Error: x cannot be zero'
                         }
                     } else {
                         result = 'Error: missing variable/s'
                     }
                     break;
                 case 'b':
-                    if(nonSerializedFormulaData.check([h, a])){
-                        result = (-2 * a * h)
+                    if(nonSerializedFormulaData.check([x, a])){
+                        result = (-2 * a * x)
+                    } else {
+                        result = 'Error: missing variable/s'
+                    }
+                    break;
+                default:
+                    result = 'Error'
+                    break;
+            }
+            if(result || result === 0){
+                if(String(result) === 'Infinity'){
+                    result = 'Error: result is too large'
+                    return result
+                } else {
+                    if(String(result) === '-Infinity'){
+                        result = 'Error: result is too small'
+                        return result
+                    } else {
+                        return result
+                    }
+                }
+            } else {
+                result = 'Error'
+                return result
+            }
+        }
+    },
+    'Cubic Solver': {
+        'display':(variables, selectedVariable) => (
+            <>
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'Y')}
+                &nbsp;=&nbsp;
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'a')}
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'x', {paren:true})}
+                <sup>3</sup>&nbsp;+&nbsp;
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'b')}
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'x', {paren:true})}
+                <sup>2</sup>&nbsp;+&nbsp;
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'c')}
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'x', {paren:true})}
+                &nbsp;+&nbsp;
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'd')}
+            </>
+        ),
+        'math':(selectedVariable, variables) => {
+            let updatedVariables = {...variables}
+            let result = 0
+            for(let key in variables){
+                if(key === updatedVariables[key]){
+                    updatedVariables[key] = ''
+                }
+            }
+            let {Y, x, a, b, c, d} = updatedVariables
+            const D = d-Y
+
+            switch(selectedVariable){
+                case 'Y':
+                    if(nonSerializedFormulaData.check([x, a, b, c, d])){
+                        result = math.multiply(a, math.pow(x, 3)) + math.multiply(b, math.pow(x, 2)) + math.multiply(c, x) + Number(d)
+                    } else {
+                        result = 'Error: missing variable/s'
+                    }
+                    break;
+                case 'x':
+                    if(nonSerializedFormulaData.check([Y, a, b, c, d])){
+                        const roots = math.polynomialRoot(D, c, b, a)
+                        const firstRoot = typeof roots[0] === 'object'
+                            ?nonSerializedFormulaData.formatComplex(roots[0])
+                            :roots[0]
+                        const secondRoot = typeof roots[1] === 'object'
+                            ?nonSerializedFormulaData.formatComplex(roots[1])
+                            :roots[1]
+                        const thirdRoot = typeof roots[2] === 'object'
+                            ?nonSerializedFormulaData.formatComplex(roots[2])
+                            :roots[2]
+                        let formattedRoots = [firstRoot, secondRoot, thirdRoot]
+                        result= `${formattedRoots}`
+                    } else {
+                        result = 'Error: missing variable/s'
+                    }
+                    break;
+                case 'a':
+                    if(nonSerializedFormulaData.check([x, Y, b, c, d])){
+                        if(Number(x) !== 0){
+                            result = (-b * (x ** 2) - c * x - D) / (x ** 3)
+                        } else {
+                            result = 'Error: x cannot be zero'
+                        }
+                    } else {
+                        result = 'Error: missing variable/s'
+                    }
+                    break;
+                case 'b':
+                    if(nonSerializedFormulaData.check([Y, x, a, c, d])){
+                        if(Number(x) !== 0){
+                            result = (-a * (x ** 3) - c * x - D) / (x ** 2)
+                        } else {
+                            result = 'Error: x cannot be zero'
+                        }
+                    } else {
+                        result = 'Error: missing variable/s'
+                    }
+                    break;
+                case 'c':
+                    if(nonSerializedFormulaData.check([Y, x, a, b, d])){
+                        if(Number(x) !== 0){
+                            result = (-a * (x ** 3) - b * (x ** 2) - D) / x
+                        } else {
+                            result = 'Error: x cannot be zero'
+                        }
+                    } else {
+                        result = 'Error: missing variable/s'
+                    }
+                    break;
+                case 'd':
+                    if(nonSerializedFormulaData.check([Y, x, a, b, c])){
+                        result = -(a * (x ** 3) + b * (x ** 2) + c * x) + Number(Y)
                     } else {
                         result = 'Error: missing variable/s'
                     }
@@ -3449,6 +5237,774 @@ export const nonSerializedFormulaData = {
                         result = 'Error: missing variable/s'
                     }
                     break;
+                default:
+                    result = 'Error'
+                    break;
+            }
+            if(result || result === 0){
+                if(String(result) === 'Infinity'){
+                    result = 'Error: result is too large'
+                    return result
+                } else {
+                    if(String(result) === '-Infinity'){
+                        result = 'Error: result is too small'
+                        return result
+                    } else {
+                        return result
+                    }
+                }
+            } else {
+                result = 'Error'
+                return result
+            }
+        }
+    },
+    'Standard form to Polar form': {
+        'display': (variables, selectedVariable) => (
+            <>
+                <Fraction parsing='children' negativeStyling={true}>
+                    <>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'a')}</p>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'b')}</p>
+                    </>
+                </Fraction>
+                <Fraction parsing='children' negativeStyling={true} addPlus={true} negParen={true}>
+                    <>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'c')}</p>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'd')}</p>
+                    </>
+                </Fraction>
+                {nonSerializedFormulaData.complexNumberI}
+                &nbsp;=&nbsp;
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'r', {alwaysDarkRed:true})}
+                ({nonSerializedFormulaData.trigDisplay('cos')}
+                ({nonSerializedFormulaData.checkVar(variables, selectedVariable, '𝜃', {alwaysDarkRed:true})})
+                +&nbsp;{nonSerializedFormulaData.complexNumberI}
+                {nonSerializedFormulaData.trigDisplay('sin')}(
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, '𝜃', {alwaysDarkRed:true})}))
+            </>
+        ),
+        'math':(selectedVariable, variables) => {
+            let updatedVariables = {...variables}
+            for(let key in variables){
+                if(key === updatedVariables[key]){
+                    updatedVariables[key] = ''
+                }
+            }
+            let {a, b, c, d} = updatedVariables
+
+            let result = 0
+            switch(selectedVariable){
+                case 'ANS':
+                    if(nonSerializedFormulaData.check([a, b, c, d])){
+                        if(Number(b) !== 0 && Number(d) !== 0){
+                            const x = a/b
+                            const y = c/d
+                            const rValue = math.sqrt(math.add(x * x, y * y))
+                            const thetaValue = math.arg(math.complex(x, y))
+                            result = `${rValue}||${thetaValue}`
+                        } else {
+                            result = 'Error: cannot divide by zero||Error: cannot divide by zero'
+                        }
+                        break;
+                    } else {
+                        result = 'Error: missing variable/s||Error: missing variable/s'
+                        break;
+                    }
+                default:
+                    result = 'Error||Error'
+                    break;
+            }
+            if(result || result === 0){
+                if(String(result) === 'Infinity'){
+                    result = 'Error: result is too large||Error: result is too large'
+                    return result
+                } else {
+                    if(String(result) === '-Infinity'){
+                        result = 'Error: result is too small||Error: result is too small'
+                        return result
+                    } else {
+                        return result
+                    }
+                }
+            } else {
+                result = 'Error||Error'
+                return result
+            }
+        }
+    },
+    'Standard form to Euler\'s form': {
+        'display': (variables, selectedVariable) => (
+            <>
+                <Fraction parsing='children' negativeStyling={true}>
+                    <>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'a')}</p>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'b')}</p>
+                    </>
+                </Fraction>
+                <Fraction parsing='children' negativeStyling={true} addPlus={true} negParen={true}>
+                    <>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'c')}</p>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'd')}</p>
+                    </>
+                </Fraction>
+                {nonSerializedFormulaData.complexNumberI}
+                &nbsp;=&nbsp;
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'r', {alwaysDarkRed:true})}
+                {nonSerializedFormulaData.e}
+                <sup>{nonSerializedFormulaData.complexNumberI}{nonSerializedFormulaData.checkVar(variables, selectedVariable, '𝜃', {alwaysDarkRed:true, lessThanZeroParen:true})}</sup>
+            </>
+        ),
+        'math':(selectedVariable, variables) => {
+            let updatedVariables = {...variables}
+            for(let key in variables){
+                if(key === updatedVariables[key]){
+                    updatedVariables[key] = ''
+                }
+            }
+            let {a, b, c, d} = updatedVariables
+
+            let result = 0
+            switch(selectedVariable){
+                case 'ANS':
+                    if(nonSerializedFormulaData.check([a, b, c, d])){
+                        if(Number(b) !== 0 && Number(d) !== 0){
+                            const x = a/b
+                            const y = c/d
+                            const rValue = math.sqrt(math.add(x * x, y * y))
+                            const thetaValue = math.arg(math.complex(x, y))
+                            result = `${rValue}||${thetaValue}`
+                        } else {
+                            result = 'Error: cannot divide by zero||Error: cannot divide by zero'
+                        }
+                        break;
+                    } else {
+                        result = 'Error: missing variable/s||Error: missing variable/s'
+                        break;
+                    }
+                default:
+                    result = 'Error||Error'
+                    break;
+            }
+            if(result || result === 0){
+                if(String(result) === 'Infinity'){
+                    result = 'Error: result is too large||Error: result is too large'
+                    return result
+                } else {
+                    if(String(result) === '-Infinity'){
+                        result = 'Error: result is too small||Error: result is too small'
+                        return result
+                    } else {
+                        return result
+                    }
+                }
+            } else {
+                result = 'Error||Error'
+                return result
+            }
+        }
+    },
+    'Standard form to Conjugate': {
+        'display': (variables, selectedVariable) => (
+            <>
+                <Fraction parsing='children' negativeStyling={true}>
+                    <>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'a')}</p>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'b')}</p>
+                    </>
+                </Fraction>
+                &nbsp;+&nbsp;
+                <Fraction parsing='children' negativeStyling={true} lessThanZeroParen={true}>
+                    <>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'c')}</p>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'd')}</p>
+                    </>
+                </Fraction>
+                &nbsp;&rarr;&nbsp;
+                <Fraction parsing='children' negativeStyling={true} numColor='darkred' denColor='darkred'>
+                    <>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'a')}</p>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'b')}</p>
+                    </>
+                </Fraction>
+                &nbsp;-&nbsp;
+                <Fraction parsing='children' negativeStyling={true} lessThanZeroParen={true} numColor='darkred' denColor='darkred'>
+                    <>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'c')}</p>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'd')}</p>
+                    </>
+                </Fraction>
+            </>
+        ),
+        'math':(selectedVariable, variables) => {
+            let updatedVariables = {...variables}
+            for(let key in variables){
+                if(key === updatedVariables[key]){
+                    updatedVariables[key] = ''
+                }
+            }
+            let {a, b, c, d} = updatedVariables
+
+            let result = 0
+            switch(selectedVariable){
+                case 'ANS':
+                    if(nonSerializedFormulaData.check([a, b, c, d])){
+                        result = 'Error: if you see this, something is wrong'
+                        break;
+                    } else {
+                        result = 'Error: missing variable/s'
+                        break;
+                    }
+                default:
+                    result = 'Error'
+                    break;
+            }
+            if(result || result === 0){
+                if(String(result) === 'Infinity'){
+                    result = 'Error: result is too large'
+                    return result
+                } else {
+                    if(String(result) === '-Infinity'){
+                        result = 'Error: result is too small'
+                        return result
+                    } else {
+                        return result
+                    }
+                }
+            } else {
+                result = 'Error'
+                return result
+            }
+        }
+    },
+    'Polar form to Standard form': {
+        'display': (variables, selectedVariable) => (
+            <>
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'r')}
+                ({nonSerializedFormulaData.trigDisplay('cos')}
+                ({nonSerializedFormulaData.checkVar(variables, selectedVariable, '𝜃')})
+                +&nbsp;{nonSerializedFormulaData.complexNumberI}
+                {nonSerializedFormulaData.trigDisplay('sin')}(
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, '𝜃')}))
+                =&nbsp;
+                <Fraction parsing='children' negativeStyling={true} numColor='darkred' denColor='darkred'>
+                    <>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'a')}</p>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'b')}</p>
+                    </>
+                </Fraction>
+                <Fraction parsing='children' negativeStyling={true} addPlus={true} negParen={true} numColor='darkred' denColor='darkred'>
+                    <>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'c')}</p>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'd')}</p>
+                    </>
+                </Fraction>
+                {nonSerializedFormulaData.complexNumberI}
+            </>
+        ),
+        'math':(selectedVariable, variables) => {
+            let updatedVariables = {...variables}
+            for(let key in variables){
+                if(key === updatedVariables[key]){
+                    updatedVariables[key] = ''
+                }
+            }
+            let {r, 𝜃} = updatedVariables
+
+            let result = 0
+            switch(selectedVariable){
+                case 'ANS':
+                    if(nonSerializedFormulaData.check([r, 𝜃])){
+                        const realPart = math.fraction(r * math.cos(𝜃))
+                        const realnum = realPart.s * realPart.n
+                        const realDen = realPart.d
+                        const imaginaryPart = math.fraction(r * math.sin(𝜃))
+                        const imaginarynum = imaginaryPart.s * imaginaryPart.n
+                        const imaginaryDen = imaginaryPart.d
+                        result = `${realnum}||${realDen}||${imaginarynum}||${imaginaryDen}`
+                        break;
+                    } else {
+                        result = 'Error: missing variable/s||Error: missing variable/s||Error: missing variable/s||Error: missing variable/s'
+                        break;
+                    }
+                default:
+                    result = 'Error||Error||Error||Error'
+                    break;
+            }
+            if(result || result === 0){
+                if(String(result) === 'Infinity'){
+                    result = 'Error: result is too large||Error: result is too large||Error: result is too large||Error: result is too large'
+                    return result
+                } else {
+                    if(String(result) === '-Infinity'){
+                        result = 'Error: result is too small||Error: result is too small||Error: result is too small||Error: result is too small'
+                        return result
+                    } else {
+                        return result
+                    }
+                }
+            } else {
+                result = 'Error||Error||Error||Error'
+                return result
+            }
+        }
+    },
+    'Polar form to Euler\'s form': {
+        'display': (variables, selectedVariable) => (
+            <>
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'r')}
+                ({nonSerializedFormulaData.trigDisplay('cos')}
+                ({nonSerializedFormulaData.checkVar(variables, selectedVariable, '𝜃')})
+                +&nbsp;{nonSerializedFormulaData.complexNumberI}
+                {nonSerializedFormulaData.trigDisplay('sin')}(
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, '𝜃')}))
+                =&nbsp;
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'r', {alwaysDarkRed:true})}
+                {nonSerializedFormulaData.e}
+                <sup>{nonSerializedFormulaData.complexNumberI}{nonSerializedFormulaData.checkVar(variables, selectedVariable, '𝜃', {alwaysDarkRed:true, lessThanZeroParen:true})}</sup>
+            </>
+        ),
+        'math':(selectedVariable, variables) => {
+            let updatedVariables = {...variables}
+            for(let key in variables){
+                if(key === updatedVariables[key]){
+                    updatedVariables[key] = ''
+                }
+            }
+            let {r} = updatedVariables
+
+            let result = 0
+            switch(selectedVariable){
+                case 'ANS':
+                    if(nonSerializedFormulaData.check([r])){
+                        result = 'Error: if you see this, something is wrong'
+                        break;
+                    } else {
+                        result = 'Error: missing variable/s'
+                        break;
+                    }
+                default:
+                    result = 'Error'
+                    break;
+            }
+            if(result || result === 0){
+                if(String(result) === 'Infinity'){
+                    result = 'Error: result is too large'
+                    return result
+                } else {
+                    if(String(result) === '-Infinity'){
+                        result = 'Error: result is too small'
+                        return result
+                    } else {
+                        return result
+                    }
+                }
+            } else {
+                result = 'Error'
+                return result
+            }
+        }
+    },
+    'Polar form to Conjugate': {
+        'display': (variables, selectedVariable) => (
+            <>
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'r')}
+                ({nonSerializedFormulaData.trigDisplay('cos')}
+                ({nonSerializedFormulaData.checkVar(variables, selectedVariable, '𝜃')})
+                +&nbsp;{nonSerializedFormulaData.complexNumberI}
+                {nonSerializedFormulaData.trigDisplay('sin')}(
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, '𝜃')}))
+                &rarr;&nbsp;
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'r', {alwaysDarkRed:true})}
+                ({nonSerializedFormulaData.trigDisplay('cos')}
+                (-{nonSerializedFormulaData.checkVar(variables, selectedVariable, '𝜃', {alwaysDarkRed:true, lessThanZeroParen:true})})
+                +&nbsp;{nonSerializedFormulaData.complexNumberI}
+                {nonSerializedFormulaData.trigDisplay('sin')}(-
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, '𝜃', {alwaysDarkRed: true, lessThanZeroParen:true})}))
+            </>
+        ),
+        'math':(selectedVariable, variables) => {
+            let updatedVariables = {...variables}
+            for(let key in variables){
+                if(key === updatedVariables[key]){
+                    updatedVariables[key] = ''
+                }
+            }
+            let {r} = updatedVariables
+
+            let result = 0
+            switch(selectedVariable){
+                case 'ANS':
+                    if(nonSerializedFormulaData.check([r])){
+                        result = 'Error: if you see this, something is wrong'
+                        break;
+                    } else {
+                        result = 'Error: missing variable/s'
+                        break;
+                    }
+                default:
+                    result = 'Error'
+                    break;
+            }
+            if(result || result === 0){
+                if(String(result) === 'Infinity'){
+                    result = 'Error: result is too large'
+                    return result
+                } else {
+                    if(String(result) === '-Infinity'){
+                        result = 'Error: result is too small'
+                        return result
+                    } else {
+                        return result
+                    }
+                }
+            } else {
+                result = 'Error'
+                return result
+            }
+        }
+    },
+    'Euler\'s form to Standard form': {
+        'display': (variables, selectedVariable) => (
+            <>
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'r')}
+                {nonSerializedFormulaData.e}
+                <sup>{nonSerializedFormulaData.complexNumberI}{nonSerializedFormulaData.checkVar(variables, selectedVariable, '𝜃', {lessThanZeroParen:true})}</sup>
+                &nbsp;=&nbsp;
+                <Fraction parsing='children' negativeStyling={true} numColor='darkred' denColor='darkred'>
+                    <>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'a')}</p>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'b')}</p>
+                    </>
+                </Fraction>
+                <Fraction parsing='children' negativeStyling={true} addPlus={true} negParen={true} numColor='darkred' denColor='darkred'>
+                    <>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'c')}</p>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'd')}</p>
+                    </>
+                </Fraction>
+                {nonSerializedFormulaData.complexNumberI}
+            </>
+        ),
+        'math':(selectedVariable, variables) => {
+            let updatedVariables = {...variables}
+            for(let key in variables){
+                if(key === updatedVariables[key]){
+                    updatedVariables[key] = ''
+                }
+            }
+            let {r, 𝜃} = updatedVariables
+
+            let result = 0
+            switch(selectedVariable){
+                case 'ANS':
+                    if(nonSerializedFormulaData.check([r, 𝜃])){
+                        const realPart = math.fraction(r * math.cos(𝜃))
+                        const realnum = realPart.s * realPart.n
+                        const realDen = realPart.d
+                        const imaginaryPart = math.fraction(r * math.sin(𝜃))
+                        const imaginarynum = imaginaryPart.s * imaginaryPart.n
+                        const imaginaryDen = imaginaryPart.d
+                        result = `${realnum}||${realDen}||${imaginarynum}||${imaginaryDen}`
+                        break;
+                    } else {
+                        result = 'Error: missing variable/s||Error: missing variable/s||Error: missing variable/s||Error: missing variable/s'
+                        break;
+                    }
+                default:
+                    result = 'Error||Error||Error||Error'
+                    break;
+            }
+            if(result || result === 0){
+                if(String(result) === 'Infinity'){
+                    result = 'Error: result is too large||Error: result is too large||Error: result is too large||Error: result is too large'
+                    return result
+                } else {
+                    if(String(result) === '-Infinity'){
+                        result = 'Error: result is too small||Error: result is too small||Error: result is too small||Error: result is too small'
+                        return result
+                    } else {
+                        return result
+                    }
+                }
+            } else {
+                result = 'Error||Error||Error||Error'
+                return result
+            }
+        }
+    },
+    'Euler\'s form to Polar form': {
+        'display': (variables, selectedVariable) => (
+            <>
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'r',)}
+                {nonSerializedFormulaData.e}
+                <sup>{nonSerializedFormulaData.complexNumberI}{nonSerializedFormulaData.checkVar(variables, selectedVariable, '𝜃', {lessThanZeroParen:true})}</sup>
+                &nbsp;=&nbsp;
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'r', {alwaysDarkRed:true})}
+                ({nonSerializedFormulaData.trigDisplay('cos')}
+                ({nonSerializedFormulaData.checkVar(variables, selectedVariable, '𝜃', {alwaysDarkRed:true})})
+                +&nbsp;{nonSerializedFormulaData.complexNumberI}
+                {nonSerializedFormulaData.trigDisplay('sin')}(
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, '𝜃', {alwaysDarkRed:true})}))
+            </>
+        ),
+        'math':(selectedVariable, variables) => {
+            let updatedVariables = {...variables}
+            for(let key in variables){
+                if(key === updatedVariables[key]){
+                    updatedVariables[key] = ''
+                }
+            }
+            let {r} = updatedVariables
+
+            let result = 0
+            switch(selectedVariable){
+                case 'ANS':
+                    if(nonSerializedFormulaData.check([r])){
+                        result = 'Error: if you see this, something is wrong'
+                        break;
+                    } else {
+                        result = 'Error: missing variable/s'
+                        break;
+                    }
+                default:
+                    result = 'Error'
+                    break;
+            }
+            if(result || result === 0){
+                if(String(result) === 'Infinity'){
+                    result = 'Error: result is too large'
+                    return result
+                } else {
+                    if(String(result) === '-Infinity'){
+                        result = 'Error: result is too small'
+                        return result
+                    } else {
+                        return result
+                    }
+                }
+            } else {
+                result = 'Error'
+                return result
+            }
+        }
+    },
+    'Euler\'s form to Conjugate': {
+        'display': (variables, selectedVariable) => (
+            <>
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'r')}
+                {nonSerializedFormulaData.e}
+                <sup>{nonSerializedFormulaData.complexNumberI}{nonSerializedFormulaData.checkVar(variables, selectedVariable, '𝜃', {lessThanZeroParen:true})}</sup>
+                &nbsp;&rarr;&nbsp;
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'r', {alwaysDarkRed:true})}
+                {nonSerializedFormulaData.e}
+                <sup>-{nonSerializedFormulaData.complexNumberI}{nonSerializedFormulaData.checkVar(variables, selectedVariable, '𝜃', {alwaysDarkRed:true, lessThanZeroParen:true})}</sup>
+            </>
+        ),
+        'math':(selectedVariable, variables) => {
+            let updatedVariables = {...variables}
+            for(let key in variables){
+                if(key === updatedVariables[key]){
+                    updatedVariables[key] = ''
+                }
+            }
+            let {r} = updatedVariables
+
+            let result = 0
+            switch(selectedVariable){
+                case 'ANS':
+                    if(nonSerializedFormulaData.check([r])){
+                        result = 'Error: if you see this, something is wrong'
+                        break;
+                    } else {
+                        result = 'Error: missing variable/s'
+                        break;
+                    }
+                default:
+                    result = 'Error'
+                    break;
+            }
+            if(result || result === 0){
+                if(String(result) === 'Infinity'){
+                    result = 'Error: result is too large'
+                    return result
+                } else {
+                    if(String(result) === '-Infinity'){
+                        result = 'Error: result is too small'
+                        return result
+                    } else {
+                        return result
+                    }
+                }
+            } else {
+                result = 'Error'
+                return result
+            }
+        }
+    },
+    'Conjugate to Standard form': {
+        'display': (variables, selectedVariable) => (
+            <>
+                <Fraction parsing='children' negativeStyling={true}>
+                    <>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'a')}</p>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'b')}</p>
+                    </>
+                </Fraction>
+                &nbsp;-&nbsp;
+                <Fraction parsing='children' negativeStyling={true} lessThanZeroParen={true}>
+                    <>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'c')}</p>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'd')}</p>
+                    </>
+                </Fraction>
+                &nbsp;&rarr;&nbsp;
+                <Fraction parsing='children' negativeStyling={true} numColor='darkred' denColor='darkred'>
+                    <>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'a')}</p>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'b')}</p>
+                    </>
+                </Fraction>
+                &nbsp;+&nbsp;
+                <Fraction parsing='children' negativeStyling={true} lessThanZeroParen={true} numColor='darkred' denColor='darkred'>
+                    <>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'c')}</p>
+                        <p>{nonSerializedFormulaData.checkVar(variables, selectedVariable, 'd')}</p>
+                    </>
+                </Fraction>
+            </>
+        ),
+        'math':(selectedVariable, variables) => {
+            let updatedVariables = {...variables}
+            for(let key in variables){
+                if(key === updatedVariables[key]){
+                    updatedVariables[key] = ''
+                }
+            }
+            let {a, b, c, d} = updatedVariables
+
+            let result = 0
+            switch(selectedVariable){
+                case 'ANS':
+                    if(nonSerializedFormulaData.check([a, b, c, d])){
+                        result = 'Error: if you see this, something is wrong'
+                        break;
+                    } else {
+                        result = 'Error: missing variable/s'
+                        break;
+                    }
+                default:
+                    result = 'Error'
+                    break;
+            }
+            if(result || result === 0){
+                if(String(result) === 'Infinity'){
+                    result = 'Error: result is too large'
+                    return result
+                } else {
+                    if(String(result) === '-Infinity'){
+                        result = 'Error: result is too small'
+                        return result
+                    } else {
+                        return result
+                    }
+                }
+            } else {
+                result = 'Error'
+                return result
+            }
+        }
+    },
+    'Conjugate to Polar form': {
+        'display': (variables, selectedVariable) => (
+            <>
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'r')}
+                ({nonSerializedFormulaData.trigDisplay('cos')}
+                (-{nonSerializedFormulaData.checkVar(variables, selectedVariable, '𝜃', {lessThanZeroParen:true})})
+                +&nbsp;{nonSerializedFormulaData.complexNumberI}
+                {nonSerializedFormulaData.trigDisplay('sin')}(-
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, '𝜃', {lessThanZeroParen:true})}))
+                &rarr;&nbsp;
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'r', {alwaysDarkRed:true})}
+                ({nonSerializedFormulaData.trigDisplay('cos')}
+                ({nonSerializedFormulaData.checkVar(variables, selectedVariable, '𝜃', {alwaysDarkRed:true})})
+                +&nbsp;{nonSerializedFormulaData.complexNumberI}
+                {nonSerializedFormulaData.trigDisplay('sin')}(
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, '𝜃', {alwaysDarkRed:true})}))
+            </>
+        ),
+        'math':(selectedVariable, variables) => {
+            let updatedVariables = {...variables}
+            for(let key in variables){
+                if(key === updatedVariables[key]){
+                    updatedVariables[key] = ''
+                }
+            }
+            let {r} = updatedVariables
+
+            let result = 0
+            switch(selectedVariable){
+                case 'ANS':
+                    if(nonSerializedFormulaData.check([r])){
+                        result = 'Error: if you see this, something is wrong'
+                        break;
+                    } else {
+                        result = 'Error: missing variable/s'
+                        break;
+                    }
+                default:
+                    result = 'Error'
+                    break;
+            }
+            if(result || result === 0){
+                if(String(result) === 'Infinity'){
+                    result = 'Error: result is too large'
+                    return result
+                } else {
+                    if(String(result) === '-Infinity'){
+                        result = 'Error: result is too small'
+                        return result
+                    } else {
+                        return result
+                    }
+                }
+            } else {
+                result = 'Error'
+                return result
+            }
+        }
+    },
+    'Conjugate to Euler\'s form': {
+        'display': (variables, selectedVariable) => (
+            <>
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'r')}
+                {nonSerializedFormulaData.e}
+                <sup>-{nonSerializedFormulaData.complexNumberI}{nonSerializedFormulaData.checkVar(variables, selectedVariable, '𝜃', {lessThanZeroParen:true})}</sup>
+                &nbsp;&rarr;&nbsp;
+                {nonSerializedFormulaData.checkVar(variables, selectedVariable, 'r', {alwaysDarkRed:true})}
+                {nonSerializedFormulaData.e}
+                <sup>{nonSerializedFormulaData.complexNumberI}{nonSerializedFormulaData.checkVar(variables, selectedVariable, '𝜃', {alwaysDarkRed:true, lessThanZeroParen:true})}</sup>
+            </>
+        ),
+        'math':(selectedVariable, variables) => {
+            let updatedVariables = {...variables}
+            for(let key in variables){
+                if(key === updatedVariables[key]){
+                    updatedVariables[key] = ''
+                }
+            }
+            let {r} = updatedVariables
+
+            let result = 0
+            switch(selectedVariable){
+                case 'ANS':
+                    if(nonSerializedFormulaData.check([r])){
+                        result = 'Error: if you see this, something is wrong'
+                        break;
+                    } else {
+                        result = 'Error: missing variable/s'
+                        break;
+                    }
                 default:
                     result = 'Error'
                     break;

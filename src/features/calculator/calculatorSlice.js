@@ -1,4 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
+import { isUndefined } from 'mathjs';
 
 const initialState = {
 	tabData:[
@@ -273,6 +274,121 @@ const initialState = {
 			calculationType: {},
 			leftSideUtil: {},
 		},{
+			name: 'Algebraic Complex Addition',
+			type: 'formula',
+			formula: '(p/q + (r/s)i) = (a/b + (c/d)i) + (e/f + (g/h)i)',
+			fraction:true,
+			defaultVariable: 'p',
+			defaultLeftSideUtilValue: '',
+			variables: [
+				'p', 'q', 'r', 's', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'
+			],
+			fadedVariables: {
+				a: ['b', 'e', 'f', 'p', 'q'],
+				b: ['a', 'e', 'f', 'p', 'q'],
+				e: ['b', 'a', 'f', 'p', 'q'],
+				f: ['b', 'e', 'a', 'p', 'q'],
+				p: ['b', 'e', 'f', 'a', 'q'],
+				q: ['b', 'e', 'f', 'p', 'a'],
+				c: ['d', 'g', 'h', 'r', 's'],
+				d: ['c', 'g', 'h', 'r', 's'],
+				g: ['d', 'c', 'h', 'r', 's'],
+				h: ['d', 'g', 'c', 'r', 's'],
+				r: ['d', 'g', 'h', 'c', 's'],
+				s: ['d', 'g', 'h', 'r', 'c'],
+			},
+			units: {},
+			formatTypes: {},
+			calculationType: {},
+			leftSideUtil: {},
+			definitions: {
+				'p,a,e': 'Real Number Numerators',
+				'q,b,f': 'Real Number Denominators',
+				'r,c,g': 'Complex Number Numerators',
+				's,d,h': 'Complex Number Denominators',
+			},
+			moreInfo:{
+				features: [
+					'the real and imaginary parts are<br> calculated separately, which is why<br> certain inputs are hidden'
+				]
+			}
+		},{
+			name: 'Algebraic Complex Subtraction',
+			type: 'formula',
+			formula: '(p/q + (r/s)i) = (a/b + (c/d)i) - (e/f + (g/h)i)',
+			fraction:true,
+			defaultVariable: 'p',
+			defaultLeftSideUtilValue: '',
+			variables: [
+				'p', 'q', 'r', 's', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'
+			],
+			fadedVariables: {
+				a: ['b', 'e', 'f', 'p', 'q'],
+				b: ['a', 'e', 'f', 'p', 'q'],
+				e: ['b', 'a', 'f', 'p', 'q'],
+				f: ['b', 'e', 'a', 'p', 'q'],
+				p: ['b', 'e', 'f', 'a', 'q'],
+				q: ['b', 'e', 'f', 'p', 'a'],
+				c: ['d', 'g', 'h', 'r', 's'],
+				d: ['c', 'g', 'h', 'r', 's'],
+				g: ['d', 'c', 'h', 'r', 's'],
+				h: ['d', 'g', 'c', 'r', 's'],
+				r: ['d', 'g', 'h', 'c', 's'],
+				s: ['d', 'g', 'h', 'r', 'c'],
+			},
+			units: {},
+			formatTypes: {},
+			calculationType: {},
+			leftSideUtil: {},
+			definitions: {
+				'p,a,e': 'Real Number Numerators',
+				'q,b,f': 'Real Number Denominators',
+				'r,c,g': 'Complex Number Numerators',
+				's,d,h': 'Complex Number Denominators',
+			},
+			moreInfo:{
+				features: [
+					'the real and imaginary parts are<br> calculated separately, which is why<br> certain inputs are hidden'
+				]
+			}
+		},{
+			name: 'Factors of an Integer',
+			type: 'formula_expression',
+			formula: 'the factors are n',
+			defaultVariable: 'Factors',
+			inputWrapMarginLeft: '100px',
+			variables: [
+				'Factors', 'n'
+			],
+			units: {},
+			formatTypes: {},
+			calculationType: {},
+			leftSideUtil: {},
+		},{
+			name: 'Greatest Common Factor (GCF)',
+			type: 'formula_expression',
+			formula: 'The Greatest Common Factor of n_1 and n_2 is GCF',
+			defaultVariable: 'GCF',
+			variables: [
+				'GCF', 'n_1', 'n_2'
+			],
+			units: {},
+			formatTypes: {},
+			calculationType: {},
+			leftSideUtil: {},
+		},{
+			name: 'Least Common Multiple (LCM)',
+			type: 'formula_expression',
+			formula: 'The Least Common Multiple of n_1 and n_2 is LCM',
+			defaultVariable: 'LCM',
+			variables: [
+				'LCM', 'n_1', 'n_2'
+			],
+			units: {},
+			formatTypes: {},
+			calculationType: {},
+			leftSideUtil: {},
+		},{
 			name: 'Algebraic Addition',
 			type: 'array',
 			defaultVariable: 'S',
@@ -485,7 +601,7 @@ const initialState = {
 			},
 			moreInfo:{
 				features:[
-					'Go to Algebra > Axis of symmetry to find h',
+					'Go to Algebra > Axis of symmetry to find h<br>(subsitute h with x)',
 					'(h, k) is the vertex of the parabola',
 					'The axis of symmetry is x = h',
 					'If a > 0, then the maximum value of y is k',
@@ -495,28 +611,124 @@ const initialState = {
 		},{
 			name: 'Axis of Symmetry',
 			type: 'formula',
-			formula: 'h = -b/2a',
-			defaultVariable: 'h',
+			formula: 'x = -b/2a',
+			defaultVariable: 'x',
 			defaultLeftSideUtilValue: '',
-			variables: ['h', 'a', 'b'],
+			variables: ['x', 'a', 'b'],
 			units: {},
 			formatTypes: {},
 			calculationType: {},
 			leftSideUtil: {},
 			definitions: {
-				h: 'Y coordinate of the vertex',
+				x: 'Y coordinate of the vertex',
 				a: 'Quadratic coefficient',
 				b: 'Linear coefficient'
 			},
 			moreInfo: {
 				features:[
-					'Go to Algebra > General Form of a Quadratic <br>to find k(subsitute x with h)',
-					'(h, k) is the vertex of the parabola',
-					'The axis of symmetry is x = h',
+					'Go to Algebra > Vertex Form of a Quadratic <br>to find k',
+					'(x, k) is the vertex of the parabola',
 					'If a > 0, then the maximum value of y is k',
 					'If a < 0, then the minimum value of y is k'
 				]
 			}
+		},{
+			name: 'Cubic Solver',
+			type: 'formula',
+			formula: 'Y = ax^3 + bx^2 + cx + d',
+			defaultVariable: 'x',
+			defaultLeftSideUtilValue: '',
+			variables: ['Y', 'x', 'a', 'b', 'c', 'd'],
+			units:{},
+			formatTypes:{},
+			calculationType:{},
+			leftSideUtil:{},
+			definitions:{
+				Y: 'Y value',
+				x: 'X value',
+				a: 'Cubic coefficient',
+				b: 'Quadratic coefficient',
+				c: 'Linear coefficient',
+				d: 'Constant term'
+			},
+			moreInfo:{}
+		},{
+			name: 'Adding Polynomial Expressions',
+			type: 'polynomial_expression',
+			formula: 'formula will vary',
+			defaultVariable: 'S',
+			defaultLeftSideUtilValue: '4|4',
+			maxTerms: 10,
+			variables: [
+				'S', 'a', 'b', 'c', 'd', '--', 'k', 'l', 'm', 'n'
+			],
+			units: {},
+			formatTypes: {},
+			calculationType: {},
+			leftSideUtil: {},
+		},{
+			name: 'Subtracting Polynomial Expressions',
+			type: 'polynomial_expression',
+			formula: 'formula will vary',
+			defaultVariable: 'D',
+			defaultLeftSideUtilValue: '4|4',
+			maxTerms: 10,
+			variables: [
+				'D', 'a', 'b', 'c', 'd', '--', 'k', 'l', 'm', 'n'
+			],
+			units: {},
+			formatTypes: {},
+			calculationType: {},
+			leftSideUtil: {},
+		},{
+			name: 'Multiplying Polynomial Expressions',
+			type: 'polynomial_expression',
+			formula: 'formula will vary',
+			defaultVariable: 'P',
+			defaultLeftSideUtilValue: '4|4',
+			maxTerms: 5,
+			variables: [
+				'P', 'a', 'b', 'c', 'd', '--', 'k', 'l', 'm', 'n'
+			],
+			units: {},
+			formatTypes: {},
+			calculationType: {},
+			leftSideUtil: {},
+		},{
+			name: 'Dividing Polynomial Expressions',
+			type: 'polynomial_expression',
+			formula: 'formula will vary',
+			defaultVariable: 'Q',
+			defaultLeftSideUtilValue: '4|4',
+			maxTerms: 8,
+			variables: [
+				'Q', 'a', 'b', 'c', 'd', '--', 'k', 'l', 'm', 'n'
+			],
+			units: {},
+			formatTypes: {},
+			calculationType: {},
+			leftSideUtil: {},
+		},{
+			name: 'Absolute Value Equation',
+			type: 'formula',
+			formula: 'y = a|x-h| + k',
+			defaultVariable: 'y',
+			defaultLeftSideUtilValue: '',
+			variables: [
+				'y', 'a', 'x', 'h', 'k'
+			],
+			units: {},
+			formatTypes: {},
+			calculationType: {},
+			leftSideUtil: {},
+			definitions: {
+				y: 'Y-value',
+				x: 'X-value',
+				a: 'Reflection and vertical stretch factor',
+				h: 'Horizontal shift',
+				k: 'Vertical Shift'
+			},
+			moreInfo: {}
 		},{
 			name: 'Arithmetic Sequence (Explicit Formula)',
 			type: 'formula',
@@ -546,7 +758,7 @@ const initialState = {
 			],
 			fadedVariables: {
 				a_1: ['n'],
-				'a_n-1': ['a_n', 'a_1', 'r']
+				'a_n-1': ['a_n', 'a_1', 'd']
 			},
 			omittedSolveFor:['a_1'],
 			units: {},
@@ -701,6 +913,246 @@ const initialState = {
 				features: [
 					'the absolute value of r has to be <br>less than 1 (|r| < 1)'
 				]
+			}
+		},{
+			name: 'Standard form to Polar form',
+			type: 'formula_expression',
+			formula: 'a/b + (c/d)i = r(cos(𝜃) + i sin(𝜃))',
+			defaultVariable: 'ANS',
+			fraction:true,
+			otherAnswers: ['r', '𝜃'],
+			variables: [
+				'r', 'a', 'b', 'c', 'd', '𝜃', 'ANS'
+			],
+			units: {},
+			formatTypes: {},
+			calculationType: {𝜃:'approximation', r:'approximation'},
+			leftSideUtil: {},
+			includeDefinitions:true,
+			definitions: {
+				a: 'Numerator of real part of complex number',
+				b: 'Denominator of real part of complex number',
+				c: 'Numerator of complex part of complex number',
+				d: 'Denominator of complex part of complex number',
+				r: 'Magnitude (modulus) of complex number',
+				𝜃: 'Argument (angle in radians) of the complex number'
+			}
+		},{
+			name: 'Standard form to Euler\'s form',
+			type: 'formula_expression',
+			formula: 'a/b + (c/d)i = re^i𝜃',
+			defaultVariable: 'ANS',
+			fraction:true,
+			otherAnswers: ['r', '𝜃'],
+			variables: [
+				'r', 'a', 'b', 'c', 'd', '𝜃', 'ANS'
+			],
+			units: {},
+			formatTypes: {},
+			calculationType: {𝜃:'approximation', r: 'approximation'},
+			leftSideUtil: {},
+			includeDefinitions:true,
+			definitions: {
+				a: 'Numerator of real part of complex number',
+				b: 'Denominator of real part of complex number',
+				c: 'Numerator of complex part of complex number',
+				d: 'Denominator of complex part of complex number',
+				r: 'Magnitude (modulus) of complex number',
+				𝜃: 'Argument (angle in radians) of the complex number'
+			}
+		},{
+			name: 'Standard form to Conjugate',
+			type: 'formula_expression',
+			formula: 'a/b + (c/d)i -> a/b - (c/d)i',
+			defaultVariable: 'ANS',
+			fraction:true,
+			otherAnswers: [],
+			variables: [
+				'ANS', 'a', 'b', 'c', 'd', 
+			],
+			units: {},
+			formatTypes: {},
+			calculationType: {},
+			leftSideUtil: {},
+			includeDefinitions:true,
+			definitions: {
+				a: 'Numerator of real part of complex number',
+				b: 'Denominator of real part of complex number',
+				c: 'Numerator of complex part of complex number',
+				d: 'Denominator of complex part of complex number',
+			}
+		},{
+			name: 'Polar form to Standard form',
+			type: 'formula_expression',
+			formula: 'r(cos(𝜃) + i sin(𝜃)) = a/b + (c/d)i',
+			defaultVariable: 'ANS',
+			otherAnswers: ['a', 'b', 'c', 'd'],
+			variables: [
+				'a', 'b', 'c', 'd', 'r', '𝜃', 'ANS'
+			],
+			units: {},
+			formatTypes: {},
+			calculationType: {},
+			leftSideUtil: {},
+			includeDefinitions:true,
+			definitions: {
+				r: 'Magnitude (modulus) of complex number',
+				𝜃: 'Argument (angle in radians) of the complex number',
+				a: 'Numerator of real part of complex number',
+				b: 'Denominator of real part of complex number',
+				c: 'Numerator of complex part of complex number',
+				d: 'Denominator of complex part of complex number'
+			}
+		},{
+			name: 'Polar form to Euler\'s form',
+			type: 'formula_expression',
+			formula: 'r(cos(𝜃) + i sin(𝜃)) = re^i𝜃',
+			defaultVariable: 'ANS',
+			otherAnswers: [],
+			variables: [
+				'ANS', 'r', '𝜃', 
+			],
+			units: {},
+			formatTypes: {},
+			calculationType: {},
+			leftSideUtil: {},
+			includeDefinitions:true,
+			definitions: {
+				r: 'Magnitude (modulus) of complex number',
+				𝜃: 'Argument (angle in radians) of the complex number'
+			}
+		},{
+			name: 'Polar form to Conjugate',
+			type: 'formula_expression',
+			formula: 'r(cos(𝜃) + i sin(𝜃)) -> r(cos(-𝜃) + i sin(-𝜃))',
+			defaultVariable: 'ANS',
+			otherAnswers: [],
+			variables: [
+				'ANS', 'r', '𝜃', 
+			],
+			units: {},
+			formatTypes: {},
+			calculationType: {},
+			leftSideUtil: {},
+			includeDefinitions:true,
+			definitions: {
+				r: 'Magnitude (modulus) of complex number',
+				𝜃: 'Argument (angle in radians) of the complex number'
+			}
+		},{
+			name: 'Euler\'s form to Standard form',
+			type: 'formula_expression',
+			formula: 're^i𝜃 = a/b + (c/d)i',
+			defaultVariable: 'ANS',
+			otherAnswers: ['a', 'b', 'c', 'd'],
+			variables: [
+				'a', 'b', 'c', 'd', 'r', '𝜃', 'ANS'
+			],
+			units: {},
+			formatTypes: {},
+			calculationType: {},
+			leftSideUtil: {},
+			includeDefinitions:true,
+			definitions: {
+				a: 'Numerator of real part of complex number',
+				b: 'Denominator of real part of complex number',
+				c: 'Numerator of complex part of complex number',
+				d: 'Denominator of complex part of complex number',
+				r: 'Magnitude (modulus) of complex number',
+				𝜃: 'Argument (angle in radians) of the complex number'
+			}
+		},{
+			name: 'Euler\'s form to Polar form',
+			type: 'formula_expression',
+			formula: 're^i𝜃 = r(cos(𝜃) + i sin(𝜃))',
+			defaultVariable: 'ANS',
+			otherAnswers: [],
+			variables: [
+				'ANS', 'r', '𝜃', 
+			],
+			units: {},
+			formatTypes: {},
+			calculationType: {},
+			leftSideUtil: {},
+			includeDefinitions:true,
+			definitions: {
+				r: 'Magnitude (modulus) of complex number',
+				𝜃: 'Argument (angle in radians) of the complex number'
+			}
+		},{
+			name: 'Euler\'s form to Conjugate',
+			type: 'formula_expression',
+			formula: 're^i𝜃 -> re^-i𝜃',
+			defaultVariable: 'ANS',
+			otherAnswers: [],
+			variables: [
+				'ANS', 'r', '𝜃', 
+			],
+			units: {},
+			formatTypes: {},
+			calculationType: {},
+			leftSideUtil: {},
+			includeDefinitions:true,
+			definitions: {
+				r: 'Magnitude (modulus) of complex number',
+				𝜃: 'Argument (angle in radians) of the complex number'
+			}
+		},{
+			name: 'Conjugate to Standard form',
+			type: 'formula_expression',
+			formula: 'a/b - (c/d)i -> a/b + (c/d)i',
+			defaultVariable: 'ANS',
+			fraction:true,
+			otherAnswers: [],
+			variables: [
+				'ANS', 'a', 'b', 'c', 'd', 
+			],
+			units: {},
+			formatTypes: {},
+			calculationType: {},
+			leftSideUtil: {},
+			includeDefinitions:true,
+			definitions: {
+				a: 'Numerator of real part of complex number',
+				b: 'Denominator of real part of complex number',
+				c: 'Numerator of complex part of complex number',
+				d: 'Denominator of complex part of complex number',
+			}
+		},{
+			name: 'Conjugate to Polar form',
+			type: 'formula_expression',
+			formula: 'r(cos(-𝜃) + i sin(-𝜃)) -> r(cos(𝜃) + i sin(𝜃))',
+			defaultVariable: 'ANS',
+			otherAnswers: [],
+			variables: [
+				'ANS', 'r', '𝜃', 
+			],
+			units: {},
+			formatTypes: {},
+			calculationType: {},
+			leftSideUtil: {},
+			includeDefinitions:true,
+			definitions: {
+				r: 'Magnitude (modulus) of complex number',
+				𝜃: 'Argument (angle in radians) of the complex number'
+			}
+		},{
+			name: 'Conjugate to Euler\'s form',
+			type: 'formula_expression',
+			formula: 're^-i𝜃 -> re^i𝜃',
+			defaultVariable: 'ANS',
+			otherAnswers: [],
+			variables: [
+				'ANS', 'r', '𝜃', 
+			],
+			units: {},
+			formatTypes: {},
+			calculationType: {},
+			leftSideUtil: {},
+			includeDefinitions:true,
+			definitions: {
+				r: 'Magnitude (modulus) of complex number',
+				𝜃: 'Argument (angle in radians) of the complex number'
 			}
 		},{
 			name: 'Mean',
@@ -862,6 +1314,13 @@ export const calculatorSlice = createSlice({
 			const {name} = action.payload
 			const currentTabData = state.tabData.find(obj => obj.name === name)
 			const newId = state.tabs.at(-1)?.id + 1
+			let defaultAnswer = 'Error: missing variable/s'
+			if(!isUndefined(currentTabData.otherAnswers)){
+				defaultAnswer = ''
+				for(let i = 0; i < currentTabData.otherAnswers.length; i++){
+					defaultAnswer += `Error: missing variable/s${i===currentTabData.otherAnswers.length-1?'':'||'}`
+				}
+			}
 			if(currentTabData){
 				if(currentTabData.type === 'formula'){
 					state.tabs.push({
@@ -871,7 +1330,7 @@ export const calculatorSlice = createSlice({
 						variables: currentTabData.variables.reduce((acc, curr) => ({ ...acc, [curr]: curr }), {}),
 						selectedVariable: currentTabData.defaultVariable,
 						leftSideUtilValue: currentTabData.defaultLeftSideUtilValue,
-						answer: 'Error: missing variable/s',
+						answer: defaultAnswer,
 						conversions: {}
 					})
 				} else if(currentTabData.type === 'formula_expression'){
@@ -882,7 +1341,7 @@ export const calculatorSlice = createSlice({
 						variables: currentTabData.variables.reduce((acc, curr) => ({ ...acc, [curr]: curr }), {}),
 						selectedVariable: currentTabData.defaultVariable,
 						leftSideUtilValue: currentTabData.defaultLeftSideUtilValue,
-						answer: 'Error: missing variable/s',
+						answer: defaultAnswer,
 						conversions: {}
 					})
 				} else if(currentTabData.type === 'array'){
@@ -894,7 +1353,7 @@ export const calculatorSlice = createSlice({
 						selectedVariable: currentTabData.defaultVariable,
 						leftSideUtilValue: currentTabData.defaultLeftSideUtilValue,
 						arrayVar: 'a',
-						answer: 'Error: missing variable/s'
+						answer: defaultAnswer
 					})
 				} else if(currentTabData.type === 'array_expression'){
 					state.tabs.push({
@@ -905,9 +1364,20 @@ export const calculatorSlice = createSlice({
 						selectedVariable: currentTabData.defaultVariable,
 						leftSideUtilValue: currentTabData.defaultLeftSideUtilValue,
 						arrayVar: 'a',
-						answer: 'Error: missing variable/s'
+						answer: defaultAnswer
 					})
-				}
+				} else if(currentTabData.type === 'polynomial_expression'){
+					state.tabs.push({
+						id:newId,
+						mode: currentTabData.name,
+						type: currentTabData.type,
+						variables: currentTabData.variables.reduce((acc, curr) => ({ ...acc, [curr]: curr }), {}),
+						selectedVariable: currentTabData.defaultVariable,
+						leftSideUtilValue: currentTabData.defaultLeftSideUtilValue,
+						answer: defaultAnswer,
+						conversions: {}
+					})
+				} 
 				state.currentTabId = state.tabs[state.tabs.length - 1].id
 			}
 		},

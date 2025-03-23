@@ -66,7 +66,6 @@ export function Calculator(props) {
                 i++;
             }
         }
-        console.log(groups)
         let formattedGroups = JSON.parse(JSON.stringify(groups));
 
         for (i = 0; i < formattedGroups.length; i++) {
@@ -174,9 +173,9 @@ export function Calculator(props) {
                 value: newValue
             }));
             let updatedVariables = {}
-            if(type === 'formula_expression' && 
+            if((type === 'formula_expression' || type === 'formula') && 
                 (!isUndefined(tD.fraction)? tD.fraction: false) &&
-                ("acegikmoqsuwy".includes(variable)) &&
+                ("acegikmoprtvxz".includes(variable)) &&
                 (e.nativeEvent.inputType !== 'deleteContentBackward')
             ) {
                 const nextVar = String.fromCharCode(variable.charCodeAt(0) + 1)
@@ -205,6 +204,18 @@ export function Calculator(props) {
             }
             const answer = nonSerializedFormulaData[mode]['math'](currentTab.selectedVariable, updatedVariables);
             dispatch(getAnswer({ id: tabId, answer: answer, selectedVariable: currentTab.selectedVariable }));
+            if(!isUndefined(tD.otherAnswers)){
+                let answerVariable = answer
+                if(String(answerVariable).includes('||')){
+                    for(let i = 0; i < tD.otherAnswers.length; i++){
+                        dispatch(updateInputs({
+                            id: tabId,
+                            variable: tD.otherAnswers[i],
+                            value: String(answerVariable).split('||')[i]
+                        }))
+                    }
+                }
+            }
         }
 
         setTimeout(() => {
@@ -212,7 +223,14 @@ export function Calculator(props) {
         }, 0);
     };
     const handleKeyDown = (e, index) => {
-        const keys = Object.keys(tV);
+        const tVArray = {array: {...tV}}
+        if(!isUndefined(tD.otherAnswers)){
+            (tD.otherAnswers).forEach(otherAnswer => {
+                delete tVArray.array[otherAnswer]
+            });
+            delete tVArray.array['ANS']
+        }
+        const keys = Object.keys(tVArray.array);
         let nextIndex = index;
         const currentInput = document.activeElement;
         if (e.key === "ArrowDown" || 
@@ -221,31 +239,103 @@ export function Calculator(props) {
             (e.shiftKey && e.key === 'Tab') ||
             e.key === 'Enter'
         ) {
-            e.preventDefault()
-            do {
-                nextIndex += (e.key === "ArrowDown" || (!e.shiftKey && e.key === 'Tab') || e.key ===  'Enter') ? 1 : -1;
-                if (nextIndex < 0) {
-                    nextIndex = keys.length - 1;
-                } else if (nextIndex >= keys.length) {
-                    nextIndex = 0;
+            if(type === 'polynomial_expression'){
+                e.preventDefault()
+                const validKeys = {...tV}
+                delete validKeys['--']
+                delete validKeys[currentTab.selectedVariable]
+                for(let i = 0; i < Object.keys(validKeys).length; i++){
+                    if(document.querySelector(`input[name="${Object.keys(tV)[i]}"]`)?.parentNode?.classList?.contains(styles.fade)){
+                        delete validKeys[Object.keys(tV)[i]]
+                    }
                 }
-                
-            } while (
-                nextIndex >= 0 &&
-                nextIndex < keys.length &&
-                document.querySelector(`input[name="${keys[nextIndex]}"]`)
-                    ?.parentNode
-                    ?.classList.contains(styles.fade)
-            );
-            if (nextIndex >= 0 && nextIndex < keys.length) {
-                let nextVariable = keys[nextIndex];
-                let nextInput = document.querySelector(`input[name="${nextVariable}"]`);
-    
-                if (nextInput) {
-                    setTimeout(() => {
-                        nextInput.focus();
-                        nextInput.selectionStart = nextInput.selectionEnd = nextInput.value.length;
-                    }, 0);
+                let oldIdx = Object.keys(validKeys).indexOf(currentInput.name)
+                let currentIdx = oldIdx
+                currentIdx += (e.key === "ArrowDown" || 
+                    (!e.shiftKey && e.key === 'Tab') || 
+                    e.key ===  'Enter'
+                ) ? 1 : -1;
+                let newIndex = Object.keys(validKeys)[currentIdx]
+                if(isUndefined(newIndex)){
+                    if(Object.keys(validKeys)[oldIdx] === Object.keys(validKeys)[Object.keys(validKeys).length - 1]){
+                        newIndex = Object.keys(validKeys)[0]
+                    } else if(Object.keys(validKeys)[oldIdx] === Object.keys(validKeys)[0]){
+                        newIndex = Object.keys(validKeys)[Object.keys(validKeys).length - 1]
+                    }
+                }
+                let newInput = document.querySelector(`input[name="${newIndex}"]`)
+                setTimeout(() => {
+                    newInput.focus();
+                    newInput.selectionStart = newInput.selectionEnd = newInput.value.length;
+                }, 0);
+            } else if(type === 'array'){
+                e.preventDefault()
+                const validKeys = {...tV}
+                for(let i = 0; i < Object.keys(validKeys).length; i++){
+                    if(document.querySelector(`input[name="${Object.keys(tV)[i]}"]`).parentNode.classList.contains(styles.fade)){
+                        delete validKeys[Object.keys(tV)[i]]
+                    }
+                }
+                let oldIdx = Object.keys(validKeys).indexOf(currentInput.name)
+                let currentIdx = oldIdx
+                currentIdx += (e.key === "ArrowDown" || 
+                    (!e.shiftKey && e.key === 'Tab') || 
+                    e.key ===  'Enter'
+                ) ? 1 : -1;
+                let newIndex = Object.keys(validKeys)[currentIdx]
+                if(isUndefined(newIndex)){
+                    if(Object.keys(validKeys)[oldIdx] === Object.keys(validKeys)[Object.keys(validKeys).length - 1]){
+                        newIndex = Object.keys(validKeys)[0]
+                    } else if(Object.keys(validKeys)[oldIdx] === Object.keys(validKeys)[0]){
+                        newIndex = Object.keys(validKeys)[Object.keys(validKeys).length - 1]
+                    }
+                }
+                let newInput = document.querySelector(`input[name="${newIndex}"]`)
+                setTimeout(() => {
+                    newInput.focus();
+                    newInput.selectionStart = newInput.selectionEnd = newInput.value.length;
+                }, 0);
+            } else {
+                e.preventDefault()
+                do {
+                    nextIndex += (e.key === "ArrowDown" || (!e.shiftKey && e.key === 'Tab') || e.key ===  'Enter') ? 1 : -1;
+                    if (nextIndex < 0) {
+                        nextIndex = keys.length - 1;
+                    } else if (nextIndex >= keys.length) {
+                        nextIndex = 0;
+                    }
+                    
+                } while (
+                    nextIndex >= 0 &&
+                    nextIndex < keys.length &&
+                    document.querySelector(`input[name="${keys[nextIndex]}"]`)
+                        ?.parentNode
+                        ?.classList.contains(styles.fade)
+                );
+                if (nextIndex >= 0 && nextIndex < keys.length) {
+                    let nextVariable = keys[nextIndex];
+                    if(mode === 'Polar form to Standard form'
+                        || mode === 'Polar form to Euler\'s form'
+                        || mode === 'Polar form to Conjugate'
+                        || mode === 'Euler\'s form to Standard form'
+                        || mode === 'Euler\'s form to Polar form'
+                        || mode === 'Euler\'s form to Conjugate'
+                        || mode === 'Conjugate to Polar form'
+                        || mode === 'Conjugate to Euler\'s form'
+                    ){
+                        if(index === 1){
+                            nextVariable = '𝜃'
+                        } else {
+                            nextVariable = 'r'
+                        }
+                    }
+                    let nextInput = document.querySelector(`input[name="${nextVariable}"]`);
+                    if (nextInput) {
+                        setTimeout(() => {
+                            nextInput.focus();
+                            nextInput.selectionStart = nextInput.selectionEnd = nextInput.value.length;
+                        }, 0);
+                    }
                 }
             }
             currentInput.setSelectionRange(currentInput.selectionStart, currentInput.selectionEnd);
@@ -288,7 +378,7 @@ export function Calculator(props) {
     
         let formattedValue;
 
-        if(type === 'formula' || type === 'formula_expression'){
+        if(type === 'formula' || type === 'formula_expression' || type === 'polynomial_expression'){
             formattedValue = formatValue(value, tD.formatTypes[variable]);
         } else if(type === 'array' || type === 'array_expression'){
             formattedValue = value
@@ -339,13 +429,26 @@ export function Calculator(props) {
             variable: variable,
             value: formattedValue,
         }));
-    
+        const answer = nonSerializedFormulaData[mode]['math'](currentTab.selectedVariable, tV)
         dispatch(getAnswer({
             id: tabId,
-            answer: nonSerializedFormulaData[mode]['math'](currentTab.selectedVariable, tV),
+            answer: answer,
             selectedVariable: currentTab.selectedVariable
         }));
+        if(!isUndefined(tD.otherAnswers)){
+            let answerVariable = answer
+            if(String(answerVariable).includes('||')){
+                for(let i = 0; i < tD.otherAnswers.length; i++){
+                    dispatch(updateInputs({
+                        id: tabId,
+                        variable: tD.otherAnswers[i],
+                        value: String(answerVariable).split('||')[i]
+                    }))
+                }
+            }
+        }
     }; 
+    
     if(type === 'formula'){
         return (
             <div className={styles.calculator}>
@@ -364,25 +467,90 @@ export function Calculator(props) {
                 <div className={styles.enter}>
                     <h2>Enter:</h2>
                     <div className={styles.variables}>
-                        {Object.keys(tV).map((variable, index) => (
-                            <Variable
-                                styles={styles}
-                                getRoundedValue={getRoundedValue}
-                                handleInputChange={handleInputChange}
-                                handleKeyDown={handleKeyDown}
-                                handleBlur={handleBlur}
-                                currentTab={currentTab}
-                                tabVariables={tabVariables}
-                                tD={tD}
-                                tV={tV}
-                                tVArray={tVArray}
-                                variable={variable}
-                                index={index}
-                                key={index}
-                                minWidth={9}
-                                placeholder={'Enter Here'}
-                            />
-                        ))}
+                        {(() => {
+                            let variableConfig = {
+                                columnCount: 1,
+                                minWidth: 9,
+                                placeholder: 'Enter Here',
+                            }
+                            if(Object.keys(tV).length < 8){
+                                variableConfig = {
+                                    columnCount: 1,
+                                    minWidth: 9,
+                                    placeholder: 'Enter Here',
+                                    errorMsg: 'Error: missing variable/s'
+                                }
+                            } else if (Object.keys(tV).length < 12){
+                                variableConfig = {
+                                    columnCount: 2,
+                                    minWidth: 6,
+                                    placeholder: 'Enter',
+                                    errorMsg: 'Error: missing variable/s'
+                                }
+                            } else if (Object.keys(tV).length < 19){
+                                variableConfig = {
+                                    columnCount: 3,
+                                    minWidth: 5,
+                                    placeholder: 'Enter',
+                                    errorMsg: 'Error: missing variable/s',
+                                    scrunch: true
+                                }
+                            } else {
+                                variableConfig = {
+                                    columnCount: 5,
+                                    minWidth: 2,
+                                    placeholder: '',
+                                    errorMsg: 'Error: missing variable/s',
+                                    scrunch: true
+                                }
+                            }
+                            return (
+                                <div>
+                                    {(() => {
+                                        const variables = Object.keys(tV);
+                                        const columnCount = variableConfig.columnCount;
+                                        const rowCount = Math.ceil(variables.length / columnCount);
+
+                                        return Array.from({ length: rowCount }).map((_, rowIndex, arr) => (
+                                        <div key={rowIndex} className={styles.flex}>
+                                            {Array.from({ length: columnCount }).map((_, colIndex) => {
+                                            const varIndex = rowIndex + colIndex * rowCount;
+                                            const currentVar = variables[varIndex];
+                                            if (!currentVar) return null;
+                                            
+                                            return (
+                                                <React.Fragment key={varIndex}>
+                                                    <Variable
+                                                        styles={styles}
+                                                        getRoundedValue={getRoundedValue}
+                                                        handleInputChange={handleInputChange}
+                                                        handleKeyDown={handleKeyDown}
+                                                        handleBlur={handleBlur}
+                                                        currentTab={currentTab}
+                                                        tabVariables={tabVariables}
+                                                        tD={tD}
+                                                        tV={tV}
+                                                        tVArray={tVArray}
+                                                        variable={currentVar}
+                                                        index={varIndex}
+                                                        key={varIndex}
+                                                        minWidth={variableConfig.minWidth}
+                                                        placeholder={variableConfig.placeholder}
+                                                        errorMsg={variableConfig.errorMsg}
+                                                        scrunch={variableConfig.scrunch}
+                                                    />
+                                                    {varIndex !== variables.length - 1 && Object.keys(tV).length > 7
+                                                        && <h3 className={styles.comma}>,</h3>
+                                                    }
+                                                </React.Fragment>
+                                            );
+                                            })}
+                                        </div>
+                                        ));
+                                    })()}
+                                </div>
+                            )
+                        })()}
                     </div>
                 </div>
                 <div className={styles.answer}>
@@ -467,6 +635,12 @@ export function Calculator(props) {
                         {(() => {
                             const tVArray = {array: {...tV}}
                             delete tVArray.array[Object.keys(tVArray.array)[0]]
+                            if(!isUndefined(tD.otherAnswers)){
+                                (tD.otherAnswers).forEach(otherAnswer => {
+                                    delete tVArray.array[otherAnswer]
+                                });
+                                delete tVArray.array['ANS']
+                            }
                             let variableConfig = {
                                 columnCount: 1,
                                 minWidth: 9,
@@ -548,76 +722,191 @@ export function Calculator(props) {
                     </div>
                 </div>
                 <div className={styles.answer}>
-                    <h2>Answer:</h2>
-                    <div>
-                        {currentTab.selectedVariable.includes('_')
-                            ?<h3>{currentTab.selectedVariable.split('_')[0]}<sub><h3>{currentTab.selectedVariable.split('_')[1]}</h3></sub></h3>
-                            :<h3>{currentTab.selectedVariable}</h3>
-                        }
-                        <h3>&nbsp;{tD.calculationType[currentTab.selectedVariable] === 'exact' || tD.calculationType[currentTab.selectedVariable] === undefined? '=': (tD.calculationType[currentTab.selectedVariable] === 'approximation'? '≈': '=')}</h3>
-                        {
-                            currentTab.answer.includes(',')
-                                ? currentTab.answer
-                                    .split(',')
-                                    .map((value, index, array) => (
-                                        <Fragment key={index}>
+                    {!isUndefined(tD.otherAnswers)
+                        ?(tD.otherAnswers.length === 0
+                            ? null
+                            : <h2>Answer:</h2>
+                        )
+                        :<h2>Answer:</h2>
+                    }
+                    {!isUndefined(tD.otherAnswers)
+                        ?tD.otherAnswers.map((otherAnswer, index) => (
+                            <div key={`answer_${index}`}>
+                                {otherAnswer.includes('_')
+                                    ?<h3>{otherAnswer.split('_')[0]}<sub><h3>{otherAnswer.split('_')[1]}</h3></sub></h3>
+                                    :<h3>{otherAnswer}</h3>
+                                }
+                                <h3>&nbsp;{tD.calculationType[otherAnswer] === 'exact' || tD.calculationType[otherAnswer] === undefined? '=': (tD.calculationType[otherAnswer] === 'approximation'? '≈': '=')}</h3>
+                                {
+                                    tV[otherAnswer].includes(',')
+                                        ? tV[otherAnswer]
+                                            .split(',')
+                                            .map((value, index, array) => (
+                                                <Fragment key={index}>
+                                                    <input
+                                                        type='text'
+                                                        placeholder=''
+                                                        aria-label={`answer-${index}`}
+                                                        value={getRoundedValue(value, currentTab.selectedVariable)}
+                                                        spellCheck='false'
+                                                        readOnly
+                                                        style={{
+                                                            minWidth:'10ch',
+                                                            width: `${Math.max
+                                                                (8, String(getRoundedValue(value.trim(), currentTab.selectedVariable))?.length || 0) + 1
+                                                            }ch`
+                                                        }} 
+                                                    />
+                                                    {index < array.length - 1 && <p key={`comma_${index}`} className={styles.comma}>, </p>}
+                                                </Fragment>
+                                            ))
+                                        : (
                                             <input
                                                 type='text'
                                                 placeholder=''
-                                                aria-label={`answer-${index}`}
-                                                value={getRoundedValue(value, currentTab.selectedVariable)}
+                                                aria-label='answer'
+                                                value={(
+                                                    String(getRoundedValue(currentTab.answer.split('||')[index], otherAnswer)).includes('|[') && 
+                                                    String(getRoundedValue(currentTab.answer.split('||')[index], otherAnswer)).includes(']|')
+                                                        ? getRoundedValue(String(currentTab.answer.split('||')[index]).split('|[')[0], otherAnswer)
+                                                        : getRoundedValue(currentTab.answer.split('||')[index], otherAnswer)
+                                                )}
                                                 spellCheck='false'
                                                 readOnly
                                                 style={{
                                                     minWidth:'10ch',
-                                                    width: `${Math.max
-                                                        (8, String(getRoundedValue(value.trim(), currentTab.selectedVariable))?.length || 0) + 1
-                                                    }ch`
+                                                    width: `${Math.max(8, String((
+                                                        String(getRoundedValue(currentTab.answer.split('||')[index], otherAnswer)).includes('|[') && 
+                                                        String(getRoundedValue(currentTab.answer.split('||')[index], otherAnswer)).includes(']|')
+                                                            ? getRoundedValue(String(currentTab.answer.split('||')[index]).split('|[')[0], otherAnswer)
+                                                            : getRoundedValue(currentTab.answer.split('||')[index], otherAnswer)
+                                                    ))?.length || 0) + 1}ch`
                                                 }} 
                                             />
-                                            {index < array.length - 1 && <p key={`comma_${index}`} className={styles.comma}>, </p>}
-                                        </Fragment>
-                                    ))
-                                : (
-                                    <input
-                                        type='text'
-                                        placeholder=''
-                                        aria-label='answer'
-                                        value={(
-                                            String(getRoundedValue(currentTab.answer, currentTab.selectedVariable)).includes('|[') && 
-                                            String(getRoundedValue(currentTab.answer, currentTab.selectedVariable)).includes(']|')
-                                                ? getRoundedValue(String(currentTab.answer).split('|[')[0], currentTab.selectedVariable)
-                                                : getRoundedValue(currentTab.answer, currentTab.selectedVariable)
-                                        )}
-                                        spellCheck='false'
-                                        readOnly
-                                        style={{
-                                            minWidth:'10ch',
-                                            width: `${Math.max(8, String((
+                                        )
+                                }
+                                <h3>{tD.units[otherAnswer] === 'DecimalPercentage' 
+                                || tD.units[otherAnswer] === 'DecimalFraction'
+                                || tD.units[otherAnswer] === 'Fraction'
+                                || tD.units[otherAnswer] === undefined
+                                    ? ''
+                                    : tD.units[otherAnswer]
+                                }</h3>
+                                {
+                                    tD.units[otherAnswer] !== '' && tD.units[otherAnswer] !== undefined
+                                    && (otherAnswer !== tD.leftSideUtil.omittedVariable
+                                    || currentTab.leftSideUtilValue === 'Custom Value')
+                                &&(
+                                    <button type='button'>add conversion</button>
+                                )}
+                            </div>
+                        ))
+                        : <div key='default_answer' style={isUndefined(tD.inputWrapMarginLeft)?{alignItems:'center'}:{}}>
+                            {currentTab.selectedVariable.includes('_')
+                                ?<h3>{currentTab.selectedVariable.split('_')[0]}<sub><h3>{currentTab.selectedVariable.split('_')[1]}</h3></sub></h3>
+                                :<h3>{currentTab.selectedVariable}</h3>
+                            }
+                            <h3 style={isUndefined(tD.inputWrapMarginLeft)?{}:{marginRight:'20px'}}>&nbsp;{tD.calculationType[currentTab.selectedVariable] === 'exact' || tD.calculationType[currentTab.selectedVariable] === undefined? '=': (tD.calculationType[currentTab.selectedVariable] === 'approximation'? '≈': '=')}</h3>
+                            {
+                                currentTab.answer.includes(',')
+                                    ? (isUndefined(tD.inputWrapMarginLeft)
+                                        ?currentTab.answer
+                                            .split(',')
+                                            .map((value, index, array) => (
+                                                <Fragment key={index}>
+                                                    <input
+                                                        type='text'
+                                                        placeholder=''
+                                                        aria-label={`answer-${index}`}
+                                                        value={getRoundedValue(value, currentTab.selectedVariable)}
+                                                        spellCheck='false'
+                                                        readOnly
+                                                        style={{
+                                                            minWidth:'10ch',
+                                                            width: `${Math.max
+                                                                (8, String(getRoundedValue(value.trim(), currentTab.selectedVariable))?.length || 0) + 1
+                                                            }ch`
+                                                        }} 
+                                                    />
+                                                    {index < array.length - 1 && <p key={`comma_${index}`} className={styles.comma}>, </p>}
+                                                </Fragment>
+                                            ))
+                                        : <span>{(() => {
+                                            const values = tabVariables[currentTab.selectedVariable].split(',')
+                                            const splitValues = []
+                                            for (let i = 0; i < values.length; i += 8) {
+                                                splitValues.push(values.slice(i, i + 8)); 
+                                            }
+                                            return splitValues.map((valueArr, index) => (
+                                                <span key={`3298498${index}`} className={styles.flex}>{(() => {
+                                                    const rowValues = valueArr
+                                                    return rowValues.map((rowValue, jindex) => (
+                                                        <span key={`48938${jindex}`} style={{display:'flex'}}>
+                                                            <input 
+                                                                type='text'
+                                                                placeholder=''
+                                                                aria-label={`answer-${jindex}`}
+                                                                value={getRoundedValue(rowValue, currentTab.selectedVariable)}
+                                                                spellCheck='false'
+                                                                readOnly 
+                                                                style={{
+                                                                    minWidth:'1ch',
+                                                                    width: `${Math.max
+                                                                        (1, String(getRoundedValue(rowValue.trim(), currentTab.selectedVariable))?.length || 0) + 1
+                                                                    }ch`,
+                                                                    marginLeft:'0px',
+                                                                    marginRight:'0px'
+                                                                }} 
+                                                            />
+                                                            {index * 8 + jindex < values.length - 1 && <p key={`comma_${index}`} className={`${styles.comma} ${styles.specialComma}`}>, </p>}
+                                                        </span>
+                                                        
+                                                    ))
+                                                })()}</span>
+                                            ))
+                                        })()}</span>
+                                    )
+                                    : (
+                                        <input
+                                            type='text'
+                                            placeholder=''
+                                            aria-label='answer'
+                                            value={(
                                                 String(getRoundedValue(currentTab.answer, currentTab.selectedVariable)).includes('|[') && 
                                                 String(getRoundedValue(currentTab.answer, currentTab.selectedVariable)).includes(']|')
                                                     ? getRoundedValue(String(currentTab.answer).split('|[')[0], currentTab.selectedVariable)
                                                     : getRoundedValue(currentTab.answer, currentTab.selectedVariable)
-                                            ))?.length || 0) + 1}ch`
-                                        }} 
-                                    />
-                                )
-                        }
-                        <h3>{tD.units[currentTab.selectedVariable] === 'DecimalPercentage' 
-                        || tD.units[currentTab.selectedVariable] === 'DecimalFraction'
-                        || tD.units[currentTab.selectedVariable] === 'Fraction'
-                        || tD.units[currentTab.selectedVariable] === undefined
-                            ? ''
-                            : tD.units[currentTab.selectedVariable]
-                        }</h3>
-                        {
-                            tD.units[currentTab.selectedVariable] !== '' && tD.units[currentTab.selectedVariable] !== undefined
-                            && (currentTab.selectedVariable !== tD.leftSideUtil.omittedVariable
-                            || currentTab.leftSideUtilValue === 'Custom Value')
-                        &&(
-                            <button type='button'>add conversion</button>
-                        )}
-                    </div>
+                                            )}
+                                            spellCheck='false'
+                                            readOnly
+                                            style={{
+                                                minWidth:'10ch',
+                                                width: `${Math.max(8, String((
+                                                    String(getRoundedValue(currentTab.answer, currentTab.selectedVariable)).includes('|[') && 
+                                                    String(getRoundedValue(currentTab.answer, currentTab.selectedVariable)).includes(']|')
+                                                        ? getRoundedValue(String(currentTab.answer).split('|[')[0], currentTab.selectedVariable)
+                                                        : getRoundedValue(currentTab.answer, currentTab.selectedVariable)
+                                                ))?.length || 0) + 1}ch`
+                                            }} 
+                                        />
+                                    )
+                            }
+                            <h3>{tD.units[currentTab.selectedVariable] === 'DecimalPercentage' 
+                            || tD.units[currentTab.selectedVariable] === 'DecimalFraction'
+                            || tD.units[currentTab.selectedVariable] === 'Fraction'
+                            || tD.units[currentTab.selectedVariable] === undefined
+                                ? ''
+                                : tD.units[currentTab.selectedVariable]
+                            }</h3>
+                            {
+                                tD.units[currentTab.selectedVariable] !== '' && tD.units[currentTab.selectedVariable] !== undefined
+                                && (currentTab.selectedVariable !== tD.leftSideUtil.omittedVariable
+                                || currentTab.leftSideUtilValue === 'Custom Value')
+                            &&(
+                                <button type='button'>add conversion</button>
+                            )}
+                        </div>
+                    }
                 </div>
             </div>
         );
@@ -1142,5 +1431,333 @@ export function Calculator(props) {
                 </div>
             </div>
         )
-    } 
+    } else if(type === 'polynomial_expression'){
+        return (
+            <div className={`${styles.calculator} ${currentTab.leftSideUtilValue.split('|')[0] === ''
+                    || currentTab.leftSideUtilValue.split('|')[0] < 1
+                    || currentTab.leftSideUtilValue.split('|')[0] > tD.maxTerms
+                    || currentTab.leftSideUtilValue.split('|')[1] === ''
+                    || currentTab.leftSideUtilValue.split('|')[1] < 1
+                    || currentTab.leftSideUtilValue.split('|')[1] > tD.maxTerms
+                    ? styles.borderFade
+                    : ''
+                }`}>
+                <div className={currentTab.leftSideUtilValue.split('|')[0] === ''
+                    || currentTab.leftSideUtilValue.split('|')[0] < 1
+                    || currentTab.leftSideUtilValue.split('|')[0] > tD.maxTerms
+                    || currentTab.leftSideUtilValue.split('|')[1] === ''
+                    || currentTab.leftSideUtilValue.split('|')[1] < 1
+                    || currentTab.leftSideUtilValue.split('|')[1] > tD.maxTerms
+                    ? styles.extraFade
+                    : ''
+                }>
+                    <div className={styles.formula}>
+                        <h1>{mode} Calculator</h1>
+                        <div>  
+                            <h3 
+                                onCopy={(e) => handleCopy(e, getCopyFormula(tD.formula, tV))} 
+                                style={{marginTop:'10px'}}
+                            >{nonSerializedFormulaData[mode]['display'](tV, currentTab.selectedVariable)}</h3>
+                        </div>
+                    </div>
+                    <div className={styles.enter}>
+                        <h2>Enter:</h2>
+                        <div className={styles.variables}>
+                            {(() => {
+                                const tVArray = {array: {...tV}}
+                                delete tVArray.array['--']
+                                delete tVArray.array[Object.keys(tVArray.array)[0]]
+                                if(!isUndefined(tD.otherAnswers)){
+                                    (tD.otherAnswers).forEach(otherAnswer => {
+                                        delete tVArray.array[otherAnswer]
+                                    });
+                                    delete tVArray.array['ANS']
+                                }
+                                let variableConfig = {
+                                    columnCount: 1,
+                                    minWidth: 9,
+                                    placeholder: 'Enter Here',
+                                }
+                                if(Object.keys(tVArray.array).length < 8){
+                                    variableConfig = {
+                                        columnCount: 1,
+                                        minWidth: 9,
+                                        placeholder: 'Enter Here',
+                                    }
+                                } else if (Object.keys(tVArray.array).length < 13){
+                                    variableConfig = {
+                                        columnCount: 2,
+                                        minWidth: 6,
+                                        placeholder: 'Enter',
+                                    }
+                                } else if (Object.keys(tVArray.array).length < 19){
+                                    variableConfig = {
+                                        columnCount: 3,
+                                        minWidth: 5,
+                                        placeholder: 'Enter',
+                                        scrunch: true
+                                    }
+                                } else {
+                                    variableConfig = {
+                                        columnCount: 5,
+                                        minWidth: 2,
+                                        placeholder: '',
+                                        scrunch: true
+                                    }
+                                }
+                                return (
+                                    <div>
+                                        {(() => {
+                                            const variables = Object.keys(tVArray.array);
+                                            const columnCount = variableConfig.columnCount;
+                                            const rowCount = Math.ceil(variables.length / columnCount);
+
+                                            return Array.from({ length: rowCount }).map((_, rowIndex, arr) => (
+                                            <div key={rowIndex} className={styles.flex}>
+                                                {Array.from({ length: columnCount }).map((_, colIndex) => {
+                                                const varIndex = rowIndex + colIndex * rowCount;
+                                                const currentVar = variables[varIndex];
+                                                if (!currentVar) return null;
+                                                
+                                                return (
+                                                    <React.Fragment key={varIndex}>
+                                                        <Variable
+                                                            styles={styles}
+                                                            getRoundedValue={getRoundedValue}
+                                                            handleInputChange={handleInputChange}
+                                                            handleKeyDown={handleKeyDown}
+                                                            handleBlur={handleBlur}
+                                                            currentTab={currentTab}
+                                                            tabVariables={tabVariables}
+                                                            tD={tD}
+                                                            tV={tV}
+                                                            tVArray={tVArray}
+                                                            variable={currentVar}
+                                                            index={varIndex+1}
+                                                            key={varIndex}
+                                                            minWidth={variableConfig.minWidth}
+                                                            placeholder={variableConfig.placeholder}
+                                                            scrunch={variableConfig.scrunch}
+                                                        />
+                                                        {varIndex !== variables.length - 1 && Object.keys(tVArray.array).length > 7
+                                                            && <h3 className={styles.comma}>,</h3>
+                                                        }
+                                                    </React.Fragment>
+                                                );
+                                                })}
+                                            </div>
+                                            ));
+                                        })()}
+                                    </div>
+                                )
+                            })()}
+                        </div>
+                    </div>
+                    <div className={styles.answer}>
+                        {!isUndefined(tD.otherAnswers)
+                            ?(tD.otherAnswers.length === 0
+                                ? null
+                                : <h2>Answer:</h2>
+                            )
+                            :<h2>Answer:</h2>
+                        }
+                        {!isUndefined(tD.otherAnswers)
+                            ?tD.otherAnswers.map((otherAnswer, index) => (
+                                <div key={`answer_${index}`}>
+                                    {otherAnswer.includes('_')
+                                        ?<h3>{otherAnswer.split('_')[0]}<sub><h3>{otherAnswer.split('_')[1]}</h3></sub></h3>
+                                        :<h3>{otherAnswer}</h3>
+                                    }
+                                    <h3>&nbsp;{tD.calculationType[otherAnswer] === 'exact' || tD.calculationType[otherAnswer] === undefined? '=': (tD.calculationType[otherAnswer] === 'approximation'? '≈': '=')}</h3>
+                                    {
+                                        tV[otherAnswer].includes(',')
+                                            ? tV[otherAnswer]
+                                                .split(',')
+                                                .map((value, index, array) => (
+                                                    <Fragment key={index}>
+                                                        <input
+                                                            type='text'
+                                                            placeholder=''
+                                                            aria-label={`answer-${index}`}
+                                                            value={getRoundedValue(value, currentTab.selectedVariable)}
+                                                            spellCheck='false'
+                                                            readOnly
+                                                            style={{
+                                                                minWidth:'10ch',
+                                                                width: `${Math.max
+                                                                    (8, String(getRoundedValue(value.trim(), currentTab.selectedVariable))?.length || 0) + 1
+                                                                }ch`
+                                                            }} 
+                                                        />
+                                                        {index < array.length - 1 && <p key={`comma_${index}`} className={styles.comma}>, </p>}
+                                                    </Fragment>
+                                                ))
+                                            : (
+                                                <input
+                                                    type='text'
+                                                    placeholder=''
+                                                    aria-label='answer'
+                                                    value={(
+                                                        String(getRoundedValue(currentTab.answer.split('||')[index], otherAnswer)).includes('|[') && 
+                                                        String(getRoundedValue(currentTab.answer.split('||')[index], otherAnswer)).includes(']|')
+                                                            ? getRoundedValue(String(currentTab.answer.split('||')[index]).split('|[')[0], otherAnswer)
+                                                            : getRoundedValue(currentTab.answer.split('||')[index], otherAnswer)
+                                                    )}
+                                                    spellCheck='false'
+                                                    readOnly
+                                                    style={{
+                                                        minWidth:'10ch',
+                                                        width: `${Math.max(8, String((
+                                                            String(getRoundedValue(currentTab.answer.split('||')[index], otherAnswer)).includes('|[') && 
+                                                            String(getRoundedValue(currentTab.answer.split('||')[index], otherAnswer)).includes(']|')
+                                                                ? getRoundedValue(String(currentTab.answer.split('||')[index]).split('|[')[0], otherAnswer)
+                                                                : getRoundedValue(currentTab.answer.split('||')[index], otherAnswer)
+                                                        ))?.length || 0) + 1}ch`
+                                                    }} 
+                                                />
+                                            )
+                                    }
+                                    <h3>{tD.units[otherAnswer] === 'DecimalPercentage' 
+                                    || tD.units[otherAnswer] === 'DecimalFraction'
+                                    || tD.units[otherAnswer] === 'Fraction'
+                                    || tD.units[otherAnswer] === undefined
+                                        ? ''
+                                        : tD.units[otherAnswer]
+                                    }</h3>
+                                    {
+                                        tD.units[otherAnswer] !== '' && tD.units[otherAnswer] !== undefined
+                                        && (otherAnswer !== tD.leftSideUtil.omittedVariable
+                                        || currentTab.leftSideUtilValue === 'Custom Value')
+                                    &&(
+                                        <button type='button'>add conversion</button>
+                                    )}
+                                </div>
+                            ))
+                            : <div key='default_answer' style={isUndefined(tD.inputWrapMarginLeft)?{alignItems:'center'}:{}}>
+                                {currentTab.selectedVariable.includes('_')
+                                    ?<h3>{currentTab.selectedVariable.split('_')[0]}<sub><h3>{currentTab.selectedVariable.split('_')[1]}</h3></sub></h3>
+                                    :<h3>{currentTab.selectedVariable}</h3>
+                                }
+                                <h3 style={isUndefined(tD.inputWrapMarginLeft)?{}:{marginRight:'20px'}}>&nbsp;{tD.calculationType[currentTab.selectedVariable] === 'exact' || tD.calculationType[currentTab.selectedVariable] === undefined? '=': (tD.calculationType[currentTab.selectedVariable] === 'approximation'? '≈': '=')}</h3>
+                                {
+                                    currentTab.answer.includes(',')
+                                        ? (isUndefined(tD.inputWrapMarginLeft)
+                                            ?currentTab.answer
+                                                .split(',')
+                                                .map((value, index, array) => (
+                                                    <Fragment key={index}>
+                                                        <input
+                                                            type='text'
+                                                            placeholder=''
+                                                            aria-label={`answer-${index}`}
+                                                            value={getRoundedValue(value, currentTab.selectedVariable)}
+                                                            spellCheck='false'
+                                                            readOnly
+                                                            style={{
+                                                                minWidth:'10ch',
+                                                                width: `${Math.max
+                                                                    (8, String(getRoundedValue(value.trim(), currentTab.selectedVariable))?.length || 0) + 1
+                                                                }ch`
+                                                            }} 
+                                                        />
+                                                        {index < array.length - 1 && <p key={`comma_${index}`} className={styles.comma}>, </p>}
+                                                    </Fragment>
+                                                ))
+                                            : <span>{(() => {
+                                                const values = tabVariables[currentTab.selectedVariable].split(',')
+                                                const splitValues = []
+                                                for (let i = 0; i < values.length; i += 8) {
+                                                    splitValues.push(values.slice(i, i + 8)); 
+                                                }
+                                                return splitValues.map((valueArr, index) => (
+                                                    <span key={`3298498${index}`} className={styles.flex}>{(() => {
+                                                        const rowValues = valueArr
+                                                        return rowValues.map((rowValue, jindex) => (
+                                                            <span key={`48938${jindex}`} style={{display:'flex'}}>
+                                                                <input 
+                                                                    type='text'
+                                                                    placeholder=''
+                                                                    aria-label={`answer-${jindex}`}
+                                                                    value={getRoundedValue(rowValue, currentTab.selectedVariable)}
+                                                                    spellCheck='false'
+                                                                    readOnly 
+                                                                    style={{
+                                                                        minWidth:'1ch',
+                                                                        width: `${Math.max
+                                                                            (1, String(getRoundedValue(rowValue.trim(), currentTab.selectedVariable))?.length || 0) + 1
+                                                                        }ch`,
+                                                                        marginLeft:'0px',
+                                                                        marginRight:'0px'
+                                                                    }} 
+                                                                />
+                                                                {index * 8 + jindex < values.length - 1 && <p key={`comma_${index}`} className={`${styles.comma} ${styles.specialComma}`}>, </p>}
+                                                            </span>
+                                                            
+                                                        ))
+                                                    })()}</span>
+                                                ))
+                                            })()}</span>
+                                        )
+                                        : (
+                                            <input
+                                                type='text'
+                                                placeholder=''
+                                                aria-label='answer'
+                                                value={(
+                                                    String(getRoundedValue(currentTab.answer, currentTab.selectedVariable)).includes('|[') && 
+                                                    String(getRoundedValue(currentTab.answer, currentTab.selectedVariable)).includes(']|')
+                                                        ? getRoundedValue(String(currentTab.answer).split('|[')[0], currentTab.selectedVariable)
+                                                        : getRoundedValue(currentTab.answer, currentTab.selectedVariable)
+                                                )}
+                                                spellCheck='false'
+                                                readOnly
+                                                style={{
+                                                    minWidth:'10ch',
+                                                    width: `${Math.max(8, String((
+                                                        String(getRoundedValue(currentTab.answer, currentTab.selectedVariable)).includes('|[') && 
+                                                        String(getRoundedValue(currentTab.answer, currentTab.selectedVariable)).includes(']|')
+                                                            ? getRoundedValue(String(currentTab.answer).split('|[')[0], currentTab.selectedVariable)
+                                                            : getRoundedValue(currentTab.answer, currentTab.selectedVariable)
+                                                    ))?.length || 0) + 1}ch`
+                                                }} 
+                                            />
+                                        )
+                                }
+                                <h3>{tD.units[currentTab.selectedVariable] === 'DecimalPercentage' 
+                                || tD.units[currentTab.selectedVariable] === 'DecimalFraction'
+                                || tD.units[currentTab.selectedVariable] === 'Fraction'
+                                || tD.units[currentTab.selectedVariable] === undefined
+                                    ? ''
+                                    : tD.units[currentTab.selectedVariable]
+                                }</h3>
+                                {
+                                    tD.units[currentTab.selectedVariable] !== '' && tD.units[currentTab.selectedVariable] !== undefined
+                                    && (currentTab.selectedVariable !== tD.leftSideUtil.omittedVariable
+                                    || currentTab.leftSideUtilValue === 'Custom Value')
+                                &&(
+                                    <button type='button'>add conversion</button>
+                                )}
+                            </div>
+                        }
+                    </div>
+                </div>
+                <div className={styles.errorSuggestion}>
+                    {currentTab.leftSideUtilValue.split('|')[0] === ''
+                    || currentTab.leftSideUtilValue.split('|')[0] < 1
+                    || currentTab.leftSideUtilValue.split('|')[0] > tD.maxTerms
+                    || currentTab.leftSideUtilValue.split('|')[1] === ''
+                    || currentTab.leftSideUtilValue.split('|')[1] < 1
+                    || currentTab.leftSideUtilValue.split('|')[1] > tD.maxTerms
+                        ? (<div>
+                            <h1>{currentTab.leftSideUtilValue.split('|')[0] > tD.maxTerms || currentTab.leftSideUtilValue.split('|')[1] > currentTab.maxTerms
+                                ? `Enter at most ${tD.maxTerms} terms`
+                                : 'Enter at least 1 term'
+                            }</h1>
+                        </div>)
+                        : ''    
+                    }
+                </div>
+            </div>
+        );
+    }
 }

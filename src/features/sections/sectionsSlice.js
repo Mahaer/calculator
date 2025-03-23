@@ -35,7 +35,14 @@ const initialState = {
 						'Adding Complex Numbers',
 						'Subtracting Complex Numbers',
 						'Multiplying Complex Numbers',
-						'Dividing Complex Numbers'
+						'Dividing Complex Numbers',
+						'Algebraic Complex Addition',
+						'Algebraic Complex Subtraction',
+					],
+					'Factors and Multiples': [
+						'Factors of an Integer',
+						'Greatest Common Factor (GCF)',
+						'Least Common Multiple (LCM)',
 					]
 				} 
 			]
@@ -51,24 +58,24 @@ const initialState = {
 					  	'Algebraic Division',
 						'Algebraic Proportions'
 					],
-					'Polynomial Equations': [
+					'Linear and Quadratic Polynomials': [
 					  	'Slope Intercept Form',
 					  	'Slope',
 					  	'General Form of a Quadratic',
 					  	'Quadratic Formula',
 						'Axis of Symmetry',
-					  	'Vertex Form of a Quadratic',
-					  	'Polynomial Equations',
-					  	'Add Polynomials',
-					  	'Subtract Polynomials',
-					  	'Multiply Polynomials',
-					  	'Divide Polynomials',
-					]
+					  	'Vertex Form of a Quadratic'
+					],
+					'Polynomials and Absolute Value': [
+						'Cubic Solver',
+						'Adding Polynomial Expressions',
+						'Subtracting Polynomial Expressions',
+						'Multiplying Polynomial Expressions',
+						'Dividing Polynomial Expressions',
+						'Absolute Value Equation'
+					],
 				},
 				{
-					'Functions': [
-						'Absolute Value Function'
-					],
 					'Sequences and Series': [
 					  	'Arithmetic Sequence (Explicit Formula)',
 					  	'Arithmetic Recursive Sequence',
@@ -79,14 +86,19 @@ const initialState = {
 					  	'Geometric Finite Sum',
 						'Geometric Infinite Sum For |r| < 1'
 					],
-					'Complex Numbers': [
-					  	'Algebraic Addition of Complex Numbers',
-					  	'Algebraic Subtraction of Complex Numbers',
-					  	'Algebraic Multiplication of Complex Numbers',
-					  	'Algebraic Division of Complex Numbers',
-					  	'Polar form',
-					  	'Euler\'s formula',
-					  	'Complex conjugate'
+					'Complex Number Forms': [
+						'Standard form to Polar form',
+						'Standard form to Euler\'s form',
+						'Standard form to Conjugate',
+						'Polar form to Standard form',
+						'Polar form to Euler\'s form',
+						'Polar form to Conjugate',
+						'Euler\'s form to Standard form',
+						'Euler\'s form to Polar form',
+						'Euler\'s form to Conjugate',
+						'Conjugate to Standard form',
+						'Conjugate to Polar form',
+						'Conjugate to Euler\'s form'
 					]
 				}
 			]

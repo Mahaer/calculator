@@ -2,7 +2,7 @@ import React from "react";
 import styles from '../css/variableDefinitions.module.css'
 
 export function VariableDefinitions({type, tVArray, tD}){
-    if(type === 'formula'){
+    if(type === 'formula' || (type === 'formula_expression' && tD.includeDefinitions)){
         return (
             <div className={styles.variableDefinitions}>
                 <h2>Variable Definitions:</h2>
@@ -51,5 +51,5 @@ export function VariableDefinitions({type, tVArray, tD}){
                 </div>
             </div>
         )
-    }
+    } 
 }

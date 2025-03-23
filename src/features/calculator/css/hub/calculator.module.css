@@ -30,6 +30,9 @@
     font-weight: 300;
     user-select: none;
 }
+.specialComma{
+    margin-top: -20px;
+}
 .calculator h2{
     font-size: 30px;
     margin-left: 10px;
@@ -116,7 +119,6 @@ sub{
 .answer > div{
     margin-left: 40px;
     display: flex;
-    align-items: center;
     width: fit-content;
 }
 .answer > div > h3:first-child{

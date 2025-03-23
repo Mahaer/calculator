@@ -8,6 +8,7 @@ import { VariableDefinitions } from '../../calculator/components/variableDefinit
 import { AdditionalInfo } from '../../calculator/components/additionalInfo';
 import { useSelector } from 'react-redux';
 import { selectCurrentTabId, selectTabs, selectTabData } from '../../calculator/calculatorSlice';
+import { isUndefined } from 'mathjs';
 
 export function Tab() {
 	const tabId = useSelector(selectCurrentTabId)
@@ -27,10 +28,13 @@ export function Tab() {
 	let numericVariables = {};
 	for (let i = 0; i < tVKeys.length; i++) {tV[tVKeys[i]] = tVKeys[i] === tabVariables[tVKeys[i]] ? '' : tabVariables[tVKeys[i]];}
 	for (let key in tV) {numericVariables[key] = tV[key] === '' ? '' : Number(tV[key]);}
-	
 	for (let key in tV) {
-		if(tV[key].includes('Error') || tV[key].includes('Impossible') || tV[key] === Infinity || tV[key] === -Infinity){
+		if(isUndefined(tV[key])){
 			tV[key] = ''
+		} else {
+			if(tV[key].includes('Error') || tV[key].includes('Impossible') || tV[key] === Infinity || tV[key] === -Infinity){
+				tV[key] = ''
+			}
 		}
 	}
 	if(type === 'array' || type === 'array_expression'){
@@ -44,6 +48,7 @@ export function Tab() {
 			}
 		}
 	}
+
 
 	if(mode !== "" && type !== ""){
 		return (
